@@ -1,0 +1,6 @@
+Oct 18 03:34:01 aquaos kernel: [    0.000000] Linux version 6.12.0-aquaos-ai-lockdown (gcc 13.2.0) #1 SMP PREEMPT_DYNAMIC
+Oct 18 03:34:01 aquaos kernel: [    0.214012] LSM:initializing lsm=lockdown,capability,landlock,yama,apparmor
+Oct 18 03:34:01 aquaos kernel: [    0.448920] SquashFS: Mounted immutable read-only rootfs on /dev/nvme0n1p2
+Oct 18 03:34:01 aquaos systemd[1]: Started Aqua Shield Zero-Trust Firewall (nftables).
+Oct 18 03:34:01 aquaos systemd[1]: Started Aqua Neural Engine Daemon (Ollama + Vulkan FlashAttention).
+Oct 18 03:34:01 aquaos systemd[1]: Started Aqua Compositor (Labwc Wayland + Picom Blur).

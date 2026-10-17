@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+# AquaOS System Utility: neofetch
+import sys
+print('AquaOS neofetch v1.0.0-beta1')

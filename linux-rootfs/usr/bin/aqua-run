@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+# AquaOS System Utility: aqua-run
+import sys
+print('AquaOS aqua-run v1.0.0-beta1')

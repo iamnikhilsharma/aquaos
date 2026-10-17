@@ -1,0 +1,3 @@
+[Oct 18 03:34:01] Gatekeeper initialized: Static + Shannon Entropy scanner active (threshold=7.25 bits/byte)
+[Oct 18 03:34:01] Bubblewrap namespace isolation enabled for .exe, .dmg, .apk, .AppImage
+[Oct 18 03:34:01] Credential Shield active: ~/.ssh, ~/.gnupg, ~/.aws masked by read-only tmpfs

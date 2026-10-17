@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+# AquaOS System Utility: aqua-ai
+import sys
+print('AquaOS aqua-ai v1.0.0-beta1')

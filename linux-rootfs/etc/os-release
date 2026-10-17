@@ -1,0 +1,9 @@
+PRETTY_NAME="AquaOS 1.0 Beta (Sonoma-AI Virus-Proof Edition)"
+NAME="AquaOS"
+VERSION_ID="1.0-beta"
+VERSION="1.0 Beta (Sonoma-AI)"
+ID=aquaos
+ID_LIKE="debian ubuntu"
+HOME_URL="https://aquaos.local/"
+KERNEL_LOCKDOWN="integrity"
+ROOTFS_MODE="squashfs-immutable-ro"

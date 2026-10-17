@@ -1,0 +1,70 @@
+"""Zero-dependency test runner for AquaOS-Beta (works with standard library or pytest)."""
+
+from __future__ import annotations
+
+import shutil
+import sys
+import tempfile
+from pathlib import Path
+
+TESTS_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(TESTS_DIR))
+sys.path.insert(0, str(TESTS_DIR.parent / "aqua-desktop"))
+
+import test_ai_engine
+import test_desktop
+import test_security
+import test_universal
+
+
+def run_all_tests() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+    test_functions = [
+        ("test_ai_engine.test_hardware_fit_estimator", test_ai_engine.test_hardware_fit_estimator, False),
+        ("test_ai_engine.test_neural_boost_env_and_status", test_ai_engine.test_neural_boost_env_and_status, False),
+        ("test_ai_engine.test_natural_language_os_intents", test_ai_engine.test_natural_language_os_intents, False),
+        ("test_ai_engine.test_sandboxed_ai_code_execution", test_ai_engine.test_sandboxed_ai_code_execution, False),
+        ("test_ai_engine.test_extract_code_block", test_ai_engine.test_extract_code_block, False),
+        ("test_security.test_gatekeeper_clean_file_and_trust", test_security.test_gatekeeper_clean_file_and_trust, True),
+        ("test_security.test_gatekeeper_malicious_payload_detection", test_security.test_gatekeeper_malicious_payload_detection, True),
+        ("test_security.test_sandbox_bwrap_command_isolation", test_security.test_sandbox_bwrap_command_isolation, True),
+        ("test_universal.test_universal_runner_formats", test_universal.test_universal_runner_formats, True),
+        ("test_universal.test_universal_runner_blocks_malware", test_universal.test_universal_runner_blocks_malware, True),
+        ("test_universal.test_universal_package_manager", test_universal.test_universal_package_manager, False),
+        ("test_desktop.test_config_persistence", test_desktop.test_config_persistence, True),
+        ("test_desktop.test_dock_parabolic_magnification", test_desktop.test_dock_parabolic_magnification, False),
+        ("test_desktop.test_spotlight_math_and_search", test_desktop.test_spotlight_math_and_search, True),
+    ]
+
+    passed = 0
+    failed = 0
+    print("=" * 68)
+    print("  AquaOS-Beta Automated Test Suite")
+    print("=" * 68)
+
+    for name, fn, needs_tmp in test_functions:
+        tmp_dir = Path(tempfile.mkdtemp(prefix="aquaos_test_")) if needs_tmp else None
+        try:
+            if needs_tmp and tmp_dir is not None:
+                fn(tmp_dir)
+            else:
+                fn()
+            print(f"  [PASS] {name}")
+            passed += 1
+        except Exception as exc:
+            print(f"  [FAIL] {name}: {exc}")
+            failed += 1
+        finally:
+            if tmp_dir and tmp_dir.exists():
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    print("-" * 68)
+    print(f"  Summary: {passed} passed, {failed} failed out of {len(test_functions)} tests")
+    print("=" * 68)
+    return 0 if failed == 0 else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(run_all_tests())

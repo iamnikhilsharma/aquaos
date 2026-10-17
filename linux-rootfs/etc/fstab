@@ -1,0 +1,4 @@
+# <file system>             <mount point>  <type>     <options>                        <dump> <pass>
+/dev/nvme0n1p2              /              squashfs   ro,nodev,relatime                0      1
+overlay                     /home          overlay    rw,nosuid,nodev,relatime         0      0
+tmpfs                       /run/sandbox   tmpfs      rw,nosuid,nodev,noexec,size=4G   0      0

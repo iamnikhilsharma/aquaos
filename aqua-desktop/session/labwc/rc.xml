@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<labwc_config>
+  <core>
+    <decoration>server</decoration>
+    <gap>8</gap>
+    <adaptiveSync>no</adaptiveSync>
+  </core>
+  <theme>
+    <name>AquaOS</name>
+    <cornerRadius>12</cornerRadius>
+    <font name="Inter" size="11" />
+    <!-- macOS Traffic Lights on Top-Left: Close, Minimize (Iconify), Maximize -->
+    <titleLayout>CIM:T</titleLayout>
+  </theme>
+  <keyboard>
+    <default />
+    <!-- Super+Space or Alt+Space -> Aqua Spotlight Search & AI -->
+    <keybind key="W-space">
+      <action name="Execute" command="python3 /opt/aquaos/spotlight/spotlight.py" />
+    </keybind>
+    <keybind key="A-space">
+      <action name="Execute" command="python3 /opt/aquaos/spotlight/spotlight.py" />
+    </keybind>
+    <!-- Super+I -> Aqua AI Studio -->
+    <keybind key="W-i">
+      <action name="Execute" command="python3 /opt/aquaos/ai/ai_studio.py" />
+    </keybind>
+    <!-- Super+Q -> Quit Active Window (macOS Cmd+Q style) -->
+    <keybind key="W-q">
+      <action name="Close" />
+    </keybind>
+    <!-- Super+Return -> Terminal -->
+    <keybind key="W-Return">
+      <action name="Execute" command="foot" />
+    </keybind>
+    <!-- Super+E -> Finder (File Manager) -->
+    <keybind key="W-e">
+      <action name="Execute" command="nautilus" />
+    </keybind>
+  </keyboard>
+</labwc_config>

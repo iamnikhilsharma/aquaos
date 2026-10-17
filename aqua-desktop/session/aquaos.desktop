@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=AquaOS Desktop (Sonoma-AI)
+Comment=macOS-inspired AI & Zero-Trust Linux Desktop Environment
+Exec=/usr/local/bin/aqua-session
+Type=Application
+DesktopNames=AquaOS

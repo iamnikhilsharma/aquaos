@@ -1,0 +1,17 @@
+# AquaOS macOS Traffic-Light Window Decoration Theme for labwc / Openbox
+border.width: 1
+padding.width: 10
+padding.height: 8
+
+window.active.title.bg.color: #22222A
+window.active.label.text.color: #F5F5F7
+window.active.border.color: #3A3A46
+
+window.inactive.title.bg.color: #18181E
+window.inactive.label.text.color: #8E8E93
+window.inactive.border.color: #282830
+
+# Traffic-light button colors: Red (Close), Yellow (Iconify), Green (Maximize)
+window.active.button.close.unpressed.image.color: #FF5F56
+window.active.button.iconify.unpressed.image.color: #FFBD2E
+window.active.button.max.unpressed.image.color: #27C93F

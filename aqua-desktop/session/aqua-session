@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# AquaOS Session & Lifecycle Orchestrator (aqua-session)
+set -euo pipefail
+
+export AQUAOS_ROOT="${AQUAOS_ROOT:-/opt/aquaos}"
+export PYTHONPATH="${AQUAOS_ROOT}:${PYTHONPATH:-}"
+export GTK_THEME="Adwaita:dark"
+export OLLAMA_FLASH_ATTENTION=1
+export OLLAMA_KV_CACHE_TYPE="q8_0"
+
+mkdir -p "${HOME}/.config/aquaos" "${HOME}/.config/labwc" "${HOME}/Applications"
+cp -f "${AQUAOS_ROOT}/session/labwc/rc.xml" "${HOME}/.config/labwc/rc.xml" 2>/dev/null || true
+cp -f "${AQUAOS_ROOT}/session/labwc/themerc" "${HOME}/.config/labwc/themerc" 2>/dev/null || true
+
+# Configure GTK traffic-light buttons on top-left (close,minimize,maximize:)
+if command -v gsettings >/dev/null 2>&1; then
+    gsettings set org.gnome.desktop.wm.preferences button-layout 'close,minimize,maximize:' || true
+    gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' || true
+fi
+
+# Start background services inside the session
+start_shell_components() {
+    sleep 1
+    if command -v swaybg >/dev/null 2>&1 && [ -f "${AQUAOS_ROOT}/theme/wallpaper.svg" ]; then
+        swaybg -i "${AQUAOS_ROOT}/theme/wallpaper.svg" -m fill &
+    fi
+    python3 "${AQUAOS_ROOT}/menubar/menubar.py" &
+    python3 "${AQUAOS_ROOT}/dock/dock.py" &
+}
+
+start_shell_components &
+
+# Prefer Wayland compositor (labwc) with automatic fallback to Openbox + Picom on X11
+if command -v labwc >/dev/null 2>&1; then
+    exec labwc -C "${HOME}/.config/labwc"
+elif command -v openbox-session >/dev/null 2>&1; then
+    if command -v picom >/dev/null 2>&1; then
+        picom --config "${AQUAOS_ROOT}/session/picom.conf" -b || true
+    fi
+    exec openbox-session
+else
+    wait
+fi
