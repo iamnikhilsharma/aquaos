@@ -1,0 +1,8 @@
+# Ubuntu 24.04 Netplan Configuration for AquaOS
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    eth0:
+      dhcp4: true
+      dhcp6: true

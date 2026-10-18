@@ -1,0 +1,8 @@
+#include <tunables/global>
+/usr/bin/aqua-run flags=(enforce) {
+  #include <abstractions/base>
+  /usr/bin/bwrap ix,
+  /home/aqua/** rw,
+  deny @{HOME}/.ssh/** rwx,
+  deny @{HOME}/.gnupg/** rwx,
+}

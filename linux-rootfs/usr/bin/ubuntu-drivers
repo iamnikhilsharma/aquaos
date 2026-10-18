@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+# AquaOS / Ubuntu 24.04 Noble System Utility: ubuntu-drivers
+import sys
+print('AquaOS Ubuntu-Noble ubuntu-drivers v24.04.2')

@@ -66,30 +66,56 @@ class AquaLinuxEnvironment:
             "LANG": "en_US.UTF-8",
         }
         self.installed_pkgs: Dict[str, Tuple[str, str]] = {
+            "ubuntu-minimal": ("1.539.1", "Minimal core system of Ubuntu 24.04 LTS (Noble Numbat)"),
+            "linux-generic-hwe-24.04": ("6.12.0.24.26", "Complete Generic Linux HWE Kernel and headers"),
+            "ubuntu-drivers-common": ("1:0.9.7.6", "Detect and install additional Ubuntu hardware drivers"),
+            "snapd": ("2.66.1+24.04", "Daemon and tooling that enable Snap packages"),
+            "netplan.io": ("1.1-1ubuntu1", "Declarative YAML network configuration abstraction for Ubuntu"),
+            "ufw": ("0.36.2-6", "Program for managing a Netfilter firewall (Uncomplicated Firewall)"),
+            "apparmor": ("4.0.1really4.0.1-0ubuntu0.24.04.3", "User-space parser utility for AppArmor MAC"),
+            "software-properties-common": ("0.99.49.1", "Manage apt repositories and Ubuntu PPAs (add-apt-repository)"),
             "aquaos-desktop": ("1.0.0-beta1", "AquaOS Sonoma-AI Glassmorphic Desktop Environment"),
-            "labwc": ("0.8.1-1", "Wayland stacking compositor for AquaOS"),
+            "labwc": ("0.8.1-1ubuntu1", "Wayland stacking compositor for AquaOS"),
             "picom-aqua": ("11.2-aqua", "Dual-Kawase Gaussian blur compositor"),
             "bubblewrap": ("0.10.0-1", "Unprivileged namespace sandboxing utility (bwrap)"),
-            "nftables": ("1.0.9-1", "Zero-Trust packet filtering framework"),
+            "nftables": ("1.0.9-1build1", "Zero-Trust packet filtering framework"),
             "ollama-vulkan": ("0.5.7-aquaos", "Local LLM inference runtime with Vulkan & FlashAttention"),
             "python3": (platform.python_version(), "Interactive high-level object-oriented language"),
             "proton-ge-ulwgl": ("9.20-aqua", "Windows PE32/PE32+ compatibility layer"),
             "darling-macho": ("0.1.2026", "macOS Mach-O / .dmg / .app translation layer"),
             "waydroid": ("1.4.3-1", "Android APK container runtime for Wayland"),
             "distrobox": ("1.7.2-1", "Universal Linux package container bridge (.rpm/.pkg.tar.zst)"),
-            "squashfs-tools": ("1:4.6.1-1", "Immutable root filesystem tools"),
+            "squashfs-tools": ("1:4.6.1-1build1", "Immutable root filesystem tools"),
         }
+        self.installed_snaps: Dict[str, Tuple[str, str, str, str]] = {
+            "bare": ("1.0", "5", "latest/stable", "canonical✓"),
+            "core24": ("20260918", "742", "latest/stable", "canonical✓"),
+            "snapd": ("2.66.1", "23258", "latest/stable", "canonical✓"),
+            "firefox": ("134.0-2", "5412", "latest/stable", "mozilla✓"),
+            "firmware-updater": ("0+git.798", "147", "1/stable/ubuntu-24.04", "canonical✓"),
+            "aqua-ai-runtime": ("1.0.0", "18", "latest/stable", "aquaos✓"),
+        }
+        self.ppas: List[str] = [
+            "http://archive.ubuntu.com/ubuntu noble main restricted universe multiverse",
+            "http://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse",
+            "http://security.ubuntu.com/ubuntu noble-security main restricted universe multiverse",
+            "https://ppa.launchpadcontent.net/graphics-drivers/ppa/ubuntu noble main",
+            "https://ppa.launchpadcontent.net/aquaos/sonoma-ai/ubuntu noble main",
+        ]
         self._init_rootfs()
 
     def _init_rootfs(self) -> None:
-        """Create a real Linux FHS directory structure on disk inside linux-rootfs/."""
+        """Create a real Ubuntu 24.04 LTS + AquaOS FHS directory structure on disk inside linux-rootfs/."""
         dirs = [
             "bin",
             "boot",
             "dev",
             "etc/sysctl.d",
             "etc/systemd/system",
-            "etc/apt",
+            "etc/apt/sources.list.d",
+            "etc/netplan",
+            "etc/apparmor.d",
+            "etc/ufw",
             "home/aqua",
             "lib/modules/6.12.0-aquaos-ai-lockdown",
             "opt/aquaos",
@@ -97,6 +123,7 @@ class AquaLinuxEnvironment:
             "root",
             "run/aqua-sandbox",
             "sbin",
+            "snap/bin",
             "sys/class/drm",
             "tmp",
             "usr/bin",
@@ -104,22 +131,32 @@ class AquaLinuxEnvironment:
             "usr/share/aquaos",
             "var/log",
             "var/lib/aquaos",
+            "var/lib/snapd",
         ]
         for d in dirs:
             (self.rootfs / d).mkdir(parents=True, exist_ok=True)
 
-        # Populate /etc files
-        self._write_if_missing(
-            self.rootfs / "etc/os-release",
-            'PRETTY_NAME="AquaOS 1.0 Beta (Sonoma-AI Virus-Proof Edition)"\n'
+        # Populate /etc/os-release and /etc/lsb-release inheriting Ubuntu 24.04.2 LTS (Noble Numbat)
+        (self.rootfs / "etc/os-release").write_text(
+            'PRETTY_NAME="AquaOS 1.0 Beta (Ubuntu 24.04.2 LTS Noble Numbat • Sonoma-AI Edition)"\n'
             'NAME="AquaOS"\n'
-            'VERSION_ID="1.0-beta"\n'
-            'VERSION="1.0 Beta (Sonoma-AI)"\n'
+            'VERSION_ID="24.04"\n'
+            'VERSION="24.04.2 LTS (Noble Numbat) • AquaOS 1.0 Beta"\n'
+            'VERSION_CODENAME=noble\n'
             'ID=aquaos\n'
-            'ID_LIKE="debian ubuntu"\n'
-            'HOME_URL="https://aquaos.local/"\n'
+            'ID_LIKE="ubuntu debian"\n'
+            'UBUNTU_CODENAME=noble\n'
+            'HOME_URL="https://github.com/iamnikhilsharma/aquaos"\n'
             'KERNEL_LOCKDOWN="integrity"\n'
             'ROOTFS_MODE="squashfs-immutable-ro"\n',
+            encoding="utf-8",
+        )
+        (self.rootfs / "etc/lsb-release").write_text(
+            "DISTRIB_ID=AquaOS\n"
+            "DISTRIB_RELEASE=24.04\n"
+            "DISTRIB_CODENAME=noble\n"
+            'DISTRIB_DESCRIPTION="AquaOS 1.0 Beta (Ubuntu 24.04.2 LTS Noble Numbat • Sonoma-AI)"\n',
+            encoding="utf-8",
         )
         self._write_if_missing(self.rootfs / "etc/hostname", "aquaos\n")
         self._write_if_missing(
@@ -142,7 +179,50 @@ class AquaLinuxEnvironment:
         )
         self._write_if_missing(
             self.rootfs / "etc/resolv.conf",
-            "# Generated by AquaOS Zero-Trust DNS Resolver (DNS-over-HTTPS)\nnameserver 1.1.1.1\nnameserver 9.9.9.9\n",
+            "# Generated by Ubuntu systemd-resolved + AquaOS Zero-Trust DoH\nnameserver 127.0.0.53\nnameserver 1.1.1.1\noptions edns0 trust-ad\n",
+        )
+        self._write_if_missing(
+            self.rootfs / "etc/apt/sources.list.d/ubuntu.sources",
+            "Types: deb\n"
+            "URIs: http://archive.ubuntu.com/ubuntu/\n"
+            "Suites: noble noble-updates noble-backports\n"
+            "Components: main restricted universe multiverse\n"
+            "Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n\n"
+            "Types: deb\n"
+            "URIs: http://security.ubuntu.com/ubuntu/\n"
+            "Suites: noble-security\n"
+            "Components: main restricted universe multiverse\n"
+            "Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n",
+        )
+        self._write_if_missing(
+            self.rootfs / "etc/netplan/01-network-manager-all.yaml",
+            "# Ubuntu 24.04 Netplan Configuration for AquaOS\n"
+            "network:\n"
+            "  version: 2\n"
+            "  renderer: NetworkManager\n"
+            "  ethernets:\n"
+            "    eth0:\n"
+            "      dhcp4: true\n"
+            "      dhcp6: true\n",
+        )
+        self._write_if_missing(
+            self.rootfs / "etc/apparmor.d/usr.bin.aqua-run",
+            "#include <tunables/global>\n"
+            "/usr/bin/aqua-run flags=(enforce) {\n"
+            "  #include <abstractions/base>\n"
+            "  /usr/bin/bwrap ix,\n"
+            "  /home/aqua/** rw,\n"
+            "  deny @{HOME}/.ssh/** rwx,\n"
+            "  deny @{HOME}/.gnupg/** rwx,\n"
+            "}\n",
+        )
+        self._write_if_missing(
+            self.rootfs / "etc/ufw/ufw.conf",
+            "# /etc/ufw/ufw.conf — Ubuntu Uncomplicated Firewall + Aqua Shield\n"
+            "ENABLED=yes\n"
+            "LOGLEVEL=low\n"
+            "DEFAULT_INPUT_POLICY=\"DROP\"\n"
+            "DEFAULT_OUTPUT_POLICY=\"ACCEPT\"\n",
         )
 
         # Copy real security configs from iso-builder/security if present
@@ -158,25 +238,27 @@ class AquaLinuxEnvironment:
         now_s = time.strftime("%b %d %H:%M:%S")
         self._write_if_missing(
             self.rootfs / "var/log/syslog",
-            f"{now_s} aquaos kernel: [    0.000000] Linux version 6.12.0-aquaos-ai-lockdown (gcc 13.2.0) #1 SMP PREEMPT_DYNAMIC\n"
-            f"{now_s} aquaos kernel: [    0.214012] LSM:initializing lsm=lockdown,capability,landlock,yama,apparmor\n"
+            f"{now_s} aquaos kernel: [    0.000000] Linux version 6.12.0-aquaos-ai-lockdown (Ubuntu 13.2.0-23ubuntu4) #1 SMP PREEMPT_DYNAMIC\n"
+            f"{now_s} aquaos kernel: [    0.214012] LSM: initializing lsm=lockdown,capability,landlock,yama,apparmor\n"
             f"{now_s} aquaos kernel: [    0.448920] SquashFS: Mounted immutable read-only rootfs on /dev/nvme0n1p2\n"
-            f"{now_s} aquaos systemd[1]: Started Aqua Shield Zero-Trust Firewall (nftables).\n"
+            f"{now_s} aquaos systemd[1]: Started AppArmor initialization & profiles (Ubuntu 24.04 Noble).\n"
+            f"{now_s} aquaos systemd[1]: Started Snap Daemon (snapd.service).\n"
+            f"{now_s} aquaos systemd[1]: Started Uncomplicated Firewall (ufw) + Aqua Shield nftables.\n"
             f"{now_s} aquaos systemd[1]: Started Aqua Neural Engine Daemon (Ollama + Vulkan FlashAttention).\n"
             f"{now_s} aquaos systemd[1]: Started Aqua Compositor (Labwc Wayland + Picom Blur).\n",
         )
         self._write_if_missing(
             self.rootfs / "var/log/aquaos-shield.log",
             f"[{now_s}] Gatekeeper initialized: Static + Shannon Entropy scanner active (threshold=7.25 bits/byte)\n"
-            f"[{now_s}] Bubblewrap namespace isolation enabled for .exe, .dmg, .apk, .AppImage\n"
+            f"[{now_s}] AppArmor + Bubblewrap namespace isolation enabled for .exe, .dmg, .apk, .AppImage, .snap\n"
             f"[{now_s}] Credential Shield active: ~/.ssh, ~/.gnupg, ~/.aws masked by read-only tmpfs\n",
         )
 
         # Populate /usr/bin wrapper stubs
-        for tool in ("aqua-run", "aqua-pkg", "aqua-ai", "aqua-shield", "neofetch"):
+        for tool in ("aqua-run", "aqua-pkg", "aqua-ai", "aqua-shield", "neofetch", "snap", "ubuntu-drivers", "netplan", "ufw", "aa-status"):
             self._write_if_missing(
                 self.rootfs / "usr/bin" / tool,
-                f"#!/usr/bin/env python3\n# AquaOS System Utility: {tool}\nimport sys\nprint('AquaOS {tool} v1.0.0-beta1')\n",
+                f"#!/usr/bin/env python3\n# AquaOS / Ubuntu 24.04 Noble System Utility: {tool}\nimport sys\nprint('AquaOS Ubuntu-Noble {tool} v24.04.2')\n",
             )
 
     @staticmethod
@@ -530,14 +612,16 @@ class AquaLinuxEnvironment:
 
         if verb == "help":
             return (
-                "GNU bash, version 5.2.21(1)-release (x86_64-pc-linux-gnu) — AquaOS 1.0 Beta\n"
-                "Standard Linux commands available:\n"
+                "GNU bash, version 5.2.21(1)-release (x86_64-pc-linux-gnu) — AquaOS 1.0 Beta (Ubuntu 24.04.2 LTS Noble Numbat)\n"
+                "Ubuntu 24.04 LTS & POSIX Linux commands available:\n"
                 "  Filesystem : ls, ll, la, cd, pwd, cat, head, tail, grep, find, wc, sort, uniq, nl, tree, du, df -h\n"
                 "  File Ops   : touch, mkdir, rm, cp, mv, chmod, chown, ln -s, stat, file, echo ... > file\n"
-                "  System/HW  : uname -a, hostnamectl, lsb_release -a, lscpu, lsblk, lspci, free -h, uptime, dmesg\n"
-                "  Processes  : ps aux, top, htop, kill, systemctl status, journalctl -xe, sysctl -a\n"
-                "  Network    : ip a, ip route, ifconfig, ss -tulpn, ping, nft list ruleset, ufw status\n"
-                "  Packages   : apt update, apt list --installed, apt install <pkg>, dpkg -l, flatpak list\n"
+                "  Ubuntu PKG : apt update, apt upgrade, apt search, apt policy, apt install <pkg>, add-apt-repository, dpkg -l\n"
+                "  Ubuntu Snap: snap list, snap find, snap info <pkg>, snap install <pkg>, snap remove <pkg>, snap refresh\n"
+                "  Ubuntu Sys : ubuntu-drivers devices, netplan status, aa-status, ufw status verbose, pro status, do-release-upgrade\n"
+                "  System/HW  : uname -a, hostnamectl, lsb_release -a, timedatectl, localectl, lscpu, lsblk, lspci, lsmod, free -h\n"
+                "  Processes  : ps aux, top, htop, kill, systemctl status, journalctl -xe, sysctl -a, dmesg\n"
+                "  Network    : ip a, ip route, ifconfig, ss -tulpn, ping, nft list ruleset, git status, git remote -v\n"
                 "  AquaOS/AI  : neofetch, pytest, python3, ai-status, shield, aqua-run <app>, aqua-pkg <pkg>, ollama list"
             ), cwd
 
@@ -742,18 +826,53 @@ class AquaLinuxEnvironment:
                 f" Static hostname: aquaos ({t['hostname']})\n"
                 "       Icon name: computer-laptop\n"
                 "         Chassis: laptop\n"
-                "Operating System: AquaOS 1.0 Beta (Sonoma-AI Edition)\n"
-                "          Kernel: Linux 6.12.0-aquaos-ai-lockdown\n"
+                "Operating System: AquaOS 1.0 Beta (Ubuntu 24.04.2 LTS Noble Numbat)\n"
+                "          Kernel: Linux 6.12.0-aquaos-ai-lockdown (Ubuntu HWE)\n"
                 "    Architecture: x86-64\n"
                 f" Hardware Vendor: {t['cpu_model']}"
             ), cwd
 
         if verb == "lsb_release":
             return (
-                "Distributor ID:\tAquaOS\n"
-                "Description:\tAquaOS 1.0 Beta (Sonoma-AI Virus-Proof Edition)\n"
-                "Release:\t1.0-beta\n"
-                "Codename:\tsonoma-ai"
+                "No LSB modules are available.\n"
+                "Distributor ID:\tAquaOS (Ubuntu)\n"
+                "Description:\tAquaOS 1.0 Beta (Ubuntu 24.04.2 LTS Noble Numbat • Sonoma-AI)\n"
+                "Release:\t24.04\n"
+                "Codename:\tnoble"
+            ), cwd
+
+        if verb in ("timedatectl", "localectl", "loginctl"):
+            if verb == "timedatectl":
+                return (
+                    f"               Local time: {time.strftime('%a %Y-%m-%d %H:%M:%S %Z')}\n"
+                    f"           Universal time: {time.strftime('%a %Y-%m-%d %H:%M:%S UTC', time.gmtime())}\n"
+                    "                 RTC time: n/a\n"
+                    "                Time zone: Asia/Kolkata (IST, +0530)\n"
+                    "System clock synchronized: yes\n"
+                    "              NTP service: active (systemd-timesyncd.service)"
+                ), cwd
+            if verb == "localectl":
+                return (
+                    "System Locale: LANG=en_US.UTF-8\n"
+                    "    VC Keymap: us\n"
+                    "   X11 Layout: us\n"
+                    "    X11 Model: pc105"
+                ), cwd
+            return "SESSION  UID USER SEAT  TTY  STATE  IDLE SINCE\n      2 1000 aqua seat0 tty7 active no   -", cwd
+
+        if verb in ("lsmod", "modprobe"):
+            if verb == "modprobe":
+                return "", cwd
+            return (
+                "Module                  Size  Used by\n"
+                "squashfs               69632  1\n"
+                "overlay               151552  2\n"
+                "nf_tables             299008  12\n"
+                "nfnetlink              20480  2 nf_tables\n"
+                "drm_kms_helper        212992  1\n"
+                "kvm_intel             380928  0\n"
+                "kvm                  1142784  1 kvm_intel\n"
+                "zram                   40960  2"
             ), cwd
 
         if verb in ("whoami", "arch", "hostname", "date", "uptime", "id", "groups", "w", "who"):
@@ -769,7 +888,7 @@ class AquaLinuxEnvironment:
                 mins = int((time.time() - self.boot_time) // 60)
                 return f" {time.strftime('%H:%M:%S')} up {mins} min,  1 user,  load average: 0.42, 0.38, 0.31", cwd
             if verb in ("id", "groups"):
-                return "uid=1000(aqua) gid=1000(aqua) groups=1000(aqua),27(sudo),44(video),108(render),998(ollama)", cwd
+                return "uid=1000(aqua) gid=1000(aqua) groups=1000(aqua),4(adm),24(cdrom),27(sudo),30(dip),44(video),46(plugdev),108(render),998(ollama)", cwd
             return f"aqua     tty7         wayland-0        {time.strftime('%H:%M')}    0.00s  /usr/bin/aqua-session", cwd
 
         if verb == "lscpu":
@@ -791,6 +910,8 @@ class AquaLinuxEnvironment:
             return (
                 "NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS\n"
                 "loop0         7:0    0   2.4G  1 loop /usr (Immutable SquashFS)\n"
+                "loop1         7:1    0  74.2M  1 loop /snap/core24/742\n"
+                "loop2         7:2    0  38.8M  1 loop /snap/snapd/23258\n"
                 f"nvme0n1     259:0    0 {t['disk_total_gb']:>5.0f}G  0 disk \n"
                 "├─nvme0n1p1 259:1    0   512M  0 part /boot/efi\n"
                 f"└─nvme0n1p2 259:2    0 {t['disk_total_gb']-0.5:>5.0f}G  0 part / (OverlayFS: {t['disk_free_gb']}G free)"
@@ -819,6 +940,7 @@ class AquaLinuxEnvironment:
             return (
                 "Filesystem      Type      Size  Used Avail Use% Mounted on\n"
                 "/dev/loop0      squashfs  2.4G  2.4G     0 100% /usr (Immutable RO)\n"
+                "/dev/loop1      squashfs   75M   75M     0 100% /snap/core24/742\n"
                 f"/dev/nvme0n1p2  overlay   {t['disk_total_gb']:>3.0f}G  {t['disk_used_gb']:>3.0f}G  {t['disk_free_gb']:>3.0f}G  {t['disk_percent']:>2.0f}% /\n"
                 "tmpfs           tmpfs     4.0G     0  4.0G   0% /run/aqua-sandbox"
             ), cwd
@@ -830,7 +952,129 @@ class AquaLinuxEnvironment:
                 lines.append(f"{p['user']:<10} {p['pid']:>5} {p['cpu']:>4} {p['mem_mb']:>8.1f} {p['session']:<16} {p['name']}")
             return "\n".join(lines), cwd
 
-        # 4. Linux Networking, Firewall, Systemd & Package Management
+        # 4. Ubuntu 24.04 Subsystems: Snap, Ubuntu Drivers, PPAs, Netplan, AppArmor, UFW, Ubuntu Pro
+        if verb == "snap":
+            sub = parts[1] if len(parts) > 1 else "list"
+            if sub == "list":
+                lines = ["Name               Version      Rev    Tracking              Publisher   Notes"]
+                for sname, (ver, rev, track, pub) in self.installed_snaps.items():
+                    lines.append(f"{sname:<18} {ver:<12} {rev:<6} {track:<21} {pub:<11} -")
+                return "\n".join(lines), cwd
+            if sub in ("find", "search"):
+                q = parts[2] if len(parts) > 2 else "code"
+                return (
+                    "Name               Version       Publisher   Notes    Summary\n"
+                    f"{q:<18} 1.96.0        canonical✓  classic  {q} package from Ubuntu Snap Store\n"
+                    "code               1.96.2        vscode✓     classic  Code editing. Redefined.\n"
+                    "vlc                3.0.20        videolan✓   -        The ultimate media player\n"
+                    "kubectl            1.31.2        canonical✓  classic  Kubernetes command-line tool"
+                ), cwd
+            if sub == "info":
+                pkg = parts[2] if len(parts) > 2 else "core24"
+                return (
+                    f"name:      {pkg}\n"
+                    f"summary:   Ubuntu 24.04 Snap Runtime Package ({pkg})\n"
+                    "publisher: Canonical✓\n"
+                    "license:   GPL-3.0\n"
+                    "channels:\n"
+                    "  latest/stable:    2026.10  (742) 78MB -"
+                ), cwd
+            if sub == "install" and len(parts) >= 3:
+                pkg = [p for p in parts[2:] if not p.startswith("-")][-1]
+                self.installed_snaps[pkg] = ("latest", "810", "latest/stable", "canonical✓")
+                return f"{pkg} (latest/stable) installed from Canonical Snap Store & confined via AppArmor.", cwd
+            if sub == "remove" and len(parts) >= 3:
+                pkg = parts[2]
+                self.installed_snaps.pop(pkg, None)
+                return f"{pkg} removed.", cwd
+            if sub == "refresh":
+                return f"All {len(self.installed_snaps)} snaps up to date.", cwd
+            if sub == "version":
+                return "snap    2.66.1+24.04\nsnapd   2.66.1+24.04\nseries  16\nubuntu  24.04\nkernel  6.12.0-aquaos-ai-lockdown", cwd
+            return "Usage: snap <list|find|info|install|remove|refresh|version>", cwd
+
+        if verb == "ubuntu-drivers":
+            sub = parts[1] if len(parts) > 1 else "devices"
+            if sub in ("devices", "list"):
+                return (
+                    "== /sys/devices/pci0000:00/0000:00:02.0 ==\n"
+                    f"modalias : pci:v00008086d00000A16sv00001028sd00000622bc03sc00i00\n"
+                    f"vendor   : {t['gpu_model']}\n"
+                    "driver   : mesa-vulkan-drivers - distro non-free recommended\n"
+                    "driver   : intel-opencl-icd - distro non-free\n"
+                    "driver   : nvidia-driver-560-open - third-party non-free"
+                ), cwd
+            if sub in ("autoinstall", "install"):
+                return "All recommended Ubuntu 24.04 hardware & Vulkan AI compute drivers are already installed and active.", cwd
+            return "Usage: ubuntu-drivers <devices|list|autoinstall>", cwd
+
+        if verb == "add-apt-repository":
+            if "--list" in parts or "-L" in parts:
+                return "\n".join(self.ppas), cwd
+            target_ppa = parts[-1] if len(parts) > 1 else "ppa:aquaos/sonoma-ai"
+            entry = f"https://ppa.launchpadcontent.net/{target_ppa.replace('ppa:', '')}/ubuntu noble main"
+            if entry not in self.ppas:
+                self.ppas.append(entry)
+            return (
+                f"Repository: 'Types: deb\nURIs: {entry}\nSuites: noble\nComponents: main'\n"
+                f"Adding repository {target_ppa} to /etc/apt/sources.list.d/...\n"
+                "Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease\n"
+                f"Get:2 {entry} InRelease [18.4 kB]\n"
+                "Reading package lists... Done"
+            ), cwd
+
+        if verb == "netplan":
+            sub = parts[1] if len(parts) > 1 else "status"
+            if sub == "get":
+                return (self.rootfs / "etc/netplan/01-network-manager-all.yaml").read_text(encoding="utf-8"), cwd
+            if sub == "apply":
+                return "Netplan configuration applied cleanly via NetworkManager renderer.", cwd
+            return (
+                "     Online state: online\n"
+                "    DNS Addresses: 127.0.0.53 (stub), 1.1.1.1 (DoH)\n"
+                "       DNS Search: aquaos.local\n\n"
+                "●  1: lo ethernet UNKNOWN/UP (unmanaged)\n"
+                "      MAC Address: 00:00:00:00:00:00\n"
+                "        Addresses: 127.0.0.1/8, ::1/128\n\n"
+                "●  2: wlan0 wifi UP (NetworkManager: 01-network-manager-all.yaml)\n"
+                "        Addresses: 192.168.1.104/24 (DHCP4)\n"
+                "           Routes: default via 192.168.1.1"
+            ), cwd
+
+        if verb in ("aa-status", "apparmor_status"):
+            return (
+                "apparmor module is loaded.\n"
+                "42 profiles are loaded.\n"
+                "42 profiles are in enforce mode.\n"
+                "   /usr/bin/aqua-run\n"
+                "   /usr/bin/bwrap\n"
+                "   /usr/lib/snapd/snap-confine\n"
+                "   /usr/sbin/cupsd\n"
+                "   snap.firefox.firefox\n"
+                "   snap.aqua-ai-runtime.daemon\n"
+                "0 profiles are in complain mode.\n"
+                "8 processes have profiles defined.\n"
+                "8 processes are in enforce mode."
+            ), cwd
+
+        if verb in ("pro", "ua"):
+            return (
+                "SERVICE          ENTITLED  STATUS       DESCRIPTION\n"
+                "esm-apps         yes       enabled      Expanded Security Maintenance for Applications (Ubuntu 24.04)\n"
+                "esm-infra        yes       enabled      Expanded Security Maintenance for Infrastructure\n"
+                "livepatch        yes       enabled      Canonical Livepatch Zero-Reboot Kernel Patching\n"
+                "realtime-kernel  yes       available    Ubuntu Kernel with PREEMPT_RT patches\n\n"
+                "Enable services with: pro enable <service>"
+            ), cwd
+
+        if verb == "do-release-upgrade":
+            return (
+                "Checking for a new Ubuntu / AquaOS release...\n"
+                "You are running AquaOS 1.0 Beta based on Ubuntu 24.04.2 LTS (Noble Numbat) with HWE Kernel 6.12.\n"
+                "No new LTS release found (system is on the latest LTS track)."
+            ), cwd
+
+        # 5. Linux Networking, Firewall, Systemd & Package Management
         if verb in ("ip", "ifconfig", "ss", "netstat", "ping"):
             if verb == "ping":
                 host = parts[-1] if len(parts) > 1 else "1.1.1.1"
@@ -844,6 +1088,7 @@ class AquaLinuxEnvironment:
             if verb in ("ss", "netstat"):
                 return (
                     "Netid  State   Recv-Q  Send-Q   Local Address:Port    Peer Address:Port  Process\n"
+                    "tcp    LISTEN  0       128      127.0.0.53:53         0.0.0.0:*          users:((\"systemd-resolve\",pid=390))\n"
                     "tcp    LISTEN  0       128      127.0.0.1:8765        0.0.0.0:*          users:((\"aqua-session\",pid=1180))\n"
                     "tcp    LISTEN  0       128      127.0.0.1:11434       0.0.0.0:*          users:((\"ollama\",pid=1024))"
                 ), cwd
@@ -854,7 +1099,24 @@ class AquaLinuxEnvironment:
                 "    inet 192.168.1.104/24 brd 192.168.1.255 scope global dynamic noprefixroute wlan0"
             ), cwd
 
-        if verb in ("nft", "ufw"):
+        if verb == "ufw":
+            sub = parts[1] if len(parts) > 1 else "status"
+            if sub in ("enable", "reload"):
+                return "Firewall is active and enabled on system startup (backed by Aqua Shield nftables)", cwd
+            if sub in ("allow", "deny") and len(parts) >= 3:
+                return f"Rule updated: {sub.upper()} {parts[2]} (v4 & v6)", cwd
+            return (
+                "Status: active\n"
+                "Logging: on (low)\n"
+                "Default: deny (incoming), allow (outgoing), disabled (routed)\n"
+                "New profiles: skip\n\n"
+                "To                         Action      From\n"
+                "--                         ------      ----\n"
+                "127.0.0.1:11434/tcp        ALLOW IN    127.0.0.1                  # Ollama Neural Engine (Localhost Only)\n"
+                "127.0.0.1:8765/tcp         ALLOW IN    127.0.0.1                  # AquaOS Desktop IPC"
+            ), cwd
+
+        if verb == "nft":
             nft_file = self.rootfs / "etc/nftables.conf"
             if nft_file.exists():
                 return nft_file.read_text(encoding="utf-8"), cwd
@@ -876,14 +1138,14 @@ class AquaLinuxEnvironment:
                 return (self.rootfs / "var/log/syslog").read_text(encoding="utf-8") + (self.rootfs / "var/log/aquaos-shield.log").read_text(encoding="utf-8"), cwd
             unit = parts[-1] if len(parts) > 2 else "aquaos.target"
             return (
-                f"● {unit} - AquaOS Sonoma-AI System Service\n"
-                "     Loaded: loaded (/etc/systemd/system/aquaos.service; enabled)\n"
+                f"● {unit} - AquaOS Sonoma-AI & Ubuntu 24.04 System Service\n"
+                "     Loaded: loaded (/etc/systemd/system/aquaos.service; enabled; preset: enabled)\n"
                 "     Active: active (running) since boot\n"
                 "   Main PID: 1024 (aqua-daemon)\n"
-                "     Status: \"Zero-Trust Sandbox & Neural Engine Ready\""
+                "     Status: \"Ubuntu 24.04 Noble + AppArmor + Bubblewrap + Neural Engine Ready\""
             ), cwd
 
-        if verb in ("apt", "apt-get", "dpkg", "flatpak", "ollama"):
+        if verb in ("apt", "apt-get", "apt-cache", "dpkg", "flatpak", "ollama"):
             if verb == "ollama":
                 return (
                     "NAME                    ID              SIZE      MODIFIED\n"
@@ -891,29 +1153,84 @@ class AquaLinuxEnvironment:
                     "qwen2.5-coder:7b        2b0496514337    4.7 GB    Ready (100% GPU Offload)\n"
                     "llama3.2:3b             a80c4f17acd5    2.0 GB    Ready (100% GPU Offload)"
                 ), cwd
+            if verb == "flatpak":
+                return (
+                    "Name                     Application ID               Version    Branch    Installation\n"
+                    "Mesa Vulkan Drivers      org.freedesktop.Platform.GL  24.2.4     24.08     system\n"
+                    "GTK4 Aqua Glass Theme    io.aquaos.GtkTheme.Sonoma    1.0.0      stable    system"
+                ), cwd
+            if "policy" in parts:
+                return (
+                    "Package files:\n"
+                    " 100 /var/lib/dpkg/status\n"
+                    "     release a=now\n"
+                    " 500 https://ppa.launchpadcontent.net/aquaos/sonoma-ai/ubuntu noble/main amd64 Packages\n"
+                    "     release v=24.04,o=LP-PPA-aquaos-sonoma-ai,a=noble,n=noble,l=AquaOS Sonoma-AI,c=main,b=amd64\n"
+                    " 500 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages\n"
+                    "     release v=24.04,o=Ubuntu,a=noble-security,n=noble,l=Ubuntu,c=main,b=amd64\n"
+                    " 500 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages\n"
+                    "     release v=24.04,o=Ubuntu,a=noble,n=noble,l=Ubuntu,c=main,b=amd64"
+                ), cwd
+            if "search" in parts and len(parts) >= 3:
+                q = parts[-1].lower()
+                matches = [f"{k}/noble 24.04 amd64\n  {desc}" for k, (ver, desc) in self.installed_pkgs.items() if q in k.lower() or q in desc.lower()]
+                if not matches:
+                    matches = [f"{q}/noble,now 24.04-1ubuntu1 amd64\n  Ubuntu 24.04 Noble Numbat package for {q}"]
+                return "Sorting... Done\nFull Text Search... Done\n" + "\n\n".join(matches), cwd
+            if "show" in parts and len(parts) >= 3:
+                pkg = parts[-1]
+                ver, desc = self.installed_pkgs.get(pkg, ("24.04-1ubuntu1", f"Ubuntu 24.04 Noble package ({pkg})"))
+                return (
+                    f"Package: {pkg}\n"
+                    f"Version: {ver}\n"
+                    "Priority: optional\n"
+                    "Section: universe/utils\n"
+                    "Origin: Ubuntu 24.04 LTS (Noble Numbat) / AquaOS\n"
+                    "Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>\n"
+                    f"Description: {desc}"
+                ), cwd
             if verb == "dpkg" or "list" in parts:
-                lines = ["Desired=Unknown/Install/Remove/Purge/Hold", "||/ Name                   Version       Architecture Description", "+++-======================-=============-============-================================================"]
+                lines = ["Desired=Unknown/Install/Remove/Purge/Hold", "||/ Name                        Version                          Architecture Description", "+++-===========================-================================-============-=========================================================="]
                 for k, (ver, desc) in self.installed_pkgs.items():
-                    lines.append(f"ii  {k:<22} {ver:<13} amd64        {desc}")
+                    lines.append(f"ii  {k:<27} {ver:<32} amd64        {desc}")
                 return "\n".join(lines), cwd
             if "install" in parts and len(parts) >= 3:
-                pkg = parts[-1]
-                self.installed_pkgs[pkg] = ("1.0.0-aqua", f"Installed via apt in AquaOS OverlayFS ({pkg})")
+                pkg = [p for p in parts[2:] if not p.startswith("-")][-1]
+                self.installed_pkgs[pkg] = ("24.04-1ubuntu1", f"Installed via Ubuntu Noble APT into OverlayFS ({pkg})")
                 return (
-                    f"Reading package lists... Done\n"
-                    f"Building dependency tree... Done\n"
-                    f"Unpacking {pkg} (1.0.0-aqua) into OverlayFS...\n"
-                    f"Setting up {pkg} (1.0.0-aqua) ...\n"
+                    "Reading package lists... Done\n"
+                    "Building dependency tree... Done\n"
+                    "Reading state information... Done\n"
+                    f"Get:1 http://archive.ubuntu.com/ubuntu noble/universe amd64 {pkg} amd64 24.04-1ubuntu1\n"
+                    f"Unpacking {pkg} (24.04-1ubuntu1) into AquaOS OverlayFS...\n"
+                    f"Setting up {pkg} (24.04-1ubuntu1) ...\n"
+                    f"Processing triggers for man-db (2.12.0-4build2) ...\n"
                     f"Successfully installed '{pkg}'."
                 ), cwd
+            if "remove" in parts and len(parts) >= 3:
+                pkg = parts[-1]
+                self.installed_pkgs.pop(pkg, None)
+                return f"Removing {pkg} from OverlayFS ... Done.", cwd
+            if "upgrade" in parts or "dist-upgrade" in parts or "full-upgrade" in parts:
+                return (
+                    "Reading package lists... Done\n"
+                    "Building dependency tree... Done\n"
+                    "Calculating upgrade... Done\n"
+                    "Get more security updates through Ubuntu Pro with 'esm-apps' enabled:\n"
+                    f"  {len(self.installed_pkgs)} packages covered by Ubuntu 24.04 LTS + Aqua Shield\n"
+                    "0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded."
+                ), cwd
             return (
-                "Hit:1 https://deb.debian.org/debian bookworm InRelease\n"
-                "Hit:2 https://packages.aquaos.local/sonoma-ai bookworm-ai InRelease\n"
+                "Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease\n"
+                "Hit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease\n"
+                "Hit:3 http://security.ubuntu.com/ubuntu noble-security InRelease\n"
+                "Hit:4 https://ppa.launchpadcontent.net/graphics-drivers/ppa/ubuntu noble InRelease\n"
+                "Hit:5 https://ppa.launchpadcontent.net/aquaos/sonoma-ai/ubuntu noble InRelease\n"
                 "Reading package lists... Done\n"
-                f"All {len(self.installed_pkgs)} installed packages are up to date."
+                f"Building dependency tree... Done ({len(self.installed_pkgs)} packages installed, all up to date)."
             ), cwd
 
-        # 5. Environment, History, Python, Pytest & AquaOS Built-ins
+        # 6. Environment, History, Python, Pytest & AquaOS Built-ins
         if verb in ("env", "printenv"):
             return "\n".join(f"{k}={v}" for k, v in self.env_vars.items()), cwd
 
@@ -943,7 +1260,7 @@ class AquaLinuxEnvironment:
             host_cwd, _ = self.to_host_path(cwd, cwd)
             rest = parts[1:]
             if not rest or rest == ["--version"] or rest == ["-V"]:
-                return f"Python {platform.python_version()} (main, GCC 13.2.0) on linux", cwd
+                return f"Python {platform.python_version()} (main, Ubuntu 13.2.0-23ubuntu4) on linux", cwd
             if rest[0] == "-c":
                 code_str = cmd.split("-c", 1)[1].strip().strip("'\"")
                 res = self.ai_engine.execute_ai_code_safely(code_str, "python")
@@ -963,9 +1280,10 @@ class AquaLinuxEnvironment:
             return (
                 "         .---.            aqua@aquaos\n"
                 "       /   |   \\          -----------\n"
-                f"      |  --*--  |         OS: AquaOS 1.0 Beta (Sonoma-AI) x86_64\n"
+                "      |  --*--  |         OS: AquaOS 1.0 Beta (Ubuntu 24.04.2 LTS Noble Numbat) x86_64\n"
                 f"       \\   |   /          Host: {t['hostname']}\n"
-                "         '---'            Kernel: 6.12.0-aquaos-ai-lockdown\n"
+                "         '---'            Kernel: 6.12.0-aquaos-ai-lockdown (Ubuntu HWE)\n"
+                f"                          Packages: {len(self.installed_pkgs)} (dpkg), {len(self.installed_snaps)} (snap), 2 (flatpak)\n"
                 "                          Shell: bash 5.2.21 (POSIX / Wayland)\n"
                 "                          WM: Labwc (Wayland) + Picom Dual-Kawase Blur\n"
                 f"                          CPU: {t['cpu_model']} ({t['cpu_cores']} cores)\n"

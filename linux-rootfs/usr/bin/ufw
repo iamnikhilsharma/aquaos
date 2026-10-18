@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+# AquaOS / Ubuntu 24.04 Noble System Utility: ufw
+import sys
+print('AquaOS Ubuntu-Noble ufw v24.04.2')

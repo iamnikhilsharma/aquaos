@@ -10,34 +10,57 @@ CHROOT_DIR="${BUILD_ROOT}/chroot"
 ISO_STAGING="${BUILD_ROOT}/iso"
 DIST_DIR="${WORKSPACE_DIR}/dist"
 ISO_OUTPUT="${DIST_DIR}/aquaos-1.0-amd64.iso"
-DEBIAN_RELEASE="${DEBIAN_RELEASE:-bookworm}"
-DEBIAN_MIRROR="${DEBIAN_MIRROR:-http://deb.debian.org/debian}"
+UBUNTU_RELEASE="${UBUNTU_RELEASE:-noble}"
+UBUNTU_MIRROR="${UBUNTU_MIRROR:-http://archive.ubuntu.com/ubuntu}"
 
 echo "=================================================================="
-echo "  Building AquaOS 1.0 Beta (Sonoma-AI • Virus-Proof Edition) ISO  "
+echo "  Building AquaOS 1.0 Beta (Ubuntu 24.04 LTS Noble + Sonoma-AI)   "
 echo "=================================================================="
 
 mkdir -p "${BUILD_ROOT}" "${ISO_STAGING}/live" "${ISO_STAGING}/boot/grub" "${DIST_DIR}"
 
-# 1. Bootstrap minimal Debian/Ubuntu base system
+# 1. Bootstrap Ubuntu 24.04 LTS (Noble Numbat) base system
 if [ ! -f "${CHROOT_DIR}/bin/bash" ]; then
-    echo "[1/6] Running debootstrap (${DEBIAN_RELEASE})..."
-    debootstrap --arch=amd64 --variant=minbase "${DEBIAN_RELEASE}" "${CHROOT_DIR}" "${DEBIAN_MIRROR}"
+    echo "[1/6] Running debootstrap (${UBUNTU_RELEASE} - Ubuntu 24.04 LTS)..."
+    debootstrap --arch=amd64 --variant=minbase --components=main,restricted,universe,multiverse "${UBUNTU_RELEASE}" "${CHROOT_DIR}" "${UBUNTU_MIRROR}"
 fi
 
-# 2. Configure chroot package installation (Kernel, Wayland/X11, GTK4 Layer Shell, Bubblewrap, Wine, Flatpak)
-echo "[2/6] Installing Linux Kernel, Aqua Desktop dependencies, Security & AI runtimes..."
+# 2. Configure chroot package installation (Ubuntu HWE Kernel, Snapd, PPAs, Ubuntu Drivers, Netplan, AppArmor, UFW, Wayland, Bubblewrap)
+echo "[2/6] Installing Ubuntu 24.04 HWE Kernel, Snap, Ubuntu Drivers, Netplan, AppArmor, Aqua Desktop & AI runtimes..."
 cat << 'EOF' > "${CHROOT_DIR}/tmp/setup-chroot.sh"
 #!/usr/bin/env bash
 set -e
 export DEBIAN_FRONTEND=noninteractive
 
+cat << 'SOURCES' > /etc/apt/sources.list.d/ubuntu.sources
+Types: deb
+URIs: http://archive.ubuntu.com/ubuntu/
+Suites: noble noble-updates noble-backports
+Components: main restricted universe multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+Types: deb
+URIs: http://security.ubuntu.com/ubuntu/
+Suites: noble-security
+Components: main restricted universe multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+SOURCES
+
 apt-get update
 apt-get install -y --no-install-recommends \
-    linux-image-amd64 \
-    live-boot \
+    linux-generic-hwe-24.04 \
+    casper \
     systemd-sysv \
+    ubuntu-Minimal \
+    ubuntu-drivers-common \
+    software-properties-common \
+    snapd \
+    netplan.io \
     network-manager \
+    ufw \
+    apparmor \
+    apparmor-profiles \
+    apparmor-utils \
     pipewire \
     pipewire-pulse \
     wireplumber \
@@ -54,40 +77,51 @@ apt-get install -y --no-install-recommends \
     gir1.2-gtk-4.0 \
     libgtk4-layer-shell0 \
     bubblewrap \
-    apparmor \
     nftables \
     flatpak \
     p7zip-full \
     foot \
     nautilus \
-    firefox-esr \
+    firefox \
     curl \
     sudo \
     ca-certificates \
-    zram-tools
+    zram-config
 
 # Create live user 'aqua' with password 'aqua'
 if ! id -u aqua >/dev/null 2>&1; then
-    useradd -m -s /bin/bash -G sudo,video,render,audio,netdev aqua
+    useradd -m -s /bin/bash -G sudo,adm,cdrom,dip,plugdev,video,render,audio,netdev aqua
     echo "aqua:aqua" | chpasswd
     echo "aqua ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/aqua
 fi
 
-# Configure OS identity
+# Configure OS identity inheriting Ubuntu 24.04.2 LTS (Noble Numbat)
 cat << 'OSREL' > /etc/os-release
-PRETTY_NAME="AquaOS 1.0 Beta (Sonoma-AI)"
+PRETTY_NAME="AquaOS 1.0 Beta (Ubuntu 24.04.2 LTS Noble Numbat • Sonoma-AI Edition)"
 NAME="AquaOS"
-VERSION_ID="1.0"
-VERSION="1.0 Beta (Sonoma-AI • Virus-Proof Edition)"
+VERSION_ID="24.04"
+VERSION="1.0 Beta (Ubuntu 24.04.2 LTS Noble Numbat • Sonoma-AI)"
+VERSION_CODENAME=noble
 ID=aquaos
-ID_LIKE=debian
-HOME_URL="https://aquaos.local"
+ID_LIKE="ubuntu debian"
+UBUNTU_CODENAME=noble
+HOME_URL="https://github.com/iamnikhilsharma/aquaos"
 OSREL
 
-echo "aquaos-macbook" > /etc/hostname
+cat << 'LSBREL' > /etc/lsb-release
+DISTRIB_ID=AquaOS
+DISTRIB_RELEASE=24.04
+DISTRIB_CODENAME=noble
+DISTRIB_DESCRIPTION="AquaOS 1.0 Beta (Ubuntu 24.04.2 LTS Noble Numbat • Sonoma-AI)"
+LSBREL
 
-# Enable Zero-Trust Firewall & NetworkManager
+echo "aquaos" > /etc/hostname
+
+# Enable Ubuntu AppArmor, UFW, Zero-Trust nftables, Snapd & NetworkManager
+systemctl enable apparmor || true
+systemctl enable ufw || true
 systemctl enable nftables || true
+systemctl enable snapd.socket || true
 systemctl enable NetworkManager || true
 
 apt-get clean

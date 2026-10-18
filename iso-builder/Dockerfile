@@ -1,5 +1,5 @@
-# AquaOS-Beta Automated ISO Builder Container (Debian Bookworm / Ubuntu Noble Compatible)
-FROM debian:bookworm-slim
+# AquaOS-Beta Automated ISO Builder Container (Ubuntu 24.04.2 LTS Noble Numbat Edition)
+FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     grub-common \
     mtools \
     dosfstools \
+    software-properties-common \
+    ubuntu-keyring \
     ca-certificates \
     curl \
     python3 \

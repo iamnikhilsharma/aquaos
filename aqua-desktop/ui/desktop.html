@@ -928,24 +928,26 @@
       <div class="win-badge">/bin/bash</div>
     </div>
     <div class="win-body" style="flex-direction:column;">
-      <div style="background:rgba(255,255,255,0.05); padding:6px 12px; display:flex; gap:6px; border-bottom:0.5px solid var(--glass-border); flex-wrap:wrap;">
-        <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="execTermQuick('ll')">ll</button>
-        <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="execTermQuick('cat /etc/os-release')">/etc/os-release</button>
-        <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="execTermQuick('lscpu')">lscpu</button>
-        <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="execTermQuick('free -h')">free -h</button>
-        <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="execTermQuick('df -h')">df -h</button>
-        <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="execTermQuick('ps aux')">ps aux</button>
-        <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="execTermQuick('systemctl status')">systemctl</button>
-        <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="execTermQuick('nft list ruleset')">nftables</button>
-        <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="execTermQuick('neofetch')">neofetch</button>
-        <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="execTermQuick('pytest')">pytest</button>
-        <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="execTermQuick('clear')">clear</button>
+      <div style="background:rgba(255,255,255,0.05); padding:6px 12px; display:flex; gap:5px; border-bottom:0.5px solid var(--glass-border); flex-wrap:wrap;">
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('ll')">ll</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('lsb_release -a')">lsb_release -a</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('snap list')">snap list</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('apt update')">apt update</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('ubuntu-drivers devices')">ubuntu-drivers</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('aa-status')">aa-status</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('netplan status')">netplan</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('ufw status')">ufw</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('pro status')">Ubuntu Pro</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('git status')">git status</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('neofetch')">neofetch</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('pytest')">pytest</button>
+        <button class="aqua-btn secondary" style="padding:4px 7px; font-size:11px;" onclick="execTermQuick('clear')">clear</button>
       </div>
       <div class="terminal-screen" onclick="document.getElementById('term-in').focus()">
         <div class="term-out selectable" id="term-out"></div>
         <div class="term-prompt-row">
           <span style="color:#4AE06E; font-weight:700;" id="term-cwd-prompt">aqua@aquaos:~/AquaOS-Beta$</span>
-          <input class="term-input" id="term-in" placeholder="Type any Linux command (ll, cd /etc, cat /proc/cpuinfo, ps aux | grep ollama, systemctl status, apt list, pytest)..." onkeydown="onTermKeyDown(event)" />
+          <input class="term-input" id="term-in" placeholder="Type any Ubuntu / Linux command (snap list, apt install htop, ubuntu-drivers devices, aa-status, netplan status, ufw status, ll)..." onkeydown="onTermKeyDown(event)" />
           <button class="aqua-btn" style="padding:4px 10px; font-size:11.5px;" onclick="runTermCmd()">Run</button>
         </div>
       </div>
