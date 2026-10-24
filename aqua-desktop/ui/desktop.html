@@ -3187,6 +3187,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
         <span style="color:var(--text-muted); cursor:pointer;" onclick="navigateFirefox(document.getElementById('ff-url-input').value)">➜</span>
       </div>
       <button class="aqua-btn secondary" style="padding:4px 9px; font-size:11px;" onclick="showToast('Bookmark Saved to Firefox toolbar')">★</button>
+      <button class="aqua-btn secondary" style="padding:4px 10px; font-size:11px; white-space:nowrap; display:flex; align-items:center; gap:4px;" onclick="openExternalUrl(document.getElementById('ff-url-input').value)" title="Open actual URL in new browser window"><span>↗ Live Web</span></button>
     </div>
     <div class="ff-bookmarks">
       <span class="ff-bm-item" onclick="navigateFirefox('https://aquaos.local/start')">🌐 AquaOS Start</span>
@@ -7259,6 +7260,15 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       showToast('Firefox: reloaded page');
       navigateFirefox(input.value, false);
     }
+  }
+
+  function openExternalUrl(url) {
+    let target = (url || 'https://google.com').trim();
+    if (!target.startsWith('http://') && !target.startsWith('https://')) {
+      target = 'https://' + target;
+    }
+    window.open(target, '_blank');
+    showToast('Opened live URL in actual browser window: ' + target);
   }
 
   function renderFirefoxViewport(url) {
