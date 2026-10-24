@@ -1310,6 +1310,61 @@ class AquaLinuxEnvironment:
             plan = self.universal_runner.create_execution_plan(Path(target))
             return f"Type: {plan.target_type} | Bridge: {plan.runtime_bridge}\nSandbox Vector: {' '.join(plan.command)}", cwd
 
+        if verb == "rea":
+            if len(parts) < 2:
+                return (
+                    "rea (Reverse Engineer Anything) — AquaOS Deep Binary Analysis\n"
+                    "Usage: rea <target-binary> [--strings [query]]\n"
+                    "Examples:\n"
+                    "  rea /usr/bin/python3\n"
+                    "  rea sample.exe\n"
+                    "  rea script.sh --strings\n"
+                ), cwd
+            target_arg = parts[1]
+            host_p, norm_linux = self.to_host_path(target_arg, cwd)
+            if not host_p.exists() or not host_p.is_file():
+                if target_arg in ("python", "python3", "/usr/bin/python3", "/usr/bin/python"):
+                    import sys
+                    host_p = Path(sys.executable)
+                    norm_linux = "/usr/bin/python3"
+                else:
+                    return f"rea: binary not found: {norm_linux}", cwd
+
+            from security.gatekeeper import AquaGatekeeper
+            gk = AquaGatekeeper()
+
+            if "--strings" in parts:
+                idx = parts.index("--strings")
+                q = parts[idx + 1] if idx + 1 < len(parts) else ""
+                matches = gk.search_binary_strings(host_p, q, limit=20)
+                out_lines = [f"=== REA String Extraction ({norm_linux}) ==="]
+                for m in matches:
+                    out_lines.append(f"  {m['offset_hex']} | {m['value']}")
+                return "\n".join(out_lines), cwd
+
+            res = gk.rea_deep_inspect(host_p)
+            lines = [
+                f"🔬 REA Evidence Analysis — {res['file_name']}",
+                f"  Format:       {res['file_format']} ({res['architecture']})",
+                f"  SHA-256:      {res['sha256']}",
+                f"  Size:         {res['file_size']} bytes",
+                f"  Entropy:      {res['overall_entropy']:.3f} bits/byte ({res['risk_level']})",
+                f"  Mitigations:  ASLR={res['mitigations'].get('dynamic_base_aslr', False)}, DEP={res['mitigations'].get('nx_dep_compatible', False)}, HighEntropyVA={res['mitigations'].get('high_entropy_va', False)}",
+                f"  REA Engine:   {res['rea_status']}",
+            ]
+            if res.get("sections"):
+                lines.append("  Sections:")
+                for sec in res["sections"][:6]:
+                    lines.append(f"    {sec['name']:<8} Addr:{sec['virtual_address']:<10} Size:{sec['raw_size']:<8} Ent:{sec['entropy']:<5} Perm:{sec['permissions']}")
+            if res.get("suspicious_apis"):
+                lines.append(f"  Suspicious Symbols ({len(res['suspicious_apis'])}):")
+                lines.append("    " + ", ".join(res["suspicious_apis"][:8]))
+            if res.get("urls"):
+                lines.append(f"  Extracted URLs ({len(res['urls'])}):")
+                for u in res["urls"][:3]:
+                    lines.append(f"    -> {u}")
+            return "\n".join(lines), cwd
+
         # Fallback: run command in host subprocess if valid executable (e.g. git)
         host_cwd, _ = self.to_host_path(cwd, cwd)
         if shutil.which(verb):

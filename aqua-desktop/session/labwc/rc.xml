@@ -25,9 +25,26 @@
     <keybind key="W-i">
       <action name="Execute" command="python3 /opt/aquaos/ai/ai_studio.py" />
     </keybind>
+    <!-- Super+S -> Aqua Shield & REA Reverse Engineering Center -->
+    <keybind key="W-s">
+      <action name="Execute" command="python3 /opt/aquaos/security/shield_center.py" />
+    </keybind>
     <!-- Super+Q -> Quit Active Window (macOS Cmd+Q style) -->
     <keybind key="W-q">
       <action name="Close" />
+    </keybind>
+    <!-- macOS Sequoia Window Snapping Shortcuts: Super+Alt+Arrows (⌥⌘←, ⌥⌘→, ⌥⌘↑, ⌥⌘↓) -->
+    <keybind key="W-A-Left">
+      <action name="SnapToRegion" region="left" />
+    </keybind>
+    <keybind key="W-A-Right">
+      <action name="SnapToRegion" region="right" />
+    </keybind>
+    <keybind key="W-A-Up">
+      <action name="ToggleMaximize" />
+    </keybind>
+    <keybind key="W-A-Down">
+      <action name="ToggleMaximize" />
     </keybind>
     <!-- Super+Return -> Terminal -->
     <keybind key="W-Return">

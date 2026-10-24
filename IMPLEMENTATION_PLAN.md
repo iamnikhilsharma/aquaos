@@ -132,6 +132,12 @@ All files below will be created under [C:/Users/iamni/Desktop/AquaOS-Beta](file:
 - Implements **Aqua Gatekeeper & Static/Heuristic Malware Scanner**:
   - Checks quarantine attributes (`user.aquaos.quarantine`) and SHA-256 trust database.
   - Performs static & heuristic analysis on ELF, PE (`.exe`/`.dll`), Mach-O (`.app`), and scripts (detecting shell injection patterns, crypto-miner signatures, `LD_PRELOAD` hijacking, and high-entropy packed sections).
+  - **REA (Reverse Engineer Anything) Engine Integration**:
+    - Deep binary dissection using REA 6.7.0 (`io.github.morluto/rea`) MCP & native binary parser.
+    - Extracts PE/ELF sections (`.text`, `.rdata`, `.rsrc`, `.data`), virtual memory mappings, and raw sizes.
+    - Generates a **32-segment interactive Shannon Entropy Distribution Ribbon** (0.00–8.00 bits/byte) distinguishing packed/encrypted payloads (&ge;7.50), compiled code (5.50–7.50), and structured resource data (<5.50).
+    - Extracts binary security mitigations (`ASLR / DynamicBase`, `DEP / NX`, `HighEntropyVA`, `ControlFlowGuard`, `Authenticode`).
+    - Surfaces Indicators of Compromise (IoCs), remote IP/URL endpoints, and suspicious injection API calls (`VirtualAlloc`, `CreateRemoteThread`, `ptrace`, `setuid`).
   - Launches a GTK4 **macOS Gatekeeper & TCC Permission Prompt** (*Run in Sandbox*, *Configure Folder/Network Access*, *Block*).
 
 #### [NEW] [sandbox.py](file:///C:/Users/iamni/Desktop/AquaOS-Beta/aqua-desktop/security/sandbox.py)
@@ -139,8 +145,11 @@ All files below will be created under [C:/Users/iamni/Desktop/AquaOS-Beta](file:
   - Mounts `/usr`, `/lib`, `/bin`, `/sbin` strictly read-only (`--ro-bind`).
   - Creates an isolated per-app private `$HOME` (`~/.local/share/aqua-sandboxes/<app-id>`) blocking access to `~/.ssh`, `~/.gnupg`, and personal files unless permitted via TCC.
 
-#### [NEW] [shield_center.py](file:///C:/Users/iamni/Desktop/AquaOS-Beta/aqua-desktop/security/shield_center.py)
-- GTK4 **Aqua Shield Security Center** app showing Immutable RootFS status, Kernel Hardening score, Active Sandboxes, Firewall controls, and On-Demand Malware Scanner.
+#### [NEW] [shield_center.py](file:///C:/Users/iamni/Desktop/AquaOS-Beta/aqua-desktop/security/shield_center.py) & [desktop.html](file:///C:/Users/iamni/Desktop/AquaOS-Beta/aqua-desktop/ui/desktop.html)
+- GTK4 & Web **Aqua Shield Security Center** featuring:
+  - **Gatekeeper & Universal Runtime Tab**: SHA-256 scanner, universal sandbox planner, and active zero-trust kernel hardening layers.
+  - **REA Reverse Engineering Center Tab**: Interactive 32-block entropy ribbon, PE/ELF section analyzer, indicators table, authoritative REA Evidence JSON viewer and export, and trust database management.
+  - Full **Finder Integration**: One-click *"🔬 Deep Inspect with REA"* action in Miller Columns view (<kbd>⌘3</kbd>), Gallery view (<kbd>⌘4</kbd>), code editor toolbar, and terminal `rea` command.
 
 #### [NEW] [99-aquaos-hardening.conf](file:///C:/Users/iamni/Desktop/AquaOS-Beta/iso-builder/security/99-aquaos-hardening.conf) & [nftables.conf](file:///C:/Users/iamni/Desktop/AquaOS-Beta/iso-builder/security/nftables.conf)
 - Kernel hardening parameters and zero-trust default-deny `nftables` firewall.

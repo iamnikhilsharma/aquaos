@@ -29,6 +29,8 @@ def run_all_tests() -> int:
         ("test_ai_engine.test_extract_code_block", test_ai_engine.test_extract_code_block, False),
         ("test_security.test_gatekeeper_clean_file_and_trust", test_security.test_gatekeeper_clean_file_and_trust, True),
         ("test_security.test_gatekeeper_malicious_payload_detection", test_security.test_gatekeeper_malicious_payload_detection, True),
+        ("test_security.test_gatekeeper_rea_deep_inspect_script_and_entropy", test_security.test_gatekeeper_rea_deep_inspect_script_and_entropy, True),
+        ("test_security.test_gatekeeper_rea_deep_inspect_pe_mock", test_security.test_gatekeeper_rea_deep_inspect_pe_mock, True),
         ("test_security.test_sandbox_bwrap_command_isolation", test_security.test_sandbox_bwrap_command_isolation, True),
         ("test_universal.test_universal_runner_formats", test_universal.test_universal_runner_formats, True),
         ("test_universal.test_universal_runner_blocks_malware", test_universal.test_universal_runner_blocks_malware, True),

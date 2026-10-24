@@ -155,12 +155,27 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
                     "model_fits": fits,
                     "shield": shield_diag.get_security_posture(),
                     "fs": linux_env.list_linux_directory("/home/aqua/AquaOS-Beta"),
+                    "config": config.as_dict(),
                 }
             )
             return
 
         if clean_path == "/api/processes":
             self._send_json({"processes": linux_env.get_linux_processes(), "telemetry": get_live_telemetry()})
+            return
+
+        if clean_path == "/api/system/status":
+            ss = ai_engine.system_services
+            self._send_json(
+                {
+                    "volume": ss.get_volume(),
+                    "brightness": ss.get_brightness(),
+                    "battery": ss.get_battery_status(),
+                    "wifi": {"enabled": ss._wifi_enabled, "ssid": ss._wifi_ssid},
+                    "bluetooth": {"enabled": ss._bluetooth_enabled},
+                    "dnd": ss._dnd_enabled,
+                }
+            )
             return
 
         self.send_error(404)
@@ -269,6 +284,62 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
             )
             return
 
+        if clean_path == "/api/rea/inspect":
+            target_str = str(body.get("target") or body.get("path") or "").strip()
+            if not target_str:
+                self._send_json({"error": "Missing target path"}, status=400)
+                return
+
+            candidate, norm_linux = linux_env.to_host_path(target_str)
+            if not candidate.exists() or not candidate.is_file():
+                if target_str in ("python", "python3", "/usr/bin/python3"):
+                    candidate = Path(sys.executable)
+                    norm_linux = "/usr/bin/python3"
+                else:
+                    self._send_json({"error": f"Binary not found: {norm_linux}"}, status=404)
+                    return
+
+            rep = gatekeeper.rea_deep_inspect(candidate)
+            rep["linux_path"] = norm_linux
+            self._send_json(rep)
+            return
+
+        if clean_path == "/api/rea/strings":
+            target_str = str(body.get("target") or body.get("path") or "").strip()
+            query = str(body.get("query", "")).strip()
+            limit = int(body.get("limit", 50))
+
+            candidate, norm_linux = linux_env.to_host_path(target_str)
+            if not candidate.exists() or not candidate.is_file():
+                if target_str in ("python", "python3", "/usr/bin/python3"):
+                    candidate = Path(sys.executable)
+                    norm_linux = "/usr/bin/python3"
+                else:
+                    self._send_json({"error": f"Binary not found: {norm_linux}"}, status=404)
+                    return
+
+            matches = gatekeeper.search_binary_strings(candidate, query=query, limit=limit)
+            self._send_json({"target": norm_linux, "query": query, "count": len(matches), "strings": matches})
+            return
+
+        if clean_path == "/api/rea/trust":
+            target_str = str(body.get("target") or body.get("path") or "").strip()
+            action = str(body.get("action", "trust")).strip().lower()
+            candidate, norm_linux = linux_env.to_host_path(target_str)
+
+            if not candidate.exists() or not candidate.is_file():
+                self._send_json({"error": f"File not found: {norm_linux}"}, status=404)
+                return
+
+            if action == "trust":
+                digest = gatekeeper.trust_file(candidate, note="User trusted via Aqua Shield REA")
+                self._send_json({"trusted": True, "sha256": digest, "target": norm_linux})
+            else:
+                digest = gatekeeper.compute_sha256(candidate)
+                gatekeeper.revoke_trust(digest)
+                self._send_json({"trusted": False, "revoked": digest, "target": norm_linux})
+            return
+
         if clean_path == "/api/universal/plan":
             target = str(body.get("target", "")).strip()
             if target.endswith((".rpm", ".pkg.tar.zst", ".deb")):
@@ -329,6 +400,46 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
             cwd_str = str(body.get("cwd", "/home/aqua/AquaOS-Beta"))
             output, new_cwd = linux_env.execute_bash(cmd, cwd_str)
             self._send_json({"output": output, "cwd": new_cwd})
+            return
+
+        if clean_path == "/api/settings/get":
+            self._send_json(config.as_dict())
+            return
+
+        if clean_path == "/api/settings/update":
+            section = str(body.get("section", "")).strip()
+            key = str(body.get("key", "")).strip()
+            val = body.get("value")
+            if section and key:
+                config.set(section, key, val)
+                self._send_json({"saved": True, "section": section, "key": key, "value": val})
+            else:
+                self._send_json({"error": "Missing section or key"}, status=400)
+            return
+
+        if clean_path == "/api/system/volume":
+            vol = int(body.get("volume", 75))
+            new_vol = ai_engine.system_services.set_volume(vol)
+            self._send_json({"volume": new_vol})
+            return
+
+        if clean_path == "/api/system/brightness":
+            b = int(body.get("brightness", 85))
+            new_b = ai_engine.system_services.set_brightness(b)
+            self._send_json({"brightness": new_b})
+            return
+
+        if clean_path == "/api/system/toggle":
+            feature = str(body.get("feature", ""))
+            enabled = bool(body.get("enabled", True))
+            ss = ai_engine.system_services
+            if feature == "wifi":
+                ss._wifi_enabled = enabled
+            elif feature == "bluetooth":
+                ss._bluetooth_enabled = enabled
+            elif feature == "dnd":
+                ss._dnd_enabled = enabled
+            self._send_json({"feature": feature, "enabled": enabled})
             return
 
         self.send_error(404)

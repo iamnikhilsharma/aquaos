@@ -50,5 +50,19 @@ def test_spotlight_math_and_search(tmp_path: Path) -> None:
     assert calc_results[0].category == "CALCULATOR"
     assert "144" in calc_results[0].title
 
+    # Unit & currency conversions
+    conv_gb = engine.query("16 GB to MB")
+    assert conv_gb[0].category == "CALCULATOR"
+    assert "16,384 MB" in conv_gb[0].title
+
+    conv_curr = engine.query("100 USD to EUR")
+    assert conv_curr[0].category == "CALCULATOR"
+    assert "92.00 EUR" in conv_curr[0].title
+
+    # REA binary inspection queries
+    rea_results = engine.query("rea /usr/bin/python3")
+    assert any(r.category == "REA" and "Deep Inspect" in r.title for r in rea_results)
+
     app_results = engine.query("AI Studio")
     assert any(r.category == "APPLICATION" and "Aqua AI Studio" in r.title for r in app_results)
+

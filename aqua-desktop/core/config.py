@@ -150,6 +150,10 @@ class AquaConfig:
     def data(self) -> Dict[str, Any]:
         return self._data
 
+    def as_dict(self) -> Dict[str, Any]:
+        """Return a copy of the configuration dictionary."""
+        return copy.deepcopy(self._data)
+
     @staticmethod
     def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> None:
         for k, v in override.items():
