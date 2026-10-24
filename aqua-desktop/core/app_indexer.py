@@ -45,13 +45,63 @@ BUILTIN_AQUA_APPS: List[AppEntry] = [
         app_type="native",
     ),
     AppEntry(
-        app_id="org.aquaos.Browser",
-        name="Safari (Aqua Web)",
-        exec_cmd="firefox-esr",
-        icon="web-browser",
-        comment="Browse the web with privacy and sandboxing",
+        app_id="org.mozilla.Firefox",
+        name="Firefox",
+        exec_cmd="firefox",
+        icon="firefox",
+        comment="Fast, private, and secure default web browser",
         categories=["Network", "WebBrowser"],
-        keywords=["web", "internet", "browser", "safari", "firefox"],
+        keywords=["web", "internet", "browser", "firefox", "mozilla", "surf"],
+        app_type="native",
+    ),
+    AppEntry(
+        app_id="org.mozilla.Thunderbird",
+        name="Thunderbird",
+        exec_cmd="thunderbird",
+        icon="thunderbird",
+        comment="Default email client, news, and calendar suite",
+        categories=["Network", "Email"],
+        keywords=["email", "mail", "inbox", "thunderbird", "messages"],
+        app_type="native",
+    ),
+    AppEntry(
+        app_id="org.aquaos.SnapStore",
+        name="Snap Store",
+        exec_cmd="snap-store",
+        icon="software-store",
+        comment="Download, install, and update native Linux and AquaOS apps",
+        categories=["System", "PackageManager"],
+        keywords=["app store", "store", "software", "snap", "package", "download", "install"],
+        app_type="native",
+    ),
+    AppEntry(
+        app_id="org.aquaos.Music",
+        name="Music",
+        exec_cmd="aqua-music",
+        icon="multimedia-audio-player",
+        comment="High-res audio, playlists, Lo-Fi synthesizers and visualizers",
+        categories=["AudioVideo", "Audio", "Player"],
+        keywords=["music", "audio", "song", "mp3", "flac", "playlist", "sound"],
+        app_type="native",
+    ),
+    AppEntry(
+        app_id="org.aquaos.QuickTime",
+        name="QuickTime Player",
+        exec_cmd="aqua-video",
+        icon="multimedia-video-player",
+        comment="Glassmorphic video player supporting 4K, PiP, and format playback",
+        categories=["AudioVideo", "Video", "Player"],
+        keywords=["video", "movie", "player", "mp4", "mkv", "quicktime", "clip"],
+        app_type="native",
+    ),
+    AppEntry(
+        app_id="org.aquaos.Preview",
+        name="Preview",
+        exec_cmd="aqua-preview",
+        icon="image-viewer",
+        comment="Default image viewer with zoom, rotation, filters, and EXIF inspection",
+        categories=["Graphics", "Viewer"],
+        keywords=["image", "photo", "picture", "viewer", "preview", "png", "jpg"],
         app_type="native",
     ),
     AppEntry(
@@ -92,6 +142,16 @@ BUILTIN_AQUA_APPS: List[AppEntry] = [
         comment="Configure Appearance, Dock, Wallpaper, AI Compute, and Security",
         categories=["Settings", "System"],
         keywords=["settings", "preferences", "control", "dock", "theme", "dark mode", "display"],
+        app_type="native",
+    ),
+    AppEntry(
+        app_id="org.aquaos.ActivityMonitor",
+        name="Activity Monitor",
+        exec_cmd="gnome-system-monitor",
+        icon="utilities-system-monitor",
+        comment="Linux process viewer, CPU, memory, network, and disk performance",
+        categories=["System", "Monitor"],
+        keywords=["activity", "process", "task", "cpu", "ram", "memory", "kill", "ps"],
         app_type="native",
     ),
     AppEntry(
@@ -258,6 +318,10 @@ class AppIndexer:
 
     def all_apps(self) -> List[AppEntry]:
         return list(self._apps.values())
+
+    def list_apps(self) -> List[AppEntry]:
+        """Convenience alias for all_apps."""
+        return self.all_apps()
 
     @staticmethod
     def _score_match(query: str, app: AppEntry) -> int:

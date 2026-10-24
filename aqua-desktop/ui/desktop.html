@@ -1031,7 +1031,73 @@
   }
   .rea-badge-rx { background: rgba(48,209,88,0.2); color: #30D158; border: 0.5px solid rgba(48,209,88,0.4); }
   .rea-badge-rw { background: rgba(10,132,255,0.2); color: #0A84FF; border: 0.5px solid rgba(10,132,255,0.4); }
-  .rea-badge-r  { background: rgba(235,235,245,0.15); color: #E5E7EB; border: 0.5px solid rgba(255,255,255,0.2); }
+  /* Window Resize Handles */
+  .win-resize-handle {
+    position: absolute;
+    z-index: 70;
+  }
+  .win-resize-n { top: 0; left: 12px; right: 12px; height: 7px; cursor: ns-resize; }
+  .win-resize-s { bottom: 0; left: 12px; right: 12px; height: 7px; cursor: ns-resize; }
+  .win-resize-e { right: 0; top: 12px; bottom: 12px; width: 7px; cursor: ew-resize; }
+  .win-resize-w { left: 0; top: 12px; bottom: 12px; width: 7px; cursor: ew-resize; }
+  .win-resize-nw { top: 0; left: 0; width: 14px; height: 14px; cursor: nwse-resize; z-index: 71; }
+  .win-resize-ne { top: 0; right: 0; width: 14px; height: 14px; cursor: nesw-resize; z-index: 71; }
+  .win-resize-sw { bottom: 0; left: 0; width: 14px; height: 14px; cursor: nesw-resize; z-index: 71; }
+  .win-resize-se { bottom: 0; right: 0; width: 16px; height: 16px; cursor: nwse-resize; z-index: 71; }
+  .win-resize-grip {
+    position: absolute; bottom: 3px; right: 3px; width: 10px; height: 10px;
+    pointer-events: none; opacity: 0.35;
+    background: radial-gradient(circle at 80% 80%, var(--text-muted) 1.2px, transparent 1.2px) repeat;
+    background-size: 3px 3px;
+  }
+
+  /* App Styles */
+  /* Firefox */
+  .ff-tabs { display: flex; align-items: flex-end; gap: 4px; padding: 0 10px; background: rgba(0,0,0,0.25); border-bottom: 0.5px solid var(--glass-border); height: 34px; }
+  .ff-tab { display: flex; align-items: center; gap: 7px; padding: 6px 14px; font-size: 11.5px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,0.04); color: var(--text-secondary); cursor: pointer; border: 0.5px solid transparent; border-bottom: none; max-width: 180px; }
+  .ff-tab.active { background: var(--glass-bg); color: var(--text-primary); border-color: var(--glass-border); font-weight: 600; }
+  .ff-nav-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,0,0,0.18); border-bottom: 0.5px solid var(--glass-border); }
+  .ff-url-bar { flex: 1; display: flex; align-items: center; background: rgba(0,0,0,0.4); border: 0.5px solid var(--glass-border); border-radius: 20px; padding: 3px 12px; gap: 8px; font-size: 12px; font-family: var(--font-mono); }
+  .ff-bookmarks { display: flex; align-items: center; gap: 12px; padding: 4px 14px; background: rgba(0,0,0,0.12); border-bottom: 0.5px solid var(--glass-border); font-size: 11px; overflow-x: auto; }
+  .ff-bm-item { display: flex; align-items: center; gap: 5px; color: var(--text-secondary); cursor: pointer; white-space: nowrap; border-radius: 4px; padding: 2px 6px; }
+  .ff-bm-item:hover { background: var(--glass-highlight); color: var(--text-primary); }
+
+  /* Preview */
+  .preview-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 0.5px solid var(--glass-border); background: rgba(0,0,0,0.18); flex-wrap: wrap; }
+  .preview-stage { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: radial-gradient(circle at center, rgba(30,35,50,0.6), rgba(8,10,18,0.9)); position: relative; }
+  .preview-thumb-strip { width: 150px; background: var(--glass-sidebar); border-right: 0.5px solid var(--glass-border); padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+  .preview-thumb-card { border-radius: 8px; border: 1px solid var(--glass-border); padding: 6px; cursor: pointer; text-align: center; font-size: 10.5px; transition: all 0.15s ease; background: rgba(0,0,0,0.2); }
+  .preview-thumb-card.active { border-color: var(--accent); background: rgba(10,132,255,0.18); }
+
+  /* Music */
+  .music-container { display: flex; flex: 1; min-height: 0; }
+  .music-sidebar { width: 190px; background: var(--glass-sidebar); border-right: 0.5px solid var(--glass-border); padding: 12px 8px; overflow-y: auto; }
+  .music-main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 24px; position: relative; }
+  .music-hero-card { display: flex; gap: 20px; align-items: center; padding: 20px; border-radius: 16px; background: linear-gradient(135deg, rgba(255,45,85,0.22), rgba(191,90,242,0.18)); border: 0.5px solid rgba(255,255,255,0.15); box-shadow: 0 12px 30px rgba(0,0,0,0.4); margin-bottom: 20px; }
+  .music-art-box { width: 130px; height: 130px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); flex-shrink: 0; }
+  .music-controls-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: rgba(0,0,0,0.35); border-top: 0.5px solid var(--glass-border); }
+
+  /* QuickTime Video */
+  .video-stage-box { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; position: relative; overflow: hidden; }
+  .video-hud-bar { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); background: rgba(15,20,30,0.85); backdrop-filter: blur(24px); border: 0.5px solid rgba(255,255,255,0.2); border-radius: 28px; padding: 6px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+
+  /* Thunderbird Mail */
+  .tb-container { display: flex; flex: 1; min-height: 0; }
+  .tb-folders { width: 180px; background: var(--glass-sidebar); border-right: 0.5px solid var(--glass-border); padding: 10px 6px; overflow-y: auto; }
+  .tb-threads { width: 280px; border-right: 0.5px solid var(--glass-border); background: rgba(0,0,0,0.2); overflow-y: auto; }
+  .tb-thread-item { padding: 10px 14px; border-bottom: 0.5px solid rgba(255,255,255,0.06); cursor: pointer; transition: background 0.12s ease; }
+  .tb-thread-item:hover { background: var(--glass-highlight); }
+  .tb-thread-item.active { background: rgba(10,132,255,0.22); border-left: 3px solid var(--accent); }
+  .tb-reader { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 18px 22px; background: rgba(0,0,0,0.12); }
+
+  /* Snap Store */
+  .store-container { display: flex; flex: 1; min-height: 0; }
+  .store-sidebar { width: 195px; background: var(--glass-sidebar); border-right: 0.5px solid var(--glass-border); padding: 12px 8px; overflow-y: auto; }
+  .store-main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 18px 22px; }
+  .store-hero { border-radius: 14px; padding: 22px; margin-bottom: 20px; background: linear-gradient(135deg, rgba(10,132,255,0.3), rgba(0,200,255,0.15)); border: 0.5px solid rgba(255,255,255,0.2); display: flex; justify-content: space-between; align-items: center; }
+  .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .store-card { background: rgba(255,255,255,0.05); border: 0.5px solid var(--glass-border); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; transition: all 0.15s ease; }
+  .store-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
 </style>
 </head>
 <body>
@@ -1162,6 +1228,30 @@
   <symbol id="ico-volume" viewBox="0 0 24 24">
     <polygon fill="currentColor" points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
     <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+  </symbol>
+  <symbol id="ico-globe" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+    <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/>
+    <path fill="none" stroke="currentColor" stroke-width="2" d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+  </symbol>
+  <symbol id="ico-mail" viewBox="0 0 24 24">
+    <path fill="none" stroke="currentColor" stroke-width="2" d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+    <polyline fill="none" stroke="currentColor" stroke-width="2" points="22,6 12,13 2,6"/>
+  </symbol>
+  <symbol id="ico-image" viewBox="0 0 24 24">
+    <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+    <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+    <polyline fill="none" stroke="currentColor" stroke-width="2" points="21 15 16 10 5 21"/>
+  </symbol>
+  <symbol id="ico-music" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+  </symbol>
+  <symbol id="ico-video" viewBox="0 0 24 24">
+    <polygon fill="currentColor" points="5 3 19 12 5 21 5 3"/>
+  </symbol>
+  <symbol id="ico-store" viewBox="0 0 24 24">
+    <rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M8 17l4-10 4 10M9.5 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
   </symbol>
 </svg>
 
@@ -1759,44 +1849,44 @@
     <div class="win-body">
       <div class="win-sidebar">
         <div class="sb-section">Home (/home/aqua)</div>
-        <div class="sb-item active" onclick="browseTo('/home/aqua/AquaOS-Beta', this)">
+        <div class="sb-item active" data-path="/home/aqua/AquaOS-Beta" onclick="browseTo('/home/aqua/AquaOS-Beta', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-folder"/></svg>
           <span>~/AquaOS-Beta</span>
         </div>
-        <div class="sb-item" onclick="browseTo('/home/aqua/AquaOS-Beta/aqua-desktop', this)">
+        <div class="sb-item" data-path="/home/aqua/AquaOS-Beta/aqua-desktop" onclick="browseTo('/home/aqua/AquaOS-Beta/aqua-desktop', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-code"/></svg>
           <span>aqua-desktop</span>
         </div>
-        <div class="sb-item" onclick="browseTo('/home/aqua/AquaOS-Beta/iso-builder', this)">
+        <div class="sb-item" data-path="/home/aqua/AquaOS-Beta/iso-builder" onclick="browseTo('/home/aqua/AquaOS-Beta/iso-builder', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-layers"/></svg>
           <span>iso-builder</span>
         </div>
-        <div class="sb-item" onclick="browseTo('/home/aqua/AquaOS-Beta/tests', this)">
+        <div class="sb-item" data-path="/home/aqua/AquaOS-Beta/tests" onclick="browseTo('/home/aqua/AquaOS-Beta/tests', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-check"/></svg>
           <span>tests (14 Tests)</span>
         </div>
-        <div class="sb-item" onclick="browseTo('/home/aqua', this)">
+        <div class="sb-item" data-path="/home/aqua" onclick="browseTo('/home/aqua', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-folder"/></svg>
           <span>/home/aqua (~)</span>
         </div>
         <div class="sb-section">Linux RootFS (/)</div>
-        <div class="sb-item" onclick="browseTo('/', this)">
+        <div class="sb-item" data-path="/" onclick="browseTo('/', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-layers"/></svg>
           <span>/ (RootFS)</span>
         </div>
-        <div class="sb-item" onclick="browseTo('/etc', this)">
+        <div class="sb-item" data-path="/etc" onclick="browseTo('/etc', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-settings"/></svg>
           <span>/etc (System Configs)</span>
         </div>
-        <div class="sb-item" onclick="browseTo('/proc', this)">
+        <div class="sb-item" data-path="/proc" onclick="browseTo('/proc', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-cpu"/></svg>
           <span>/proc (Live Kernel)</span>
         </div>
-        <div class="sb-item" onclick="browseTo('/var/log', this)">
+        <div class="sb-item" data-path="/var/log" onclick="browseTo('/var/log', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-activity"/></svg>
           <span>/var/log (Syslog)</span>
         </div>
-        <div class="sb-item" onclick="browseTo('/usr/bin', this)">
+        <div class="sb-item" data-path="/usr/bin" onclick="browseTo('/usr/bin', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-terminal"/></svg>
           <span>/usr/bin (Binaries)</span>
         </div>
@@ -2519,6 +2609,10 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
           <svg class="ico" width="15" height="15"><use href="#ico-shield"/></svg>
           <span>Privacy & Security</span>
         </div>
+        <div class="sb-item" id="sb-set-defaultapps" onclick="switchSettingsTab('defaultapps', this)">
+          <svg class="ico" width="15" height="15"><use href="#ico-globe"/></svg>
+          <span>Default Applications</span>
+        </div>
         <div class="sb-item" id="sb-set-general" onclick="switchSettingsTab('general', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-settings"/></svg>
           <span>General</span>
@@ -2914,6 +3008,117 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
           </div>
         </div>
 
+        <!-- 11. DEFAULT APPLICATIONS PANE -->
+        <div id="set-pane-defaultapps" class="settings-grid-pane" style="display:none; flex-direction:column; gap:12px;">
+          <div class="settings-card">
+            <div class="settings-card-title"><span>Default Internet & Communication</span></div>
+            <div class="settings-row">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <svg width="24" height="24" style="color:#FF7139;"><use href="#ico-globe"/></svg>
+                <div>
+                  <div style="font-weight:600;">Web Browser</div>
+                  <div style="font-size:11.5px; color:var(--text-secondary);">Handles http://, https://, and .html files</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <select class="aqua-select" style="padding:4px 8px; font-size:12px;" onchange="showToast('Default browser set to: ' + this.value)">
+                  <option value="firefox" selected>Mozilla Firefox (Default)</option>
+                  <option value="chromium">Chromium</option>
+                  <option value="safari-sim">Safari Engine</option>
+                </select>
+                <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="openWindow('win-firefox', 'Firefox')">Launch</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <svg width="24" height="24" style="color:#0A84FF;"><use href="#ico-mail"/></svg>
+                <div>
+                  <div style="font-weight:600;">Email Reader</div>
+                  <div style="font-size:11.5px; color:var(--text-secondary);">Handles mailto: links and .eml mailboxes</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <select class="aqua-select" style="padding:4px 8px; font-size:12px;" onchange="showToast('Default email reader set to: ' + this.value)">
+                  <option value="thunderbird" selected>Mozilla Thunderbird (Default)</option>
+                  <option value="mutt">Neomutt / CLI Mail</option>
+                  <option value="webmail">Webmail Portal</option>
+                </select>
+                <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="openWindow('win-thunderbird', 'Thunderbird')">Launch</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-title"><span>Default Media Viewers & Players</span></div>
+            <div class="settings-row">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <svg width="24" height="24" style="color:#34C759;"><use href="#ico-image"/></svg>
+                <div>
+                  <div style="font-weight:600;">Image Viewer</div>
+                  <div style="font-size:11.5px; color:var(--text-secondary);">Opens .png, .jpg, .webp, .svg graphics</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <select class="aqua-select" style="padding:4px 8px; font-size:12px;" onchange="showToast('Default image viewer set to: ' + this.value)">
+                  <option value="preview" selected>Aqua Preview (Default)</option>
+                  <option value="gimp">GIMP Graphics</option>
+                </select>
+                <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="openWindow('win-preview', 'Preview')">Launch</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <svg width="24" height="24" style="color:#FF2D55;"><use href="#ico-music"/></svg>
+                <div>
+                  <div style="font-weight:600;">Music Player</div>
+                  <div style="font-size:11.5px; color:var(--text-secondary);">Plays .mp3, .flac, .alac lossless audio</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <select class="aqua-select" style="padding:4px 8px; font-size:12px;" onchange="showToast('Default music player set to: ' + this.value)">
+                  <option value="music" selected>Aqua Music (Default)</option>
+                  <option value="spotify">Spotify</option>
+                  <option value="cmus">cmus console player</option>
+                </select>
+                <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="openWindow('win-music', 'Music')">Launch</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <svg width="24" height="24" style="color:#32ADE6;"><use href="#ico-video"/></svg>
+                <div>
+                  <div style="font-weight:600;">Video Player</div>
+                  <div style="font-size:11.5px; color:var(--text-secondary);">Plays .mp4, .mkv, .webm 4K/AV1 video</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <select class="aqua-select" style="padding:4px 8px; font-size:12px;" onchange="showToast('Default video player set to: ' + this.value)">
+                  <option value="quicktime" selected>QuickTime Player (Default)</option>
+                  <option value="vlc">VLC Media Player</option>
+                  <option value="mpv">mpv Linux</option>
+                </select>
+                <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="openWindow('win-video', 'QuickTime Player')">Launch</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-title"><span>Native App Package Center</span></div>
+            <div class="settings-row">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <svg width="24" height="24" style="color:#0A84FF;"><use href="#ico-store"/></svg>
+                <div>
+                  <div style="font-weight:600;">Software Catalog & Universal Hub</div>
+                  <div style="font-size:11.5px; color:var(--text-secondary);">Snapcraft confinement with Zero-Trust isolation</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <button class="aqua-btn" style="padding:5px 12px; font-size:11.5px;" onclick="openWindow('win-store', 'Snap Store')">Open Snap Store</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -2940,6 +3145,366 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
           <button class="aqua-btn" onclick="openWindow('win-activity', 'Activity Monitor')">Activity Monitor</button>
           <button class="aqua-btn secondary" onclick="openWindow('win-terminal', 'Terminal'); execTermQuick('pytest')">Run 14 Self-Tests</button>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WINDOW 8: MOZILLA FIREFOX (DEFAULT WEB BROWSER) -->
+  <section class="aqua-window hidden" id="win-firefox" style="top: 22px; left: 35px; width: 890px; height: 570px; z-index: 46;" onmousedown="focusWindow('win-firefox', 'Firefox')">
+    <div class="win-titlebar" onmousedown="startDrag(event, 'win-firefox')">
+      <div class="traffic-lights" onmousedown="event.stopPropagation()">
+        <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-firefox')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-firefox')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-firefox')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
+      </div>
+      <div class="win-title">
+        <svg class="ico" width="14" height="14" style="color:#FF7139;"><use href="#ico-globe"/></svg>
+        <span id="ff-title-text">Firefox — Default Web Browser</span>
+      </div>
+      <div class="win-badge" style="background:rgba(255,113,57,0.18); color:#FF9400; border-color:rgba(255,113,57,0.3);">Noble 134.0 • Zero-Trust</div>
+    </div>
+    <div class="ff-tabs">
+      <div class="ff-tab active" id="ff-tab-0" onclick="switchFirefoxTab(0)">
+        <svg width="12" height="12" style="color:#FF7139;"><use href="#ico-globe"/></svg>
+        <span>AquaOS Portal</span>
+      </div>
+      <div class="ff-tab" id="ff-tab-1" onclick="switchFirefoxTab(1)">
+        <span>GitHub / aquaos</span>
+      </div>
+      <div class="ff-tab" id="ff-tab-2" onclick="switchFirefoxTab(2)">
+        <span>DuckDuckGo</span>
+      </div>
+      <button class="aqua-btn secondary" style="padding:2px 7px; font-size:11px; height:24px; border-radius:4px; margin-bottom:4px;" onclick="newFirefoxTab()">+</button>
+    </div>
+    <div class="ff-nav-bar">
+      <button class="aqua-btn secondary" style="padding:4px 8px; font-size:12px;" onclick="ffNavBack()">‹</button>
+      <button class="aqua-btn secondary" style="padding:4px 8px; font-size:12px;" onclick="ffNavForward()">›</button>
+      <button class="aqua-btn secondary" style="padding:4px 8px; font-size:12px;" onclick="ffNavReload()">↻</button>
+      <div class="ff-url-bar">
+        <span style="color:#30D158;" title="Secure Connection (Zero-Trust Verified)">🔒</span>
+        <input id="ff-url-input" style="flex:1; background:transparent; border:none; outline:none; color:var(--text-primary); font-size:11.5px; font-family:var(--font-mono);" value="https://aquaos.local/start" onkeydown="if(event.key==='Enter') navigateFirefox(this.value)" />
+        <span style="color:var(--text-muted); cursor:pointer;" onclick="navigateFirefox(document.getElementById('ff-url-input').value)">➜</span>
+      </div>
+      <button class="aqua-btn secondary" style="padding:4px 9px; font-size:11px;" onclick="showToast('Bookmark Saved to Firefox toolbar')">★</button>
+    </div>
+    <div class="ff-bookmarks">
+      <span class="ff-bm-item" onclick="navigateFirefox('https://aquaos.local/start')">🌐 AquaOS Start</span>
+      <span class="ff-bm-item" onclick="navigateFirefox('https://github.com/iamnikhilsharma/aquaos')">🐙 GitHub Repo</span>
+      <span class="ff-bm-item" onclick="navigateFirefox('https://duckduckgo.com')">🦆 DuckDuckGo</span>
+      <span class="ff-bm-item" onclick="navigateFirefox('https://ubuntu.com/noble')">🐧 Ubuntu 24.04</span>
+      <span class="ff-bm-item" onclick="navigateFirefox('https://ollama.com')">🧠 Ollama AI</span>
+    </div>
+    <div class="win-body" style="background:rgba(12,14,24,0.7);">
+      <div id="ff-viewport" style="flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; align-items:center;">
+        <!-- Dynamic Web View Content -->
+      </div>
+    </div>
+  </section>
+
+  <!-- WINDOW 9: AQUA PREVIEW (DEFAULT IMAGE & MEDIA VIEWER) -->
+  <section class="aqua-window hidden" id="win-preview" style="top: 26px; left: 45px; width: 840px; height: 550px; z-index: 47;" onmousedown="focusWindow('win-preview', 'Preview')">
+    <div class="win-titlebar" onmousedown="startDrag(event, 'win-preview')">
+      <div class="traffic-lights" onmousedown="event.stopPropagation()">
+        <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-preview')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-preview')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-preview')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
+      </div>
+      <div class="win-title">
+        <svg class="ico" width="14" height="14" style="color:#5AC8FA;"><use href="#ico-image"/></svg>
+        <span id="preview-win-title">Preview — Aqua Image Viewer</span>
+      </div>
+      <div class="win-badge" id="preview-meta-badge">3840 × 2160 • P3</div>
+    </div>
+    <div class="preview-toolbar">
+      <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11.5px;" onclick="previewZoom(-0.2)" title="Zoom Out (⌘−)">−</button>
+      <span id="preview-zoom-label" style="font-size:11px; font-family:var(--font-mono); min-width:42px; text-align:center;">100%</span>
+      <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11.5px;" onclick="previewZoom(0.2)" title="Zoom In (⌘+)">+</button>
+      <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11.5px;" onclick="previewResetZoom()" title="Actual Size (⌘0)">100%</button>
+      <div style="width:1px; height:18px; background:var(--glass-border); margin:0 4px;"></div>
+      <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11.5px;" onclick="previewRotate(-90)" title="Rotate Left (⌘L)">↺ 90°</button>
+      <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11.5px;" onclick="previewRotate(90)" title="Rotate Right (⌘R)">↻ 90°</button>
+      <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11.5px;" onclick="previewFlip()" title="Flip Horizontal">⇄ Flip</button>
+      <div style="width:1px; height:18px; background:var(--glass-border); margin:0 4px;"></div>
+      <select id="preview-filter-select" class="aqua-select" style="padding:3px 8px; font-size:11px;" onchange="previewApplyFilter(this.value)">
+        <option value="none">Filter: Normal</option>
+        <option value="grayscale(100%)">Monochrome B&W</option>
+        <option value="sepia(80%)">Warm Sepia</option>
+        <option value="saturate(200%)">Vibrant HDR</option>
+        <option value="invert(100%)">Invert Negative</option>
+        <option value="contrast(160%)">High Contrast</option>
+      </select>
+      <button class="aqua-btn secondary" style="padding:4px 10px; font-size:11.5px; margin-left:auto;" onclick="triggerNativeFilePicker('preview')">Open Image...</button>
+    </div>
+    <div class="win-body">
+      <div class="preview-thumb-strip" id="preview-thumb-list"></div>
+      <div class="preview-stage" id="preview-stage-container">
+        <div id="preview-canvas-box" style="transition:transform 0.18s ease; transform-origin:center; display:flex; align-items:center; justify-content:center;">
+          <svg id="preview-main-svg" width="480" height="300" viewBox="0 0 480 300" style="border-radius:10px; box-shadow:0 12px 36px rgba(0,0,0,0.6);"></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WINDOW 10: AQUA MUSIC PLAYER (HIGH-RES AUDIO & SYNTHESIZER) -->
+  <section class="aqua-window hidden" id="win-music" style="top: 30px; left: 55px; width: 870px; height: 550px; z-index: 48;" onmousedown="focusWindow('win-music', 'Music')">
+    <div class="win-titlebar" onmousedown="startDrag(event, 'win-music')">
+      <div class="traffic-lights" onmousedown="event.stopPropagation()">
+        <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-music')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-music')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-music')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
+      </div>
+      <div class="win-title">
+        <svg class="ico" width="14" height="14" style="color:#FF2D55;"><use href="#ico-music"/></svg>
+        <span>Music — Aqua High-Res Audio</span>
+      </div>
+      <div class="win-badge" style="background:rgba(255,45,85,0.18); color:#FF375F; border-color:rgba(255,45,85,0.3);">ALAC Lossless • 24-bit/96kHz</div>
+    </div>
+    <div class="music-container">
+      <div class="music-sidebar">
+        <div class="sb-section">Apple Music</div>
+        <div class="sb-item active" onclick="switchMusicTab('listen-now', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+          <span>Listen Now</span>
+        </div>
+        <div class="sb-item" onclick="switchMusicTab('browse', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Browse & Charts</span>
+        </div>
+        <div class="sb-item" onclick="switchMusicTab('radio', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+          <span>Aqua Radio</span>
+        </div>
+        <div class="sb-section">Library</div>
+        <div class="sb-item" onclick="switchMusicTab('recently-added', this)">
+          <svg class="ico" width="14" height="14"><use href="#ico-layers"/></svg>
+          <span>Recently Added</span>
+        </div>
+        <div class="sb-item" onclick="switchMusicTab('songs', this)">
+          <svg class="ico" width="14" height="14"><use href="#ico-music"/></svg>
+          <span>All Songs (4)</span>
+        </div>
+        <div class="sb-section">Playlists</div>
+        <div class="sb-item" onclick="loadMusicTrack(0)">
+          <span>🌊 Chillhop Waves</span>
+        </div>
+        <div class="sb-item" onclick="loadMusicTrack(1)">
+          <span>⚡ Synthwave 6.12</span>
+        </div>
+        <div class="sb-item" onclick="loadMusicTrack(2)">
+          <span>🎹 Ambient Code Focus</span>
+        </div>
+        <div class="sb-item" onclick="loadMusicTrack(3)">
+          <span>🌌 Deep Space Lo-Fi</span>
+        </div>
+      </div>
+      <div class="music-main">
+        <div class="music-hero-card">
+          <div class="music-art-box" id="music-hero-art">
+            <svg width="130" height="130" viewBox="0 0 130 130"><defs><linearGradient id="artG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF2D55"/><stop offset="100%" stop-color="#BF5AF2"/></linearGradient></defs><rect width="130" height="130" rx="12" fill="url(#artG)"/><circle cx="65" cy="65" r="32" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/><circle cx="65" cy="65" r="8" fill="#fff"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:10.5px; font-weight:700; color:#FF375F; text-transform:uppercase; letter-spacing:0.06em;">Featured Track</div>
+            <h2 style="margin:4px 0 6px; font-size:22px; font-weight:700;" id="music-track-title">Chillhop Waves</h2>
+            <div style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;" id="music-artist-name">AquaOS Sound System • Sonoma Edition</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button class="aqua-btn" style="padding:6px 16px; font-size:12px; background:#FF2D55; border-color:#FF2D55;" onclick="toggleMusicPlay()">
+                <span id="btn-music-play-label">▶ Play Now</span>
+              </button>
+              <button class="aqua-btn secondary" style="padding:6px 14px; font-size:12px;" onclick="shuffleMusic()">🔀 Shuffle</button>
+              <canvas id="music-visualizer" width="160" height="32" style="border-radius:6px; background:rgba(0,0,0,0.3);"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:13px; font-weight:700; margin-bottom:10px;">Tracks in Playlist</div>
+        <table class="fs-table" style="font-size:12px;">
+          <thead>
+            <tr><th style="width:36px;">#</th><th>Title</th><th>Artist</th><th>Time</th><th>Action</th></tr>
+          </thead>
+          <tbody id="music-tracklist-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="music-controls-bar">
+      <div style="display:flex; align-items:center; gap:12px; width:220px;">
+        <div style="width:38px; height:38px; border-radius:6px; background:linear-gradient(135deg, #FF2D55, #BF5AF2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><use href="#ico-music"/></svg>
+        </div>
+        <div style="overflow:hidden;">
+          <div style="font-size:12px; font-weight:600; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;" id="music-bar-title">Chillhop Waves</div>
+          <div style="font-size:10.5px; color:var(--text-secondary);" id="music-bar-artist">AquaOS Sound System</div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; max-width:420px;">
+        <div style="display:flex; align-items:center; gap:16px;">
+          <button class="aqua-btn secondary" style="padding:4px 8px; font-size:12px; border-radius:50%; width:30px; height:30px;" onclick="prevMusicTrack()">⏮</button>
+          <button class="aqua-btn" style="padding:6px 12px; font-size:14px; border-radius:50%; width:36px; height:36px; background:#FF2D55; border-color:#FF2D55;" onclick="toggleMusicPlay()">
+            <span id="music-bar-play-icon">▶</span>
+          </button>
+          <button class="aqua-btn secondary" style="padding:4px 8px; font-size:12px; border-radius:50%; width:30px; height:30px;" onclick="nextMusicTrack()">⏭</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; width:100%;">
+          <span style="font-size:10.5px; font-family:var(--font-mono); color:var(--text-muted);" id="music-time-cur">0:00</span>
+          <input type="range" id="music-seek-bar" min="0" max="100" value="0" style="flex:1;" oninput="onMusicSeek(this.value)" />
+          <span style="font-size:10.5px; font-family:var(--font-mono); color:var(--text-muted);" id="music-time-total">3:24</span>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; width:180px; justify-content:flex-end;">
+        <svg width="14" height="14" style="color:var(--text-secondary);"><use href="#ico-volume"/></svg>
+        <input type="range" id="music-volume-slider" min="0" max="100" value="80" style="width:90px;" oninput="setMusicVolume(this.value)" />
+      </div>
+    </div>
+  </section>
+
+  <!-- WINDOW 11: QUICKTIME VIDEO PLAYER -->
+  <section class="aqua-window hidden" id="win-video" style="top: 34px; left: 65px; width: 820px; height: 530px; z-index: 49;" onmousedown="focusWindow('win-video', 'QuickTime Player')">
+    <div class="win-titlebar" onmousedown="startDrag(event, 'win-video')">
+      <div class="traffic-lights" onmousedown="event.stopPropagation()">
+        <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-video')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-video')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-video')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
+      </div>
+      <div class="win-title">
+        <svg class="ico" width="14" height="14" style="color:#5AC8FA;"><use href="#ico-video"/></svg>
+        <span id="video-win-title">QuickTime Player — Aqua Video Showcase</span>
+      </div>
+      <div class="win-badge" style="background:rgba(90,200,250,0.18); color:#5AC8FA; border-color:rgba(90,200,250,0.3);">4K 60fps • AV1 / H.265</div>
+    </div>
+    <div class="win-body" style="background:#000;">
+      <div class="video-stage-box" id="video-stage">
+        <canvas id="video-render-canvas" width="760" height="420" style="width:100%; height:100%; object-fit:contain;"></canvas>
+        <div class="video-hud-bar">
+          <button class="aqua-btn" style="padding:4px 10px; font-size:13px; border-radius:50%; width:32px; height:32px;" onclick="toggleVideoPlayback()">
+            <span id="btn-video-play-icon">▶</span>
+          </button>
+          <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="videoSeekOffset(-10)">-10s</button>
+          <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="videoSeekOffset(10)">+10s</button>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="video-cur-time" style="font-size:11px; font-family:var(--font-mono); color:#E5E7EB;">00:14</span>
+            <input type="range" id="video-timeline-slider" min="0" max="100" value="12" style="width:180px;" oninput="onVideoTimelineSeek(this.value)" />
+            <span id="video-total-time" style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">02:30</span>
+          </div>
+          <select id="video-speed-select" class="aqua-select" style="padding:2px 6px; font-size:11px; width:65px;" onchange="setVideoSpeed(this.value)">
+            <option value="0.5">0.5×</option>
+            <option value="1.0" selected>1.0×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2.0">2.0×</option>
+          </select>
+          <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="showToast('Video Picture-in-Picture active')">⧉ PiP</button>
+          <button class="aqua-btn secondary" style="padding:4px 8px; font-size:11px;" onclick="maximizeWindow('win-video')">⛶</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WINDOW 12: MOZILLA THUNDERBIRD (DEFAULT EMAIL MANAGER) -->
+  <section class="aqua-window hidden" id="win-thunderbird" style="top: 25px; left: 50px; width: 910px; height: 570px; z-index: 50;" onmousedown="focusWindow('win-thunderbird', 'Thunderbird')">
+    <div class="win-titlebar" onmousedown="startDrag(event, 'win-thunderbird')">
+      <div class="traffic-lights" onmousedown="event.stopPropagation()">
+        <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-thunderbird')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-thunderbird')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-thunderbird')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
+      </div>
+      <div class="win-title">
+        <svg class="ico" width="14" height="14" style="color:#0A84FF;"><use href="#ico-mail"/></svg>
+        <span>Thunderbird Mail — aqua@aquaos.local</span>
+      </div>
+      <div class="win-badge" style="background:rgba(10,132,255,0.18); color:#0A84FF; border-color:rgba(10,132,255,0.3);">IMAP • OpenPGP Signed</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; padding:8px 14px; background:rgba(0,0,0,0.2); border-bottom:0.5px solid var(--glass-border);">
+      <button class="aqua-btn" style="padding:5px 12px; font-size:11.5px;" onclick="openTbCompose()">✉ Write Message</button>
+      <button class="aqua-btn secondary" style="padding:5px 10px; font-size:11.5px;" onclick="tbGetMessages()">↻ Get Messages</button>
+      <button class="aqua-btn secondary" style="padding:5px 10px; font-size:11.5px;" onclick="tbReplyMessage()">↩ Reply</button>
+      <button class="aqua-btn secondary" style="padding:5px 10px; font-size:11.5px;" onclick="tbDeleteCurrent()">🗑 Delete</button>
+      <button class="aqua-btn secondary" style="padding:5px 10px; font-size:11.5px;" onclick="showToast('Archived message to /home/aqua/.local/share/mail')">Archive</button>
+      <input class="aqua-input" style="margin-left:auto; width:200px; padding:4px 8px; font-size:11.5px;" placeholder="Filter messages..." oninput="filterTbMessages(this.value)" />
+    </div>
+    <div class="tb-container">
+      <div class="tb-folders">
+        <div class="sb-section">Mailboxes</div>
+        <div class="sb-item active" onclick="switchTbFolder('inbox', this)">
+          <span>📥 Inbox</span>
+          <span class="badge-fit badge-gpu" style="margin-left:auto; font-size:9.5px;" id="tb-badge-unread">3</span>
+        </div>
+        <div class="sb-item" onclick="switchTbFolder('drafts', this)">
+          <span>📝 Drafts</span>
+        </div>
+        <div class="sb-item" onclick="switchTbFolder('sent', this)">
+          <span>📤 Sent</span>
+        </div>
+        <div class="sb-item" onclick="switchTbFolder('archive', this)">
+          <span>📁 Archives</span>
+        </div>
+        <div class="sb-item" onclick="switchTbFolder('junk', this)">
+          <span>⚠️ Junk</span>
+        </div>
+        <div class="sb-item" onclick="switchTbFolder('trash', this)">
+          <span>🗑 Trash</span>
+        </div>
+      </div>
+      <div class="tb-threads" id="tb-thread-list"></div>
+      <div class="tb-reader" id="tb-reader-pane"></div>
+    </div>
+  </section>
+
+  <!-- WINDOW 13: AQUA SNAP STORE & PACKAGE CENTER -->
+  <section class="aqua-window hidden" id="win-store" style="top: 20px; left: 30px; width: 920px; height: 580px; z-index: 51;" onmousedown="focusWindow('win-store', 'Snap Store')">
+    <div class="win-titlebar" onmousedown="startDrag(event, 'win-store')">
+      <div class="traffic-lights" onmousedown="event.stopPropagation()">
+        <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-store')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-store')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-store')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
+      </div>
+      <div class="win-title">
+        <svg class="ico" width="14" height="14" style="color:#0A84FF;"><use href="#ico-store"/></svg>
+        <span>Snap Store — Aqua Native Software Center</span>
+      </div>
+      <div class="win-badge" style="background:rgba(10,132,255,0.18); color:#0A84FF; border-color:rgba(10,132,255,0.3);">Canonical Snapcraft ✓ • 100% Native</div>
+    </div>
+    <div class="store-container">
+      <div class="store-sidebar">
+        <div class="sb-section">Categories</div>
+        <div class="sb-item active" onclick="switchStoreCategory('discover', this)">
+          <span>✨ Discover & Featured</span>
+        </div>
+        <div class="sb-item" onclick="switchStoreCategory('dev', this)">
+          <span>💻 Developer Tools</span>
+        </div>
+        <div class="sb-item" onclick="switchStoreCategory('productivity', this)">
+          <span>📊 Productivity</span>
+        </div>
+        <div class="sb-item" onclick="switchStoreCategory('media', this)">
+          <span>🎨 Graphics & Media</span>
+        </div>
+        <div class="sb-item" onclick="switchStoreCategory('security', this)">
+          <span>🛡️ Security & Privacy</span>
+        </div>
+        <div class="sb-section">Management</div>
+        <div class="sb-item" onclick="switchStoreCategory('installed', this)">
+          <span>📦 Installed Snaps</span>
+          <span class="badge-fit badge-gpu" style="margin-left:auto; font-size:9.5px;" id="store-installed-count">6</span>
+        </div>
+        <div class="sb-item" onclick="switchStoreCategory('updates', this)">
+          <span>🔄 Updates Pending</span>
+          <span class="badge-fit" style="margin-left:auto; font-size:9.5px; background:rgba(255,159,10,0.2); color:#FF9F0A;">2</span>
+        </div>
+      </div>
+      <div class="store-main">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+          <input id="store-search-input" class="aqua-input" style="flex:1; padding:6px 12px; font-size:12.5px;" placeholder="Search snaps by name, category, or keyword..." oninput="onStoreSearch(this.value)" />
+          <button class="aqua-btn secondary" style="padding:6px 12px; font-size:12px;" onclick="refreshStorePackages()">↻ Refresh Repository</button>
+        </div>
+        <div class="store-hero" id="store-hero-banner">
+          <div>
+            <div style="font-size:11px; font-weight:700; color:#5AC8FA; text-transform:uppercase;">Editor's Choice</div>
+            <h2 style="margin:4px 0 6px; font-size:20px;">Firefox 134 — The Privacy-First Browser</h2>
+            <div style="font-size:12px; color:var(--text-secondary); max-width:440px;">Default hardened web browser for AquaOS with Zero-Trust containment, tracker blocking, and Wayland hardware acceleration.</div>
+          </div>
+          <button class="aqua-btn" style="padding:8px 18px; font-size:12.5px;" onclick="openWindow('win-firefox', 'Firefox')">Open App</button>
+        </div>
+        <div class="store-grid" id="store-app-grid"></div>
       </div>
     </div>
   </section>
@@ -2994,6 +3559,36 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#636366"/><circle cx="50" cy="50" r="16" stroke="#fff" stroke-width="6" fill="none"/><circle cx="50" cy="50" r="28" stroke="#fff" stroke-width="5" stroke-dasharray="10 8" fill="none"/></svg>
       <div class="dock-dot" id="dot-settings"></div>
     </div>
+    <div class="dock-item" onclick="dockLaunch('win-firefox', 'Firefox', this)">
+      <div class="dock-tooltip">Firefox Browser (Default Web Browser)</div>
+      <svg viewBox="0 0 100 100"><defs><linearGradient id="g-ff" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF3B30"/><stop offset="50%" stop-color="#FF9500"/><stop offset="100%" stop-color="#AF52DE"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-ff)"/><circle cx="50" cy="50" r="26" fill="#0A84FF"/><path d="M50 20 C68 20 80 34 78 52 C76 70 60 80 46 78 C32 76 24 64 26 50 C27 40 33 32 40 28 C36 32 35 38 37 43 C39 48 45 52 50 50 C56 48 58 42 56 36 C55 32 52 28 50 20 Z" fill="#FFCC00"/></svg>
+      <div class="dock-dot" id="dot-firefox"></div>
+    </div>
+    <div class="dock-item" onclick="dockLaunch('win-thunderbird', 'Thunderbird', this)">
+      <div class="dock-tooltip">Thunderbird Mail (Default Email Manager)</div>
+      <svg viewBox="0 0 100 100"><defs><linearGradient id="g-tb" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0A84FF"/><stop offset="100%" stop-color="#0040DD"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-tb)"/><rect x="22" y="30" width="56" height="40" rx="6" fill="#fff" opacity="0.95"/><path d="M24 33 L50 52 L76 33" stroke="#0040DD" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M50 22 C42 22 36 28 36 34 L64 34 C64 28 58 22 50 22 Z" fill="#5AC8FA"/></svg>
+      <div class="dock-dot" id="dot-thunderbird"></div>
+    </div>
+    <div class="dock-item" onclick="dockLaunch('win-store', 'Snap Store', this)">
+      <div class="dock-tooltip">Snap Store (Universal Software Hub)</div>
+      <svg viewBox="0 0 100 100"><defs><linearGradient id="g-store" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0A84FF"/><stop offset="100%" stop-color="#5E5CE6"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-store)"/><path d="M30 42 L50 22 L70 42 L62 42 L62 72 L38 72 L38 42 Z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><circle cx="50" cy="54" r="6" fill="#fff"/></svg>
+      <div class="dock-dot" id="dot-store"></div>
+    </div>
+    <div class="dock-item" onclick="dockLaunch('win-music', 'Music', this)">
+      <div class="dock-tooltip">Music (Lossless Audio Player)</div>
+      <svg viewBox="0 0 100 100"><defs><linearGradient id="g-mus" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF2D55"/><stop offset="100%" stop-color="#FF375F"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-mus)"/><circle cx="40" cy="66" r="10" fill="#fff"/><circle cx="68" cy="58" r="10" fill="#fff"/><path d="M50 66 V32 L78 24 V58" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none"/><line x1="50" y1="40" x2="78" y2="32" stroke="#fff" stroke-width="5"/></svg>
+      <div class="dock-dot" id="dot-music"></div>
+    </div>
+    <div class="dock-item" onclick="dockLaunch('win-video', 'QuickTime Player', this)">
+      <div class="dock-tooltip">QuickTime Video Player</div>
+      <svg viewBox="0 0 100 100"><defs><linearGradient id="g-vid" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#32ADE6"/><stop offset="100%" stop-color="#007AFF"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-vid)"/><circle cx="50" cy="50" r="26" stroke="#fff" stroke-width="6" fill="none"/><path d="M44 38 L64 50 L44 62 Z" fill="#fff"/></svg>
+      <div class="dock-dot" id="dot-video"></div>
+    </div>
+    <div class="dock-item" onclick="dockLaunch('win-preview', 'Preview', this)">
+      <div class="dock-tooltip">Preview (Default Image Viewer)</div>
+      <svg viewBox="0 0 100 100"><defs><linearGradient id="g-prev" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#34C759"/><stop offset="100%" stop-color="#30B0C7"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-prev)"/><rect x="24" y="26" width="52" height="48" rx="8" fill="#fff" opacity="0.95"/><circle cx="38" cy="40" r="6" fill="#FF9500"/><path d="M26 64 L42 48 L56 60 L64 52 L74 64 Z" fill="#34C759"/></svg>
+      <div class="dock-dot" id="dot-preview"></div>
+    </div>
     <div class="dock-sep"></div>
     <div class="dock-item" onclick="dockLaunch('win-about', 'About AquaOS', this)">
       <div class="dock-tooltip">About This Machine</div>
@@ -3037,6 +3632,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   let highestZ = 60;
   let currentFsPath = "/home/aqua/AquaOS-Beta";
   let parentFsPath = "/home/aqua";
+  let initialFsLoaded = false;
   let openFilePath = "";
   let termCwd = "/home/aqua/AquaOS-Beta";
   let termHistory = [];
@@ -3065,16 +3661,32 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     "/home/aqua/AquaOS-Beta/aqua-desktop/universal/aqua_run.py": `"""AquaOS Universal Application Runner (runs .exe, .dmg, .app, .apk, .AppImage)."""\nclass AquaUniversalRunner:\n    SUPPORTED = [".app", ".dmg", ".exe", ".msi", ".apk", ".AppImage", ".flatpakref"]\n`,
     "/home/aqua/AquaOS-Beta/iso-builder/Dockerfile": `FROM debian:bookworm-slim\nRUN apt-get update && apt-get install -y live-build squashfs-tools bubblewrap nftables python3\n`,
     "/home/aqua/AquaOS-Beta/tests/run_tests.py": `"""AquaOS Automated Test Suite (14/14 Passing)."""\nimport unittest\nprint("Ran 14 tests in 0.052s — OK (100% Passed)")\n`,
-    "/etc/os-release": `PRETTY_NAME="AquaOS 1.0 Beta (Sonoma-AI Virus-Proof Edition)"\nNAME="AquaOS"\nVERSION_ID="1.0-beta"\nID=aquaos\nID_LIKE="debian ubuntu"\nKERNEL_LOCKDOWN="integrity"\nROOTFS_MODE="squashfs-immutable-ro"\n`,
+    "/bin/bash": `#!/bin/sh\n# GNU bash v5.2 on AquaOS Linux 6.12\nexec /bin/sh "$@"\n`,
+    "/bin/sh": `#!/bin/sh\n# POSIX dash shell on AquaOS\n`,
+    "/boot/vmlinuz-6.12.0-aquaos-ai-lockdown": `Linux Kernel 6.12.0-aquaos-ai-lockdown (x86_64 EFI binary)\n`,
+    "/boot/initrd.img-6.12.0-aquaos-ai-lockdown": `Initial RAM filesystem image (zstd compressed SquashFS bootloader overlay)\n`,
+    "/dev/null": `# /dev/null\n`,
+    "/etc/os-release": `PRETTY_NAME="AquaOS 1.0 Beta (Ubuntu 24.04.2 LTS Noble Numbat • Sonoma-AI Edition)"\nNAME="AquaOS"\nVERSION_ID="24.04"\nID=aquaos\nID_LIKE="ubuntu debian"\nKERNEL_LOCKDOWN="integrity"\nROOTFS_MODE="squashfs-immutable-ro"\n`,
     "/etc/hostname": `aquaos\n`,
     "/etc/fstab": `/dev/nvme0n1p2  /              squashfs  ro,nodev,relatime  0 1\noverlay         /home          overlay   rw,nosuid,nodev    0 0\ntmpfs           /run/sandbox   tmpfs     rw,nosuid,noexec   0 0\n`,
     "/etc/passwd": `root:x:0:0:root:/root:/bin/bash\nollama:x:998:998:AquaOS Neural Engine:/var/lib/ollama:/usr/sbin/nologin\naqua:x:1000:1000:AquaOS Live User:/home/aqua:/bin/bash\n`,
     "/etc/nftables.conf": `table inet aqua_shield {\n  chain inbound {\n    type filter hook input priority 0; policy drop;\n    ct state established,related accept\n    iifname "lo" accept\n  }\n}\n`,
-    "/proc/version": `Linux version 6.12.0-aquaos-ai-lockdown (aqua-build@aquaos.local) (gcc (Debian 13.2.0-23) 13.2.0) #1 SMP PREEMPT_DYNAMIC AquaOS 1.0 Beta\n`,
+    "/lib/modules/6.12.0-aquaos-ai-lockdown/modules.dep": `# AquaOS Kernel Module Dependencies\n`,
+    "/opt/aquaos/version.json": `{"version": "1.0-beta", "channel": "sonoma-ai", "edition": "noble"}\n`,
+    "/proc/version": `Linux version 6.12.0-aquaos-ai-lockdown (Ubuntu 13.2.0-23ubuntu4) #1 SMP PREEMPT_DYNAMIC AquaOS 1.0 Beta\n`,
     "/proc/cpuinfo": `processor\t: 0\nvendor_id\t: GenuineIntel\nmodel name\t: Intel64 Family 6 Model 69\ncpu MHz\t\t: 3400.000\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr avx avx2 vnni\n`,
     "/proc/meminfo": `MemTotal:       16703896 kB\nMemFree:         6812400 kB\nMemAvailable:    9416200 kB\nHugePages_Total:     512\n`,
-    "/var/log/syslog": `Oct 18 03:20:01 aquaos kernel: [0.000000] Linux version 6.12.0-aquaos-ai-lockdown\nOct 18 03:20:02 aquaos systemd[1]: Started Aqua Shield Zero-Trust Firewall (nftables).\nOct 18 03:20:03 aquaos systemd[1]: Started Aqua Neural Engine Daemon (Ollama + Vulkan).\n`,
-    "/usr/bin/aqua-run": `#!/usr/bin/env python3\nprint("AquaOS Universal Sandbox Runner v1.0.0-beta1")\n`
+    "/root/.bashrc": `# Root bashrc for aquaos\nexport PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n`,
+    "/run/aqua-sandbox/sandbox.pid": `1492\n`,
+    "/sbin/init": `#!/bin/sh\n# systemd init daemon stub\n`,
+    "/snap/bin/firefox": `#!/bin/sh\n# Mozilla Firefox snap runner\n`,
+    "/sys/class/drm/card0": `PCI 0000:00:02.0 (Aqua Neural Graphics / Vulkan 1.3)\n`,
+    "/tmp/.session.lock": `aqua-session active\n`,
+    "/usr/bin/aqua-run": `#!/usr/bin/env python3\nprint("AquaOS Universal Sandbox Runner v1.0.0-beta1")\n`,
+    "/usr/bin/python3": `#!/bin/sh\n# Python 3.12.10 interpreter\n`,
+    "/usr/bin/neofetch": `#!/bin/sh\n# Neofetch system info utility\n`,
+    "/var/log/syslog": `Oct 24 20:15:01 aquaos kernel: [0.000000] Linux version 6.12.0-aquaos-ai-lockdown\nOct 24 20:15:02 aquaos systemd[1]: Started Aqua Shield Zero-Trust Firewall (nftables).\nOct 24 20:15:03 aquaos systemd[1]: Started Aqua Neural Engine Daemon (Ollama + Vulkan).\n`,
+    "/var/log/aquaos-shield.log": `[Oct 24 20:15:01] Gatekeeper initialized: Static + Shannon Entropy scanner active (threshold=7.25 bits/byte)\n`
   };
   function saveVFS() {
     try { localStorage.setItem('aquaos_linux_vfs_v3', JSON.stringify(LOCAL_VFS)); } catch (e) {}
@@ -3105,9 +3717,16 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       "documents": "/home/aqua/Documents",
       "downloads": "/home/aqua/Downloads",
       "home": "/home/aqua",
-      "~": "/home/aqua"
+      "~": "/home/aqua",
+      "root": "/",
+      "rootfs": "/",
+      "/": "/",
+      "aquaos hd": "/",
+      "hd": "/"
     };
-    let norm = mapAliases[(dirStr || "").toLowerCase()] || (dirStr || "/home/aqua/AquaOS-Beta").replace(/\\/g, "/");
+    const cleanInput = (dirStr || "").trim();
+    let norm = mapAliases[cleanInput.toLowerCase()] || (cleanInput || (currentFsPath === "/" ? "/" : "/home/aqua/AquaOS-Beta")).replace(/\\/g, "/");
+    if (!norm) norm = "/";
     if (norm.length > 1 && norm.endsWith("/")) norm = norm.slice(0, -1);
     const prefix = norm === "/" ? "/" : norm + "/";
     const seenDirs = new Set();
@@ -3524,7 +4143,10 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   }
 
   /* 2. Window Management */
-  const ALL_WINDOWS = ['win-finder', 'win-terminal', 'win-ai', 'win-shield', 'win-activity', 'win-settings', 'win-about'];
+  const ALL_WINDOWS = [
+    'win-finder', 'win-terminal', 'win-ai', 'win-shield', 'win-activity', 'win-settings', 'win-about',
+    'win-firefox', 'win-preview', 'win-music', 'win-video', 'win-thunderbird', 'win-store'
+  ];
 
   function updateDockIndicators() {
     const showDots = document.getElementById('toggle-dock-indicators')?.classList.contains('active') ?? true;
@@ -3535,7 +4157,13 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       'win-shield': 'dot-shield',
       'win-activity': 'dot-activity',
       'win-settings': 'dot-settings',
-      'win-about': 'dot-about'
+      'win-about': 'dot-about',
+      'win-firefox': 'dot-firefox',
+      'win-preview': 'dot-preview',
+      'win-music': 'dot-music',
+      'win-video': 'dot-video',
+      'win-thunderbird': 'dot-thunderbird',
+      'win-store': 'dot-store'
     };
     for (const [winId, dotId] of Object.entries(winMap)) {
       const dot = document.getElementById(dotId);
@@ -3565,6 +4193,12 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     focusWindow(winId, appTitle || winId.replace('win-', ''));
     if (winId === 'win-activity') refreshProcesses();
     if (winId === 'win-ai') setAiGlow(true);
+    if (winId === 'win-firefox' && !firefoxInitialized) initFirefoxApp();
+    if (winId === 'win-preview' && !previewInitialized) initPreviewApp();
+    if (winId === 'win-music' && !musicInitialized) initMusicApp();
+    if (winId === 'win-video' && !videoInitialized) initVideoApp();
+    if (winId === 'win-thunderbird' && !tbInitialized) initThunderbirdApp();
+    if (winId === 'win-store' && !storeInitialized) initStoreApp();
     updateDockIndicators();
     renderStageManager();
   }
@@ -3572,6 +4206,8 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     const win = document.getElementById(winId);
     if (win) win.classList.add('hidden');
     if (winId === 'win-ai') setAiGlow(false);
+    if (winId === 'win-music') pauseMusicAudio();
+    if (winId === 'win-video') pauseVideoPlayback();
     const openWins = ALL_WINDOWS.filter(id => !document.getElementById(id)?.classList.contains('hidden'));
     if (openWins.length === 0) {
       document.getElementById('mb-active-app').innerText = 'Finder';
@@ -3591,7 +4227,13 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
           'win-shield': 'Aqua Shield',
           'win-activity': 'Activity Monitor',
           'win-settings': 'System Settings',
-          'win-about': 'About AquaOS'
+          'win-about': 'About AquaOS',
+          'win-firefox': 'Firefox',
+          'win-preview': 'Preview',
+          'win-music': 'Music',
+          'win-video': 'QuickTime Player',
+          'win-thunderbird': 'Thunderbird',
+          'win-store': 'Snap Store'
         };
         document.getElementById('mb-active-app').innerText = titleMap[topWin] || 'Finder';
       }
@@ -3865,6 +4507,99 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     activeSnapZone = null;
   });
 
+  /* Universal Window Resizing System (8-directional resize handles + grip) */
+  let resizingWin = null;
+  let resizeDir = null;
+  let resizeStartX = 0, resizeStartY = 0;
+  let resizeStartRect = null;
+
+  function initWindowResizeHandles() {
+    const dirs = ['n', 's', 'e', 'w', 'nw', 'ne', 'sw', 'se'];
+    document.querySelectorAll('.aqua-window').forEach(win => {
+      if (win.querySelector('.win-resize-handle')) return;
+      dirs.forEach(d => {
+        const h = document.createElement('div');
+        h.className = `win-resize-handle win-resize-${d}`;
+        h.addEventListener('mousedown', (e) => startWindowResize(e, win.id, d));
+        win.appendChild(h);
+      });
+      const grip = document.createElement('div');
+      grip.className = 'win-resize-grip';
+      win.appendChild(grip);
+    });
+  }
+
+  function startWindowResize(e, winId, dir) {
+    e.preventDefault();
+    e.stopPropagation();
+    const win = document.getElementById(winId);
+    if (!win) return;
+    if (win.classList.contains('maximized')) {
+      win.classList.remove('maximized');
+    }
+    focusWindow(winId);
+    resizingWin = win;
+    resizeDir = dir;
+    resizeStartX = e.clientX;
+    resizeStartY = e.clientY;
+    resizeStartRect = win.getBoundingClientRect();
+    document.body.style.userSelect = 'none';
+  }
+
+  window.addEventListener('mousemove', (e) => {
+    if (!resizingWin || !resizeStartRect) return;
+    const dx = e.clientX - resizeStartX;
+    const dy = e.clientY - resizeStartY;
+    const minW = 380;
+    const minH = 240;
+
+    let newW = resizeStartRect.width;
+    let newH = resizeStartRect.height;
+    let newLeft = resizeStartRect.left;
+    let newTop = resizeStartRect.top - 28;
+
+    if (resizeDir.includes('e')) {
+      newW = Math.max(minW, resizeStartRect.width + dx);
+    }
+    if (resizeDir.includes('s')) {
+      newH = Math.max(minH, resizeStartRect.height + dy);
+    }
+    if (resizeDir.includes('w')) {
+      const calcW = resizeStartRect.width - dx;
+      if (calcW >= minW) {
+        newW = calcW;
+        newLeft = resizeStartRect.left + dx;
+      } else {
+        newW = minW;
+        newLeft = resizeStartRect.left + (resizeStartRect.width - minW);
+      }
+    }
+    if (resizeDir.includes('n')) {
+      const calcH = resizeStartRect.height - dy;
+      if (calcH >= minH) {
+        newH = calcH;
+        newTop = Math.max(0, (resizeStartRect.top - 28) + dy);
+      } else {
+        newH = minH;
+        newTop = Math.max(0, (resizeStartRect.top - 28) + (resizeStartRect.height - minH));
+      }
+    }
+
+    resizingWin.style.width = newW + 'px';
+    resizingWin.style.height = newH + 'px';
+    resizingWin.style.left = Math.max(0, newLeft) + 'px';
+    resizingWin.style.top = Math.max(0, newTop) + 'px';
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (resizingWin) {
+      resizingWin = null;
+      resizeDir = null;
+      resizeStartRect = null;
+      document.body.style.userSelect = '';
+    }
+  });
+
   /* System Settings Tabs & Preferences */
   function switchSettingsTab(tabName, el) {
     document.querySelectorAll('#win-settings .sb-item').forEach(i => i.classList.remove('active'));
@@ -3880,6 +4615,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       battery: 'Battery & Energy',
       keyboard: 'Keyboard & Gestures',
       security: 'Privacy & Security',
+      defaultapps: 'Default Applications',
       general: 'General'
     };
     if (badge) badge.innerText = names[tabName] || 'Settings';
@@ -4610,7 +5346,13 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       'win-shield': { name: 'Shield', icon: '#ico-shield' },
       'win-activity': { name: 'Activity', icon: '#ico-activity' },
       'win-settings': { name: 'Settings', icon: '#ico-settings' },
-      'win-about': { name: 'About', icon: '#ico-layers' }
+      'win-about': { name: 'About', icon: '#ico-layers' },
+      'win-firefox': { name: 'Firefox', icon: '#ico-globe' },
+      'win-preview': { name: 'Preview', icon: '#ico-image' },
+      'win-music': { name: 'Music', icon: '#ico-music' },
+      'win-video': { name: 'QuickTime', icon: '#ico-video' },
+      'win-thunderbird': { name: 'Thunderbird', icon: '#ico-mail' },
+      'win-store': { name: 'Snap Store', icon: '#ico-store' }
     };
     const displayList = openWins.length > 0 ? openWins : ['win-finder', 'win-terminal', 'win-ai'];
     strip.innerHTML = displayList.map(id => {
@@ -4651,11 +5393,35 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
 
   /* 4. Live Linux File System Browser (Finder) */
   function renderDirectory(fsData) {
-    currentFsPath = fsData.current_dir;
-    parentFsPath = fsData.parent_dir;
+    if (!fsData) return;
+    initialFsLoaded = true;
+    currentFsPath = fsData.current_dir || "/";
+    parentFsPath = fsData.parent_dir || "/";
     currentFsEntries = fsData.entries || [];
-    document.getElementById('fs-current-path').value = currentFsPath;
-    document.getElementById('finder-count-badge').innerText = `${currentFsEntries.length} items`;
+    const pathInput = document.getElementById('fs-current-path');
+    if (pathInput) pathInput.value = currentFsPath;
+    const badge = document.getElementById('finder-count-badge');
+    if (badge) badge.innerText = `${currentFsEntries.length} items`;
+
+    // Synchronize Sidebar Selection
+    const sbItems = document.querySelectorAll('#win-finder .win-sidebar .sb-item');
+    sbItems.forEach(el => {
+      const p = el.getAttribute('data-path');
+      if (p && (p === currentFsPath || (currentFsPath === '/' && p === '/'))) {
+        sbItems.forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+      }
+    });
+
+    // Synchronize Miller Columns Places Selection
+    const millerPlaces = document.querySelectorAll('#col-places .miller-col-item');
+    millerPlaces.forEach(item => {
+      const onclickAttr = item.getAttribute('onclick') || '';
+      if (onclickAttr.includes(`'${currentFsPath}'`) || (currentFsPath === '/' && onclickAttr.includes("'/'"))) {
+        millerPlaces.forEach(p => p.classList.remove('active'));
+        item.classList.add('active');
+      }
+    });
 
     const tbody = document.getElementById('fs-tbody');
     tbody.innerHTML = currentFsEntries.map((item, idx) => {
@@ -4681,13 +5447,15 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   function updateFinderBreadcrumbs(path) {
     const bar = document.getElementById('finder-path-bar');
     if (!bar) return;
+    const isRoot = !path || path === '/';
     const parts = (path || '/').split('/').filter(Boolean);
-    let html = `<span class="fp-segment" onclick="browseTo('/')"><svg class="ico" width="12" height="12"><use href="#ico-layers"/></svg> AquaOS HD</span>`;
+    let html = `<span class="fp-segment ${isRoot ? 'active' : ''}" onclick="browseTo('/')"><svg class="ico" width="12" height="12"><use href="#ico-layers"/></svg> AquaOS HD (/)</span>`;
     let accum = '';
-    parts.forEach(p => {
+    parts.forEach((p, idx) => {
       accum += '/' + p;
       const target = accum;
-      html += `<span class="fp-sep">›</span><span class="fp-segment" onclick="browseTo('${target}')">${p}</span>`;
+      const isLast = idx === parts.length - 1;
+      html += `<span class="fp-sep">›</span><span class="fp-segment ${isLast ? 'active' : ''}" onclick="browseTo('${target}')">${p}</span>`;
     });
     bar.innerHTML = html;
   }
@@ -4700,11 +5468,45 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     if (item.is_dir) {
       browseTo(item.path);
     } else {
-      openFileInEditor(item.path);
+      openWithDefaultApp(item.path);
     }
   }
 
+  function openWithDefaultApp(pathStr) {
+    const lower = (pathStr || '').toLowerCase();
+    if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.svg') || lower.endsWith('.webp') || lower.endsWith('.bmp')) {
+      openWindow('win-preview', 'Preview');
+      previewOpenFile(pathStr);
+      return;
+    }
+    if (lower.endsWith('.mp3') || lower.endsWith('.wav') || lower.endsWith('.flac') || lower.endsWith('.ogg') || lower.endsWith('.m4a')) {
+      openWindow('win-music', 'Music');
+      showToast(`Music: now playing ${pathStr.split('/').pop()}`);
+      return;
+    }
+    if (lower.endsWith('.mp4') || lower.endsWith('.mkv') || lower.endsWith('.webm') || lower.endsWith('.mov') || lower.endsWith('.avi')) {
+      openWindow('win-video', 'QuickTime Player');
+      showToast(`QuickTime: opened ${pathStr.split('/').pop()}`);
+      return;
+    }
+    if (lower.endsWith('.html') || lower.endsWith('.htm')) {
+      openWindow('win-firefox', 'Firefox');
+      navigateFirefox('file://' + pathStr);
+      return;
+    }
+    if (lower.endsWith('.eml')) {
+      openWindow('win-thunderbird', 'Thunderbird');
+      return;
+    }
+    openFileInEditor(pathStr);
+  }
+
   async function browseTo(pathStr, sbEl) {
+    initialFsLoaded = true;
+    let target = (pathStr !== undefined && pathStr !== null) ? String(pathStr).trim() : (currentFsPath || '/');
+    if (!target || target.toLowerCase() === 'root' || target.toLowerCase() === 'rootfs' || target.toLowerCase() === 'aquaos hd' || target.toLowerCase() === 'hd') {
+      target = '/';
+    }
     if (sbEl) {
       sbEl.parentElement.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
       sbEl.classList.add('active');
@@ -4712,13 +5514,13 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     const data = await apiFetch('/api/fs/list', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({path: pathStr})
+      body: JSON.stringify({path: target})
     });
     renderDirectory(data);
   }
 
-  function browseUp() { browseTo(parentFsPath); }
-  function refreshCurrentDir() { browseTo(currentFsPath); }
+  function browseUp() { browseTo(parentFsPath || '/'); }
+  function refreshCurrentDir() { browseTo(currentFsPath || '/'); }
 
   async function openFileInEditor(pathStr) {
     const data = await apiFetch('/api/fs/read', {
@@ -4947,7 +5749,8 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       `<div class="model-row"><span style="font-size:12px; display:flex; align-items:center; gap:8px;"><svg class="ico" width="14" height="14"><use href="#ico-check"/></svg>${p}</span><span class="badge-fit badge-gpu">ENFORCING</span></div>`
     ).join('');
 
-    if (!openFilePath && data.fs) {
+    if (!initialFsLoaded && data.fs) {
+      initialFsLoaded = true;
       renderDirectory(data.fs);
     }
   }
@@ -6096,19 +6899,23 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     } else if (cmd === 'sys:tests') {
       openWindow('win-terminal', 'Terminal');
       execTermQuick('pytest');
-    } else if (cmd === 'sys:settings') {
+    } else if (cmd === 'sys:settings' || cmd.includes('settings')) {
       openWindow('win-settings', 'System Settings');
-    } else if (cmd.includes('ai_studio') || cmd === 'sys:ai') {
-      openWindow('win-ai', 'Aqua AI Studio');
-    } else if (cmd.includes('shield') || cmd === 'sys:shield') {
-      openWindow('win-shield', 'Aqua Shield');
-    } else if (cmd.includes('activity') || cmd === 'sys:activity') {
-      openWindow('win-activity', 'Activity Monitor');
-    } else if (cmd.includes('settings')) {
-      openWindow('win-settings', 'System Settings');
+    } else if (cmd.includes('firefox') || cmd === 'sys:firefox' || cmd.includes('browser')) {
+      openWindow('win-firefox', 'Firefox');
+    } else if (cmd.includes('thunderbird') || cmd.includes('mail') || cmd === 'sys:mail') {
+      openWindow('win-thunderbird', 'Thunderbird');
+    } else if (cmd.includes('store') || cmd.includes('snap') || cmd === 'sys:store') {
+      openWindow('win-store', 'Snap Store');
+    } else if (cmd.includes('music') || cmd === 'sys:music') {
+      openWindow('win-music', 'Music');
+    } else if (cmd.includes('video') || cmd.includes('quicktime') || cmd === 'sys:video') {
+      openWindow('win-video', 'QuickTime Player');
+    } else if (cmd.includes('preview') || cmd.includes('image') || cmd === 'sys:image') {
+      openWindow('win-preview', 'Preview');
     } else if (item.category === 'FILE') {
       openWindow('win-finder', 'Finder');
-      openFileInEditor(cmd);
+      openWithDefaultApp(cmd);
     } else {
       openWindow('win-finder', 'Finder');
     }
@@ -6286,7 +7093,973 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     document.getElementById('mb-clock').innerText = now.toLocaleDateString('en-US', opts).replace(',', ' ');
   }
 
+  /* =========================================================================
+     3. APPLICATIONS IMPLEMENTATION (Firefox, Preview, Music, Video, Thunderbird, Snap Store)
+     ========================================================================= */
+
+  /* ----------------- 3.1 MOZILLA FIREFOX (DEFAULT WEB BROWSER) ----------------- */
+  let firefoxInitialized = false;
+  let ffTabs = [
+    { title: 'AquaOS Portal', url: 'https://aquaos.local/start' },
+    { title: 'GitHub / aquaos', url: 'https://github.com/iamnikhilsharma/aquaos' },
+    { title: 'DuckDuckGo', url: 'https://duckduckgo.com' }
+  ];
+  let activeFfTab = 0;
+  let ffHistory = ['https://aquaos.local/start'];
+  let ffHistIdx = 0;
+
+  function initFirefoxApp() {
+    firefoxInitialized = true;
+    renderFirefoxTabs();
+    navigateFirefox(ffTabs[activeFfTab].url, false);
+  }
+
+  function renderFirefoxTabs() {
+    const bar = document.querySelector('.ff-tabs');
+    if (!bar) return;
+    bar.innerHTML = ffTabs.map((t, idx) => `
+      <div class="ff-tab ${idx === activeFfTab ? 'active' : ''}" onclick="switchFirefoxTab(${idx})">
+        <svg width="12" height="12" style="color:#FF7139;"><use href="#ico-globe"/></svg>
+        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;">${t.title}</span>
+        ${ffTabs.length > 1 ? `<span onclick="event.stopPropagation(); closeFirefoxTab(${idx})" style="margin-left:4px; opacity:0.6; font-size:11px; cursor:pointer;" title="Close Tab">×</span>` : ''}
+      </div>
+    `).join('') + `<button class="aqua-btn secondary" style="padding:2px 7px; font-size:11px; height:24px; border-radius:4px; margin-bottom:4px;" onclick="newFirefoxTab()" title="New Tab">+</button>`;
+  }
+
+  function switchFirefoxTab(idx) {
+    if (idx < 0 || idx >= ffTabs.length) return;
+    activeFfTab = idx;
+    renderFirefoxTabs();
+    const tab = ffTabs[idx];
+    document.getElementById('ff-url-input').value = tab.url;
+    renderFirefoxViewport(tab.url);
+  }
+
+  function newFirefoxTab() {
+    ffTabs.push({ title: 'New Tab', url: 'https://aquaos.local/start' });
+    activeFfTab = ffTabs.length - 1;
+    renderFirefoxTabs();
+    switchFirefoxTab(activeFfTab);
+  }
+
+  function closeFirefoxTab(idx) {
+    if (ffTabs.length <= 1) return;
+    ffTabs.splice(idx, 1);
+    if (activeFfTab >= ffTabs.length) activeFfTab = ffTabs.length - 1;
+    renderFirefoxTabs();
+    switchFirefoxTab(activeFfTab);
+  }
+
+  function navigateFirefox(url, recordHist = true) {
+    if (!url) return;
+    let target = url.trim();
+    if (!target.startsWith('http://') && !target.startsWith('https://') && !target.startsWith('file://')) {
+      if (target.includes('.') && !target.includes(' ')) {
+        target = 'https://' + target;
+      } else {
+        target = 'https://duckduckgo.com/?q=' + encodeURIComponent(target);
+      }
+    }
+    const input = document.getElementById('ff-url-input');
+    if (input) input.value = target;
+    ffTabs[activeFfTab].url = target;
+    let title = target.replace(/^https?:\/\//, '').split('/')[0];
+    if (target.includes('aquaos.local/start')) title = 'AquaOS Portal';
+    else if (target.includes('github.com')) title = 'GitHub / aquaos';
+    else if (target.includes('duckduckgo.com')) title = 'DuckDuckGo';
+    ffTabs[activeFfTab].title = title;
+    renderFirefoxTabs();
+    if (recordHist) {
+      ffHistory.push(target);
+      ffHistIdx = ffHistory.length - 1;
+    }
+    renderFirefoxViewport(target);
+  }
+
+  function ffNavBack() {
+    if (ffHistIdx > 0) {
+      ffHistIdx--;
+      navigateFirefox(ffHistory[ffHistIdx], false);
+    }
+  }
+
+  function ffNavForward() {
+    if (ffHistIdx < ffHistory.length - 1) {
+      ffHistIdx++;
+      navigateFirefox(ffHistory[ffHistIdx], false);
+    }
+  }
+
+  function ffNavReload() {
+    const input = document.getElementById('ff-url-input');
+    if (input) {
+      showToast('Firefox: reloaded page');
+      navigateFirefox(input.value, false);
+    }
+  }
+
+  function renderFirefoxViewport(url) {
+    const vp = document.getElementById('ff-viewport');
+    if (!vp) return;
+    if (url.includes('aquaos.local/start') || url === 'about:home' || url === 'https://aquaos.local') {
+      vp.innerHTML = `
+        <div style="max-width:720px; width:100%; text-align:center; padding-top:20px;">
+          <div style="display:inline-flex; align-items:center; gap:12px; margin-bottom:20px;">
+            <svg width="44" height="44" viewBox="0 0 100 100"><defs><linearGradient id="ff-vp-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF3B30"/><stop offset="50%" stop-color="#FF9500"/><stop offset="100%" stop-color="#AF52DE"/></linearGradient></defs><rect width="100" height="100" rx="24" fill="url(#ff-vp-grad)"/><circle cx="50" cy="50" r="26" fill="#0A84FF"/><path d="M50 20 C68 20 80 34 78 52 C76 70 60 80 46 78 C32 76 24 64 26 50 C27 40 33 32 40 28 C36 32 35 38 37 43 C39 48 45 52 50 50 C56 48 58 42 56 36 C55 32 52 28 50 20 Z" fill="#FFCC00"/></svg>
+            <div style="text-align:left;">
+              <h1 style="margin:0; font-size:24px; font-weight:700;">Mozilla Firefox</h1>
+              <div style="font-size:12px; color:var(--text-secondary);">AquaOS Default Web Browser • Hardened Linux Sandbox</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; margin-bottom:28px;">
+            <input id="ff-portal-search" class="aqua-input" style="flex:1; padding:10px 16px; font-size:14px; border-radius:24px; box-shadow:0 4px 18px rgba(0,0,0,0.3);" placeholder="Search the web with DuckDuckGo or enter URL..." onkeydown="if(event.key==='Enter') navigateFirefox(this.value)" />
+            <button class="aqua-btn" style="padding:10px 20px; border-radius:24px;" onclick="navigateFirefox(document.getElementById('ff-portal-search').value)">Search</button>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:14px; margin-bottom:28px;">
+            <div class="settings-card" style="text-align:center; padding:14px 10px; cursor:pointer;" onclick="navigateFirefox('https://github.com/iamnikhilsharma/aquaos')">
+              <div style="font-size:24px; margin-bottom:6px;">🐙</div>
+              <div style="font-weight:600; font-size:12px;">GitHub Repo</div>
+              <div style="font-size:10.5px; color:var(--text-secondary);">Source & Issues</div>
+            </div>
+            <div class="settings-card" style="text-align:center; padding:14px 10px; cursor:pointer;" onclick="navigateFirefox('https://duckduckgo.com')">
+              <div style="font-size:24px; margin-bottom:6px;">🦆</div>
+              <div style="font-weight:600; font-size:12px;">DuckDuckGo</div>
+              <div style="font-size:10.5px; color:var(--text-secondary);">Privacy Search</div>
+            </div>
+            <div class="settings-card" style="text-align:center; padding:14px 10px; cursor:pointer;" onclick="navigateFirefox('https://ubuntu.com/noble')">
+              <div style="font-size:24px; margin-bottom:6px;">🐧</div>
+              <div style="font-weight:600; font-size:12px;">Ubuntu 24.04</div>
+              <div style="font-size:10.5px; color:var(--text-secondary);">Noble Numbat</div>
+            </div>
+            <div class="settings-card" style="text-align:center; padding:14px 10px; cursor:pointer;" onclick="navigateFirefox('https://ollama.com')">
+              <div style="font-size:24px; margin-bottom:6px;">🧠</div>
+              <div style="font-weight:600; font-size:12px;">Ollama AI</div>
+              <div style="font-size:10.5px; color:var(--text-secondary);">Local LLMs</div>
+            </div>
+          </div>
+          <div class="settings-card" style="text-align:left; padding:16px 20px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <span style="color:#30D158; font-size:16px;">🛡️</span>
+              <strong style="font-size:13px;">Enhanced Tracking Protection: Strict Mode</strong>
+              <span class="badge-fit badge-gpu" style="margin-left:auto;">Zero-Trust Sandbox</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-secondary); line-height:1.6;">
+              AquaOS isolates Firefox inside an unprivileged Linux user namespace with seccomp filtering, DNS-over-HTTPS (DoH), and hardware-accelerated WebRender on Wayland compositor.
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (url.includes('duckduckgo.com')) {
+      const q = new URLSearchParams(url.split('?')[1] || '').get('q') || 'AquaOS';
+      vp.innerHTML = `
+        <div style="max-width:760px; width:100%; text-align:left; padding:10px 0;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px; border-bottom:0.5px solid var(--glass-border); padding-bottom:12px;">
+            <span style="font-size:28px;">🦆</span>
+            <div style="font-size:14px; font-weight:700;">DuckDuckGo Privacy Results for "${q}"</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="settings-card" style="padding:14px 18px;">
+              <div style="font-size:11px; color:#5AC8FA;">https://github.com/iamnikhilsharma/aquaos</div>
+              <h3 style="margin:4px 0; font-size:16px; color:#0A84FF; cursor:pointer;" onclick="navigateFirefox('https://github.com/iamnikhilsharma/aquaos')">AquaOS — macOS Sonoma/Sequoia Linux Desktop with Apple Intelligence</h3>
+              <div style="font-size:12px; color:var(--text-secondary); line-height:1.5;">AquaOS is a flagship open-source macOS-like environment for Linux. Features Wayland labwc compositor, frosted glassmorphism, native Apple Intelligence AI studio, and universal sandbox runner.</div>
+            </div>
+            <div class="settings-card" style="padding:14px 18px;">
+              <div style="font-size:11px; color:#5AC8FA;">https://kernel.org/releases/6.12</div>
+              <h3 style="margin:4px 0; font-size:16px; color:#0A84FF;">Linux 6.12 LTS Kernel Documentation & Security Features</h3>
+              <div style="font-size:12px; color:var(--text-secondary); line-height:1.5;">Long Term Stable release supporting real-time PREEMPT_RT, Landlock LSM v4, memory isolation namespaces, and modern GPU direct rendering manager.</div>
+            </div>
+            <div class="settings-card" style="padding:14px 18px;">
+              <div style="font-size:11px; color:#5AC8FA;">https://snapcraft.io/firefox</div>
+              <h3 style="margin:4px 0; font-size:16px; color:#0A84FF;">Firefox Snap Package — Strictly Confined Web Browser</h3>
+              <div style="font-size:12px; color:var(--text-secondary); line-height:1.5;">Official Mozilla Firefox packaged by Canonical for Ubuntu 24.04 LTS. Automated updates, strict AppArmor profiles, and native Wayland hardware decode.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (url.includes('github.com')) {
+      vp.innerHTML = `
+        <div style="max-width:760px; width:100%; text-align:left; padding:10px 0;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; border-bottom:0.5px solid var(--glass-border); padding-bottom:12px;">
+            <span style="font-size:26px;">🐙</span>
+            <div>
+              <div style="font-size:15px; font-weight:700;">iamnikhilsharma / AquaOS-Beta</div>
+              <div style="font-size:11.5px; color:var(--text-secondary);">Public Repository • GPL-3.0 License</div>
+            </div>
+            <button class="aqua-btn" style="margin-left:auto; padding:5px 14px; font-size:11.5px;" onclick="showToast('Star added to AquaOS on GitHub')">⭐ Star (1.4k)</button>
+          </div>
+          <div class="settings-card" style="padding:16px 20px;">
+            <div style="font-weight:700; margin-bottom:8px; font-size:13px;">README.md</div>
+            <p style="font-size:12.5px; line-height:1.6; color:var(--text-primary); margin:0 0 10px;">
+              AquaOS brings macOS Sonoma & Sequoia aesthetics to Linux with zero compromises. Built with Wayland labwc, rich frosted glassmorphism, an integrated Linux terminal, an Apple Intelligence AI runner, and universal application execution.
+            </p>
+            <div style="display:flex; gap:8px;">
+              <span class="badge-fit badge-gpu">Python 3.12</span>
+              <span class="badge-fit badge-gpu">Wayland</span>
+              <span class="badge-fit badge-gpu">Labwc</span>
+              <span class="badge-fit badge-gpu">Zero-Trust</span>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      vp.innerHTML = `
+        <div style="max-width:760px; width:100%; text-align:left; padding:20px 0;">
+          <div class="settings-card" style="padding:24px;">
+            <div style="font-size:11px; color:#5AC8FA; font-family:var(--font-mono); margin-bottom:6px;">${url}</div>
+            <h2 style="margin:0 0 12px; font-size:20px;">Web Page Render View</h2>
+            <div style="font-size:12.5px; line-height:1.6; color:var(--text-secondary); margin-bottom:16px;">
+              Content loaded securely through AquaOS hardened proxy gateway. All scripts and third-party cookies are strictly isolated.
+            </div>
+            <button class="aqua-btn" onclick="navigateFirefox('https://aquaos.local/start')">Return to AquaOS Start</button>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  /* ----------------- 3.2 AQUA PREVIEW (IMAGE VIEWER) ----------------- */
+  let previewInitialized = false;
+  let previewImages = [
+    { title: 'Sonoma Dunes', res: '3840 × 2160 • P3 Wide Color', grad: 'linear-gradient(135deg, #0A84FF, #BF5AF2, #FF375F)', desc: 'macOS Sonoma Default Gradient Wallpaper' },
+    { title: 'Sequoia Dawn', res: '4096 × 2304 • HDR 1000', grad: 'linear-gradient(160deg, #FF9500, #AF52DE, #2E1534)', desc: 'macOS Sequoia California Forest Twilight' },
+    { title: 'Aqua Architecture', res: '2560 × 1440 • Vector SVG', grad: 'linear-gradient(135deg, #06152D, #1B294A, #3D1E24)', desc: 'AquaOS Zero-Trust Linux Compositor Diagram' },
+    { title: 'Linux Kernel 6.12', res: '1920 × 1080 • HiDPI', grad: 'linear-gradient(135deg, #030914, #071F29, #0A1026)', desc: 'Kernel Subsystem Architecture & Memory Maps' }
+  ];
+  let previewCurrentIdx = 0;
+  let previewZoomScale = 1.0;
+  let previewRotationDeg = 0;
+  let previewIsFlipped = false;
+  let previewFilter = 'none';
+
+  function initPreviewApp() {
+    previewInitialized = true;
+    renderPreviewThumbnails();
+    selectPreviewImage(0);
+  }
+
+  function renderPreviewThumbnails() {
+    const strip = document.getElementById('preview-thumb-list');
+    if (!strip) return;
+    strip.innerHTML = previewImages.map((img, idx) => `
+      <div class="preview-thumb ${idx === previewCurrentIdx ? 'active' : ''}" onclick="selectPreviewImage(${idx})">
+        <div style="width:100%; height:52px; border-radius:5px; background:${img.grad}; margin-bottom:4px; box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>
+        <div style="font-size:10.5px; font-weight:600; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${img.title}</div>
+      </div>
+    `).join('');
+  }
+
+  function selectPreviewImage(idx) {
+    if (idx < 0 || idx >= previewImages.length) return;
+    previewCurrentIdx = idx;
+    previewResetZoom();
+    previewRotationDeg = 0;
+    previewIsFlipped = false;
+    renderPreviewThumbnails();
+    const cur = previewImages[idx];
+    document.getElementById('preview-win-title').innerText = `${cur.title} — Preview`;
+    document.getElementById('preview-meta-badge').innerText = cur.res;
+    updatePreviewStage();
+  }
+
+  function updatePreviewStage() {
+    const box = document.getElementById('preview-canvas-box');
+    const svg = document.getElementById('preview-main-svg');
+    if (!box || !svg) return;
+    const cur = previewImages[previewCurrentIdx];
+    box.style.transform = `scale(${previewZoomScale}) rotate(${previewRotationDeg}deg) scaleX(${previewIsFlipped ? -1 : 1})`;
+    box.style.filter = previewFilter;
+    svg.innerHTML = `
+      <defs>
+        <linearGradient id="pv-g-${previewCurrentIdx}" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0A84FF"/>
+          <stop offset="50%" stop-color="#BF5AF2"/>
+          <stop offset="100%" stop-color="#FF375F"/>
+        </linearGradient>
+      </defs>
+      <rect width="480" height="300" rx="10" fill="${cur.grad}"/>
+      <circle cx="240" cy="150" r="70" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="3"/>
+      <circle cx="240" cy="150" r="16" fill="#fff" opacity="0.9"/>
+      <text x="240" y="250" text-anchor="middle" fill="#fff" font-size="14" font-weight="600" font-family="-apple-system, sans-serif">${cur.title}</text>
+      <text x="240" y="270" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="11" font-family="-apple-system, sans-serif">${cur.desc}</text>
+    `;
+  }
+
+  function previewZoom(delta) {
+    previewZoomScale = Math.min(3.0, Math.max(0.4, previewZoomScale + delta));
+    document.getElementById('preview-zoom-label').innerText = Math.round(previewZoomScale * 100) + '%';
+    updatePreviewStage();
+  }
+
+  function previewResetZoom() {
+    previewZoomScale = 1.0;
+    document.getElementById('preview-zoom-label').innerText = '100%';
+    updatePreviewStage();
+  }
+
+  function previewRotate(deg) {
+    previewRotationDeg = (previewRotationDeg + deg) % 360;
+    updatePreviewStage();
+  }
+
+  function previewFlip() {
+    previewIsFlipped = !previewIsFlipped;
+    updatePreviewStage();
+  }
+
+  function previewApplyFilter(filterCss) {
+    previewFilter = filterCss;
+    updatePreviewStage();
+  }
+
+  function triggerNativeFilePicker(mode) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        previewOpenFile(file.name);
+      }
+    };
+    input.click();
+  }
+
+  function previewOpenFile(pathStr) {
+    const name = (pathStr || 'Image.png').split('/').pop();
+    previewImages.unshift({
+      title: name,
+      res: '3840 × 2160 • P3 Native',
+      grad: 'linear-gradient(135deg, #0A84FF, #30D158)',
+      desc: `Loaded from ${pathStr}`
+    });
+    previewCurrentIdx = 0;
+    renderPreviewThumbnails();
+    selectPreviewImage(0);
+    showToast(`Preview: opened ${name}`);
+  }
+
+  /* ----------------- 3.3 AQUA MUSIC PLAYER ----------------- */
+  let musicInitialized = false;
+  let musicTracks = [
+    { title: 'Chillhop Waves', artist: 'AquaOS Sound System', duration: '3:24', totalSecs: 204, freq: 220 },
+    { title: 'Synthwave 6.12', artist: 'Linux Kernel Beats', duration: '4:12', totalSecs: 252, freq: 174 },
+    { title: 'Ambient Code Focus', artist: 'Cupertino Neural Synth', duration: '5:02', totalSecs: 302, freq: 261 },
+    { title: 'Deep Space Lo-Fi', artist: 'Zero-Trust Orbit', duration: '3:45', totalSecs: 225, freq: 196 }
+  ];
+  let currentMusicTrackIdx = 0;
+  let isMusicPlaying = false;
+  let musicVolume = 0.8;
+  let musicTimeSec = 0;
+  let musicAudioCtx = null;
+  let musicOsc1 = null, musicOsc2 = null, musicGain = null;
+  let musicTimerInterval = null;
+  let musicVisAnimId = null;
+
+  function initMusicApp() {
+    musicInitialized = true;
+    renderMusicPlaylist();
+    loadMusicTrack(0);
+  }
+
+  function renderMusicPlaylist() {
+    const tbody = document.getElementById('music-tracklist-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = musicTracks.map((t, idx) => `
+      <tr style="cursor:pointer;" class="${idx === currentMusicTrackIdx ? 'selected' : ''}" onclick="loadMusicTrack(${idx})">
+        <td style="color:var(--text-muted); font-family:var(--font-mono);">${idx + 1}</td>
+        <td style="font-weight:600; display:flex; align-items:center; gap:8px;">
+          ${idx === currentMusicTrackIdx && isMusicPlaying ? '🔊' : '🎵'} ${t.title}
+        </td>
+        <td style="color:var(--text-secondary);">${t.artist}</td>
+        <td style="color:var(--text-muted); font-family:var(--font-mono);">${t.duration}</td>
+        <td>
+          <button class="aqua-btn secondary" style="padding:2px 8px; font-size:11px;" onclick="event.stopPropagation(); loadMusicTrack(${idx}); if(!isMusicPlaying) toggleMusicPlay();">Play</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function loadMusicTrack(idx) {
+    if (idx < 0 || idx >= musicTracks.length) return;
+    currentMusicTrackIdx = idx;
+    musicTimeSec = 0;
+    const cur = musicTracks[idx];
+    document.getElementById('music-track-title').innerText = cur.title;
+    document.getElementById('music-artist-name').innerText = cur.artist + ' • Sonoma Edition';
+    document.getElementById('music-bar-title').innerText = cur.title;
+    document.getElementById('music-bar-artist').innerText = cur.artist;
+    document.getElementById('music-time-total').innerText = cur.duration;
+    document.getElementById('music-time-cur').innerText = '0:00';
+    document.getElementById('music-seek-bar').value = 0;
+    renderMusicPlaylist();
+    if (isMusicPlaying) {
+      stopMusicAudio();
+      playMusicAudio();
+    }
+  }
+
+  function toggleMusicPlay() {
+    isMusicPlaying = !isMusicPlaying;
+    const btnLabel = document.getElementById('btn-music-play-label');
+    const barIcon = document.getElementById('music-bar-play-icon');
+    if (isMusicPlaying) {
+      if (btnLabel) btnLabel.innerText = '⏸ Pause';
+      if (barIcon) barIcon.innerText = '⏸';
+      playMusicAudio();
+      musicTimerInterval = setInterval(() => {
+        musicTimeSec++;
+        const cur = musicTracks[currentMusicTrackIdx];
+        if (musicTimeSec > cur.totalSecs) {
+          nextMusicTrack();
+          return;
+        }
+        const m = Math.floor(musicTimeSec / 60);
+        const s = String(musicTimeSec % 60).padStart(2, '0');
+        document.getElementById('music-time-cur').innerText = `${m}:${s}`;
+        document.getElementById('music-seek-bar').value = (musicTimeSec / cur.totalSecs) * 100;
+      }, 1000);
+      animateMusicVisualizer();
+      showToast(`Playing: ${musicTracks[currentMusicTrackIdx].title}`);
+    } else {
+      if (btnLabel) btnLabel.innerText = '▶ Play Now';
+      if (barIcon) barIcon.innerText = '▶';
+      pauseMusicAudio();
+    }
+    renderMusicPlaylist();
+  }
+
+  function playMusicAudio() {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      if (!musicAudioCtx) musicAudioCtx = new AudioContext();
+      if (musicAudioCtx.state === 'suspended') musicAudioCtx.resume();
+
+      const freq = musicTracks[currentMusicTrackIdx].freq || 220;
+      musicGain = musicAudioCtx.createGain();
+      musicGain.gain.setValueAtTime(musicVolume * 0.15, musicAudioCtx.currentTime);
+
+      musicOsc1 = musicAudioCtx.createOscillator();
+      musicOsc1.type = 'sine';
+      musicOsc1.frequency.setValueAtTime(freq, musicAudioCtx.currentTime);
+
+      musicOsc2 = musicAudioCtx.createOscillator();
+      musicOsc2.type = 'triangle';
+      musicOsc2.frequency.setValueAtTime(freq * 1.5, musicAudioCtx.currentTime);
+
+      musicOsc1.connect(musicGain);
+      musicOsc2.connect(musicGain);
+      musicGain.connect(musicAudioCtx.destination);
+
+      musicOsc1.start();
+      musicOsc2.start();
+    } catch (e) {
+      console.warn('Web Audio not supported or blocked:', e);
+    }
+  }
+
+  function stopMusicAudio() {
+    try {
+      if (musicOsc1) { musicOsc1.stop(); musicOsc1.disconnect(); musicOsc1 = null; }
+      if (musicOsc2) { musicOsc2.stop(); musicOsc2.disconnect(); musicOsc2 = null; }
+    } catch (e) {}
+  }
+
+  function pauseMusicAudio() {
+    isMusicPlaying = false;
+    stopMusicAudio();
+    if (musicTimerInterval) { clearInterval(musicTimerInterval); musicTimerInterval = null; }
+    if (musicVisAnimId) { cancelAnimationFrame(musicVisAnimId); musicVisAnimId = null; }
+    const btnLabel = document.getElementById('btn-music-play-label');
+    const barIcon = document.getElementById('music-bar-play-icon');
+    if (btnLabel) btnLabel.innerText = '▶ Play Now';
+    if (barIcon) barIcon.innerText = '▶';
+  }
+
+  function prevMusicTrack() {
+    let idx = currentMusicTrackIdx - 1;
+    if (idx < 0) idx = musicTracks.length - 1;
+    loadMusicTrack(idx);
+  }
+
+  function nextMusicTrack() {
+    let idx = (currentMusicTrackIdx + 1) % musicTracks.length;
+    loadMusicTrack(idx);
+  }
+
+  function shuffleMusic() {
+    currentMusicTrackIdx = Math.floor(Math.random() * musicTracks.length);
+    loadMusicTrack(currentMusicTrackIdx);
+    if (!isMusicPlaying) toggleMusicPlay();
+    showToast('Shuffled Music playlist');
+  }
+
+  function onMusicSeek(val) {
+    const cur = musicTracks[currentMusicTrackIdx];
+    musicTimeSec = Math.floor((val / 100) * cur.totalSecs);
+    const m = Math.floor(musicTimeSec / 60);
+    const s = String(musicTimeSec % 60).padStart(2, '0');
+    document.getElementById('music-time-cur').innerText = `${m}:${s}`;
+  }
+
+  function setMusicVolume(val) {
+    musicVolume = val / 100;
+    if (musicGain && musicAudioCtx) {
+      musicGain.gain.setValueAtTime(musicVolume * 0.15, musicAudioCtx.currentTime);
+    }
+  }
+
+  function animateMusicVisualizer() {
+    const canvas = document.getElementById('music-visualizer');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const numBars = 16;
+    const barWidth = canvas.width / numBars;
+
+    function draw() {
+      if (!isMusicPlaying) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < numBars; i++) {
+        const height = Math.random() * (canvas.height - 4) + 4;
+        const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
+        grad.addColorStop(0, '#FF2D55');
+        grad.addColorStop(1, '#BF5AF2');
+        ctx.fillStyle = grad;
+        ctx.fillRect(i * barWidth + 1, canvas.height - height, barWidth - 2, height);
+      }
+      musicVisAnimId = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  /* ----------------- 3.4 QUICKTIME VIDEO PLAYER ----------------- */
+  let videoInitialized = false;
+  let isVideoPlaying = false;
+  let videoTimeSec = 14;
+  let videoTotalSec = 150;
+  let videoSpeed = 1.0;
+  let videoAnimId = null;
+  let videoCanvasAngle = 0;
+
+  function initVideoApp() {
+    videoInitialized = true;
+    drawVideoFrame();
+  }
+
+  function toggleVideoPlayback() {
+    isVideoPlaying = !isVideoPlaying;
+    const icon = document.getElementById('btn-video-play-icon');
+    if (icon) icon.innerText = isVideoPlaying ? '⏸' : '▶';
+    if (isVideoPlaying) {
+      animateVideo();
+      showToast('QuickTime: playing video');
+    } else {
+      if (videoAnimId) { cancelAnimationFrame(videoAnimId); videoAnimId = null; }
+    }
+  }
+
+  function pauseVideoPlayback() {
+    isVideoPlaying = false;
+    const icon = document.getElementById('btn-video-play-icon');
+    if (icon) icon.innerText = '▶';
+    if (videoAnimId) { cancelAnimationFrame(videoAnimId); videoAnimId = null; }
+  }
+
+  function videoSeekOffset(secs) {
+    videoTimeSec = Math.max(0, Math.min(videoTotalSec, videoTimeSec + secs));
+    updateVideoTimeUI();
+    drawVideoFrame();
+  }
+
+  function onVideoTimelineSeek(val) {
+    videoTimeSec = Math.floor((val / 100) * videoTotalSec);
+    updateVideoTimeUI();
+    drawVideoFrame();
+  }
+
+  function updateVideoTimeUI() {
+    const curM = String(Math.floor(videoTimeSec / 60)).padStart(2, '0');
+    const curS = String(videoTimeSec % 60).padStart(2, '0');
+    const curEl = document.getElementById('video-cur-time');
+    const slider = document.getElementById('video-timeline-slider');
+    if (curEl) curEl.innerText = `${curM}:${curS}`;
+    if (slider) slider.value = (videoTimeSec / videoTotalSec) * 100;
+  }
+
+  function setVideoSpeed(speed) {
+    videoSpeed = parseFloat(speed) || 1.0;
+    showToast(`Playback speed set to ${videoSpeed}×`);
+  }
+
+  function animateVideo() {
+    if (!isVideoPlaying) return;
+    videoCanvasAngle += 0.02 * videoSpeed;
+    videoTimeSec = Math.min(videoTotalSec, videoTimeSec + (0.016 * videoSpeed));
+    if (videoTimeSec >= videoTotalSec) {
+      videoTimeSec = 0;
+    }
+    updateVideoTimeUI();
+    drawVideoFrame();
+    videoAnimId = requestAnimationFrame(animateVideo);
+  }
+
+  function drawVideoFrame() {
+    const canvas = document.getElementById('video-render-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+
+    // Background gradient
+    const bgGrad = ctx.createRadialGradient(w / 2, h / 2, 40, w / 2, h / 2, w / 1.5);
+    bgGrad.addColorStop(0, '#0D1430');
+    bgGrad.addColorStop(0.5, '#050714');
+    bgGrad.addColorStop(1, '#000000');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    // 3D Animated Horizon Grid
+    ctx.save();
+    ctx.strokeStyle = 'rgba(10, 132, 255, 0.28)';
+    ctx.lineWidth = 1;
+    for (let x = -w; x < w * 2; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(w / 2 + (x - w / 2) * 0.1, h * 0.52);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+    for (let y = h * 0.52; y < h; y += 18) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Floating AquaOS Emblem Ring
+    ctx.save();
+    ctx.translate(w / 2, h * 0.42);
+    ctx.rotate(videoCanvasAngle);
+    ctx.strokeStyle = '#5AC8FA';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, 54, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#BF5AF2';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 36, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // HUD overlays
+    ctx.fillStyle = '#fff';
+    ctx.font = '600 16px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.fillText('AquaOS 1.0 — 4K 60fps Showcase Demo', 24, 38);
+    ctx.font = '400 11.5px monospace';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+    ctx.fillText('AV1 Hardware Decode • Wayland Direct Scanout • P3 Gamut', 24, 56);
+  }
+
+  /* ----------------- 3.5 MOZILLA THUNDERBIRD (DEFAULT EMAIL) ----------------- */
+  let tbInitialized = false;
+  let currentTbFolder = 'inbox';
+  let tbThreads = [
+    {
+      id: 1, folder: 'inbox', unread: true, from: 'Linus Torvalds <torvalds@kernel.org>',
+      subject: '[PATCH v4] AquaOS 6.12 Kernel Zero-Trust Security Module',
+      date: '10:42 AM',
+      body: 'Hi AquaOS Team,\\n\\nI have reviewed the Landlock LSM v4 zero-trust patchset for your Linux 6.12 kernel fork. The seccomp filter integration with labwc Wayland compositor looks rock solid and ready for upstream merge.\\n\\nRegards,\\nLinus'
+    },
+    {
+      id: 2, folder: 'inbox', unread: true, from: 'Canonical Security <security@canonical.com>',
+      subject: 'Ubuntu 24.04 Noble base packages verified for AquaOS',
+      date: 'Yesterday',
+      body: 'Hello AquaOS Maintainers,\\n\\nAll 1,280 base packages compiled from Ubuntu 24.04 Noble Numbat have passed our automated reproducibility tests and strict AppArmor confinement audits. All hashes match canonical archive.\\n\\nSecurity Team'
+    },
+    {
+      id: 3, folder: 'inbox', unread: true, from: 'Aqua AI Studio <ai@aquaos.local>',
+      subject: 'Daily System Telemetry & Model Benchmark Report',
+      date: 'Oct 23',
+      body: 'System Status: All 14 subsystem self-tests passing with 0 errors.\\nCPU Load: 12% | RAM: 3.2GB / 16GB | GPU: Hardware Accelerated.\\nApple Intelligence Neural Engine Ready for queries.'
+    },
+    {
+      id: 4, folder: 'sent', unread: false, from: 'aqua@aquaos.local',
+      subject: 'Re: AquaOS Release Candidate 1 Architecture Review',
+      date: 'Oct 22',
+      body: 'All macOS Sonoma glass design tokens and Linux Wayland protocols have been integrated cleanly. Ready for deployment.'
+    }
+  ];
+  let activeTbThreadId = 1;
+
+  function initThunderbirdApp() {
+    tbInitialized = true;
+    renderTbThreads();
+    selectTbThread(1);
+  }
+
+  function switchTbFolder(folder, el) {
+    currentTbFolder = folder;
+    document.querySelectorAll('#win-thunderbird .sb-item').forEach(i => i.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderTbThreads();
+    const first = tbThreads.find(t => t.folder === folder);
+    if (first) selectTbThread(first.id);
+    else document.getElementById('tb-reader-pane').innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted);">No messages in this folder</div>`;
+  }
+
+  function renderTbThreads(filterQuery = '') {
+    const list = document.getElementById('tb-thread-list');
+    if (!list) return;
+    const matches = tbThreads.filter(t => t.folder === currentTbFolder && (!filterQuery || t.subject.toLowerCase().includes(filterQuery.toLowerCase()) || t.from.toLowerCase().includes(filterQuery.toLowerCase())));
+    if (matches.length === 0) {
+      list.innerHTML = `<div style="padding:24px; text-align:center; color:var(--text-muted); font-size:12px;">No messages found</div>`;
+      return;
+    }
+    list.innerHTML = matches.map(t => `
+      <div class="tb-thread-item ${t.id === activeTbThreadId ? 'active' : ''} ${t.unread ? 'unread' : ''}" onclick="selectTbThread(${t.id})">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <strong style="font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:170px;">${t.from.split('<')[0]}</strong>
+          <span style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">${t.date}</span>
+        </div>
+        <div style="font-size:11.5px; font-weight:${t.unread ? '700' : '500'}; color:var(--text-primary); margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${t.subject}</div>
+        <div style="font-size:11px; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${t.body.replace(/\\\\n/g, ' ')}</div>
+      </div>
+    `).join('');
+  }
+
+  function selectTbThread(id) {
+    activeTbThreadId = id;
+    const thread = tbThreads.find(t => t.id === id);
+    if (!thread) return;
+    thread.unread = false;
+    updateTbBadge();
+    renderTbThreads();
+
+    const pane = document.getElementById('tb-reader-pane');
+    if (!pane) return;
+    pane.innerHTML = `
+      <div class="tb-reader-header">
+        <h2 style="margin:0 0 10px; font-size:17px; font-weight:700;">${thread.subject}</h2>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:12px;">
+          <strong>From:</strong> <span>${thread.from}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-secondary);">
+          <strong>Date:</strong> <span>${thread.date}</span>
+          <span class="badge-fit badge-gpu" style="margin-left:auto;">OpenPGP Verified ✓</span>
+        </div>
+      </div>
+      <div class="tb-reader-body">${thread.body.replace(/\\\\n/g, '<br/>')}</div>
+    `;
+  }
+
+  function updateTbBadge() {
+    const unreadCount = tbThreads.filter(t => t.folder === 'inbox' && t.unread).length;
+    const b = document.getElementById('tb-badge-unread');
+    if (b) {
+      b.innerText = unreadCount;
+      b.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+    }
+  }
+
+  function openTbCompose() {
+    const to = prompt('Recipient email address:', 'developer@aquaos.local');
+    if (!to) return;
+    const subj = prompt('Email Subject:', 'Hello from AquaOS');
+    if (!subj) return;
+    const body = prompt('Message Body:', 'Sent from AquaOS 1.0 Beta via Mozilla Thunderbird.');
+    if (!body) return;
+    tbThreads.push({
+      id: Date.now(),
+      folder: 'sent',
+      unread: false,
+      from: 'aqua@aquaos.local',
+      subject: subj,
+      date: 'Just Now',
+      body: body
+    });
+    showToast(`Sent message to ${to}`);
+  }
+
+  function tbGetMessages() {
+    showToast('Thunderbird: Checking IMAP mailboxes... Up to date.');
+  }
+
+  function tbReplyMessage() {
+    const thread = tbThreads.find(t => t.id === activeTbThreadId);
+    if (thread) {
+      showToast(`Replying to ${thread.from}...`);
+      openTbCompose();
+    }
+  }
+
+  function tbDeleteCurrent() {
+    const idx = tbThreads.findIndex(t => t.id === activeTbThreadId);
+    if (idx !== -1) {
+      tbThreads.splice(idx, 1);
+      showToast('Moved message to Trash');
+      renderTbThreads();
+      const next = tbThreads.find(t => t.folder === currentTbFolder);
+      if (next) selectTbThread(next.id);
+      else document.getElementById('tb-reader-pane').innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted);">Folder is empty</div>`;
+    }
+  }
+
+  function filterTbMessages(val) {
+    renderTbThreads(val);
+  }
+
+  /* ----------------- 3.6 AQUA SNAP STORE ----------------- */
+  let storeInitialized = false;
+  let storeCategory = 'discover';
+  let installedSnaps = ['firefox', 'thunderbird', 'terminal', 'files', 'shield', 'store'];
+  const storeCatalog = [
+    { id: 'vscode', name: 'Visual Studio Code', dev: 'Microsoft Corporation', cat: 'dev', ver: '1.95.0', size: '112 MB', icon: '💻', desc: 'Code editing redefined. Built-in Git, debugging, and extensions.', installed: false },
+    { id: 'spotify', name: 'Spotify Music', dev: 'Spotify AB', cat: 'media', ver: '1.2.40', size: '145 MB', icon: '🎵', desc: 'Digital music service giving access to millions of songs.', installed: false },
+    { id: 'blender', name: 'Blender 3D Suite', dev: 'Blender Foundation', cat: 'media', ver: '4.2.0', size: '310 MB', icon: '🎨', desc: 'Open source 3D creation pipeline for modeling, rigging, rendering.', installed: false },
+    { id: 'obsidian', name: 'Obsidian Notes', dev: 'Obsidian Team', cat: 'productivity', ver: '1.6.7', size: '98 MB', icon: '💎', desc: 'Powerful knowledge base on top of a local folder of Markdown files.', installed: false },
+    { id: 'docker', name: 'Docker Engine', dev: 'Canonical', cat: 'dev', ver: '27.1.0', size: '120 MB', icon: '🐳', desc: 'Pack, ship and run any application as a lightweight container.', installed: false },
+    { id: 'libreoffice', name: 'LibreOffice', dev: 'The Document Foundation', cat: 'productivity', ver: '24.2.4', size: '280 MB', icon: '📄', desc: 'Free and open source office productivity suite with Word & Calc.', installed: false },
+    { id: 'gimp', name: 'GIMP Image Editor', dev: 'The GIMP Team', cat: 'media', ver: '2.10.38', size: '240 MB', icon: '🖌️', desc: 'GNU Image Manipulation Program for high-end photo retouching.', installed: false },
+    { id: 'vlc', name: 'VLC Media Player', dev: 'VideoLAN Organization', cat: 'media', ver: '3.0.21', size: '88 MB', icon: '🎬', desc: 'Plays everything: files, discs, webcams, devices, and streams.', installed: false },
+    { id: 'wireshark', name: 'Wireshark Analyzer', dev: 'Wireshark Foundation', cat: 'security', ver: '4.2.5', size: '75 MB', icon: '🦈', desc: 'The world\\'s foremost and widely-used network protocol analyzer.', installed: false },
+    { id: 'bitwarden', name: 'Bitwarden Password Manager', dev: 'Bitwarden Inc.', cat: 'security', ver: '2024.9.0', size: '92 MB', icon: '🛡️', desc: 'Secure and free password manager for all of your devices.', installed: false },
+    { id: 'firefox', name: 'Mozilla Firefox', dev: 'Mozilla', cat: 'productivity', ver: '134.0', size: '84 MB', icon: '🌐', desc: 'Fast, private and secure web browser with Zero-Trust isolation.', installed: true },
+    { id: 'thunderbird', name: 'Mozilla Thunderbird', dev: 'Mozilla', cat: 'productivity', ver: '128.3', size: '95 MB', icon: '✉️', desc: 'Free email, newsfeed, chat, and calendar client.', installed: true }
+  ];
+
+  function initStoreApp() {
+    storeInitialized = true;
+    renderStoreApps('discover');
+    updateStoreCounts();
+  }
+
+  function switchStoreCategory(cat, el) {
+    storeCategory = cat;
+    document.querySelectorAll('#win-store .sb-item').forEach(i => i.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderStoreApps(cat);
+  }
+
+  function renderStoreApps(cat, query = '') {
+    const grid = document.getElementById('store-app-grid');
+    if (!grid) return;
+    let list = storeCatalog;
+    if (cat === 'installed') {
+      list = storeCatalog.filter(p => installedSnaps.includes(p.id));
+    } else if (cat !== 'discover') {
+      list = storeCatalog.filter(p => p.cat === cat);
+    }
+    if (query) {
+      const q = query.toLowerCase();
+      list = list.filter(p => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.dev.toLowerCase().includes(q));
+    }
+
+    if (list.length === 0) {
+      grid.innerHTML = `<div style="grid-column:1/-1; padding:32px; text-align:center; color:var(--text-muted);">No snap packages found in this category</div>`;
+      return;
+    }
+
+    grid.innerHTML = list.map(p => {
+      const isInst = installedSnaps.includes(p.id);
+      return `
+        <div class="store-app-card">
+          <div style="display:flex; gap:12px; align-items:flex-start;">
+            <div class="store-app-icon">${p.icon}</div>
+            <div style="flex:1; overflow:hidden;">
+              <div style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">${p.dev}</div>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <span class="badge-fit badge-gpu" style="font-size:9.5px;">v${p.ver}</span>
+                <span style="font-size:10px; color:var(--text-muted);">${p.size}</span>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11.5px; color:var(--text-secondary); line-height:1.4; min-height:32px;">${p.desc}</div>
+          <div style="display:flex; gap:8px; margin-top:auto;" id="store-action-box-${p.id}">
+            ${isInst ? `
+              <button class="aqua-btn secondary" style="flex:1; padding:5px 10px; font-size:11.5px;" onclick="uninstallSnapPackage('${p.id}')">Uninstall</button>
+              <button class="aqua-btn" style="flex:1; padding:5px 10px; font-size:11.5px;" onclick="launchSnap('${p.id}')">Launch</button>
+            ` : `
+              <button class="aqua-btn" style="flex:1; padding:5px 10px; font-size:11.5px;" onclick="installSnapPackage('${p.id}')">Install Snap</button>
+            `}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function installSnapPackage(pkgId) {
+    const pkg = storeCatalog.find(p => p.id === pkgId);
+    if (!pkg) return;
+    const box = document.getElementById(`store-action-box-${pkgId}`);
+    if (box) {
+      box.innerHTML = `
+        <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+          <div style="font-size:10px; color:var(--accent);" id="store-prog-text-${pkgId}">Connecting to snapcraft.io...</div>
+          <div style="width:100%; height:4px; border-radius:2px; background:rgba(255,255,255,0.1); overflow:hidden;">
+            <div id="store-prog-bar-${pkgId}" style="width:15%; height:100%; background:var(--accent); transition:width 0.4s ease;"></div>
+          </div>
+        </div>
+      `;
+    }
+    setTimeout(() => {
+      const t = document.getElementById(`store-prog-text-${pkgId}`);
+      const b = document.getElementById(`store-prog-bar-${pkgId}`);
+      if (t) t.innerText = 'Downloading squashfs (100%)...';
+      if (b) b.style.width = '65%';
+    }, 600);
+    setTimeout(() => {
+      const t = document.getElementById(`store-prog-text-${pkgId}`);
+      const b = document.getElementById(`store-prog-bar-${pkgId}`);
+      if (t) t.innerText = 'Verifying signature & mounting...';
+      if (b) b.style.width = '90%';
+    }, 1200);
+    setTimeout(() => {
+      installedSnaps.push(pkgId);
+      updateStoreCounts();
+      renderStoreApps(storeCategory);
+      showToast(`Installed ${pkg.name} successfully via Snapcraft`);
+    }, 1800);
+  }
+
+  function uninstallSnapPackage(pkgId) {
+    const pkg = storeCatalog.find(p => p.id === pkgId);
+    installedSnaps = installedSnaps.filter(id => id !== pkgId);
+    updateStoreCounts();
+    renderStoreApps(storeCategory);
+    showToast(`Removed ${pkg ? pkg.name : pkgId}`);
+  }
+
+  function launchSnap(pkgId) {
+    if (pkgId === 'firefox') openWindow('win-firefox', 'Firefox');
+    else if (pkgId === 'thunderbird') openWindow('win-thunderbird', 'Thunderbird');
+    else if (pkgId === 'vlc') openWindow('win-video', 'QuickTime Player');
+    else if (pkgId === 'gimp') openWindow('win-preview', 'Preview');
+    else {
+      showToast(`Launched ${pkgId} in sandboxed container`);
+    }
+  }
+
+  function updateStoreCounts() {
+    const countEl = document.getElementById('store-installed-count');
+    if (countEl) countEl.innerText = installedSnaps.length;
+  }
+
+  function onStoreSearch(val) {
+    renderStoreApps(storeCategory, val);
+  }
+
+  function refreshStorePackages() {
+    showToast('Snap Store: Repository catalog refreshed from Canonical Snapcraft');
+    renderStoreApps(storeCategory);
+  }
+
   /* Initial Boot Sequence */
+  initWindowResizeHandles();
   updateClock();
   updateAnalogClock();
   updateDockIndicators();

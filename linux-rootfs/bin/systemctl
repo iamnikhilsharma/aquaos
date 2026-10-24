@@ -1,0 +1,3 @@
+#!/bin/sh
+# Linux POSIX coreutil stub: systemctl
+exec /usr/bin/systemctl "$@"

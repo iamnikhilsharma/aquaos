@@ -191,7 +191,11 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
                 body = {}
 
         if clean_path == "/api/fs/list":
-            target_dir = str(body.get("path", "/home/aqua/AquaOS-Beta"))
+            raw_target = str(body.get("path", "")).strip()
+            if not raw_target or raw_target.lower() in ("/", "root", "rootfs", "aquaos hd", "hd"):
+                target_dir = "/"
+            else:
+                target_dir = raw_target
             self._send_json(linux_env.list_linux_directory(target_dir))
             return
 

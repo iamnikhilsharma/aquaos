@@ -45,6 +45,10 @@ def run_all_tests() -> int:
         ("test_desktop.test_config_persistence", test_desktop.test_config_persistence, True),
         ("test_desktop.test_dock_parabolic_magnification", test_desktop.test_dock_parabolic_magnification, False),
         ("test_desktop.test_spotlight_math_and_search", test_desktop.test_spotlight_math_and_search, True),
+        ("test_desktop.test_finder_root_directory_navigation", test_desktop.test_finder_root_directory_navigation, False),
+        ("test_desktop.test_default_apps_configuration", test_desktop.test_default_apps_configuration, True),
+        ("test_desktop.test_builtin_apps_indexed", test_desktop.test_builtin_apps_indexed, False),
+        ("test_desktop.test_desktop_html_windows_and_resizing", test_desktop.test_desktop_html_windows_and_resizing, False),
     ]
 
     passed = 0

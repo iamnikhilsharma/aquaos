@@ -127,6 +127,9 @@ class AquaLinuxEnvironment:
             "sys/class/drm",
             "tmp",
             "usr/bin",
+            "media",
+            "mnt",
+            "srv",
             "usr/local/bin",
             "usr/share/aquaos",
             "var/log",
@@ -261,6 +264,47 @@ class AquaLinuxEnvironment:
                 f"#!/usr/bin/env python3\n# AquaOS / Ubuntu 24.04 Noble System Utility: {tool}\nimport sys\nprint('AquaOS Ubuntu-Noble {tool} v24.04.2')\n",
             )
 
+        # Populate /bin core Linux utilities
+        for bin_cmd in ("bash", "sh", "ls", "cat", "mkdir", "cp", "mv", "rm", "grep", "chmod", "systemctl"):
+            self._write_if_missing(
+                self.rootfs / "bin" / bin_cmd,
+                f"#!/bin/sh\n# Linux POSIX coreutil stub: {bin_cmd}\nexec /usr/bin/{bin_cmd} \"$@\"\n" if bin_cmd in ("systemctl",) else f"#!/bin/sh\n# AquaOS Builtin: {bin_cmd}\n",
+            )
+
+        # Populate /boot kernel images
+        self._write_if_missing(
+            self.rootfs / "boot/vmlinuz-6.12.0-aquaos-ai-lockdown",
+            "Linux Kernel 6.12.0-aquaos-ai-lockdown (x86_64 EFI boot executable)\n",
+        )
+        self._write_if_missing(
+            self.rootfs / "boot/initrd.img-6.12.0-aquaos-ai-lockdown",
+            "Initial RAM filesystem image (zstd compressed SquashFS bootloader overlay)\n",
+        )
+        self._write_if_missing(
+            self.rootfs / "boot/config-6.12.0-aquaos-ai-lockdown",
+            "CONFIG_SECURITY_LOCKDOWN_LSM=y\nCONFIG_SECURITY_LOCKDOWN_LSM_EARLY=y\nCONFIG_LOCK_DOWN_KERNEL_FORCE_INTEGRITY=y\n",
+        )
+
+        # Populate /sbin system administrative binaries
+        for sbin_cmd in ("init", "ip", "nft", "sysctl", "apparmor_parser", "shutdown", "reboot"):
+            self._write_if_missing(
+                self.rootfs / "sbin" / sbin_cmd,
+                f"#!/bin/sh\n# AquaOS System Administration: {sbin_cmd}\n",
+            )
+
+        # Populate /root configuration
+        self._write_if_missing(
+            self.rootfs / "root/.bashrc",
+            "# ~/.bashrc for root user on aquaos\nexport PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\nPS1='root@aquaos:~# '\n",
+        )
+
+        # Populate /dev standard virtual device nodes
+        for dev_node in ("null", "zero", "random", "urandom", "nvme0n1p2"):
+            self._write_if_missing(self.rootfs / "dev" / dev_node, f"# /dev/{dev_node} char/block device node\n")
+
+        # Populate /sys kernel state
+        self._write_if_missing(self.rootfs / "sys/kernel/security/lockdown", "none [integrity] confidentiality\n")
+
     @staticmethod
     def _write_if_missing(path: Path, content: str) -> None:
         if not path.exists():
@@ -322,7 +366,11 @@ class AquaLinuxEnvironment:
     def to_host_path(self, linux_path_str: str, current_linux_cwd: str = "/home/aqua/AquaOS-Beta") -> Tuple[Path, str]:
         """Translate a Linux path (`/home/aqua/...`, `/etc/...`, `~`, relative) to a real host Path and canonical Linux path."""
         raw = linux_path_str.strip().strip('"').strip("'")
-        if not raw or raw == "aquaos":
+        if not raw:
+            raw = "/" if current_linux_cwd == "/" else current_linux_cwd
+        elif raw.lower() in ("/", "root", "rootfs", "aquaos hd", "hd"):
+            raw = "/"
+        elif raw == "aquaos":
             raw = "/home/aqua/AquaOS-Beta"
         elif raw == "aqua-desktop":
             raw = "/home/aqua/AquaOS-Beta/aqua-desktop"
@@ -413,7 +461,11 @@ class AquaLinuxEnvironment:
     def list_linux_directory(self, linux_path_str: str) -> Dict[str, Any]:
         host_dir, norm_linux = self.to_host_path(linux_path_str)
         if not host_dir.exists() or not host_dir.is_dir():
-            host_dir, norm_linux = self.project_root, "/home/aqua/AquaOS-Beta"
+            if norm_linux == "/":
+                self._init_rootfs()
+                host_dir = self.rootfs
+            else:
+                host_dir, norm_linux = self.project_root, "/home/aqua/AquaOS-Beta"
 
         entries: List[Dict[str, Any]] = []
         # Inject virtual mount folders when browsing `/home/aqua`
@@ -457,6 +509,8 @@ class AquaLinuxEnvironment:
             pass
 
         parent_linux = "/" + "/".join(norm_linux.strip("/").split("/")[:-1]) if norm_linux != "/" else "/"
+        if not parent_linux:
+            parent_linux = "/"
         return {
             "current_dir": norm_linux,
             "parent_dir": parent_linux,
