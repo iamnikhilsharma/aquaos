@@ -30,6 +30,17 @@
 - **Global Top Menu Bar (`menubar/menubar.py`)**: 28px bar with Aqua system menu, active application menus, Shield status badge, AI Orb, Control Center, and clock.
 - **Parabolic Magnifying Dock (`dock/dock.py`)**: Smooth cosine-squared hover zoom, pinned apps, running indicators, and Trash.
 - **Spotlight (`spotlight/spotlight.py`)**: `Super+Space` launcher with fuzzy app search, scientific AST calculator, and `@ai` natural-language queries.
+- **Universal Window Resizing**: 8-way interactive window resize handles (`n`, `s`, `e`, `w`, `nw`, `ne`, `sw`, `se`) + bottom-right corner grip across all desktop windows, plus <kbd>Super</kbd>+Right-Click drag anywhere to resize in Wayland compositor (`labwc`).
+
+### 5. Built-in Applications & Default Apps Suite
+- **Mozilla Firefox**: Default hardened web browser with tab manager, DuckDuckGo search integration, and Zero-Trust sandbox isolation.
+- **Mozilla Thunderbird**: Default email, calendar, and newsfeed manager with IMAP mailbox viewer and OpenPGP signing.
+- **Aqua Preview**: Default image and media viewer supporting zoom, 90° rotation, horizontal flip, and live image filters (B&W, Sepia, HDR, Invert).
+- **Aqua Music Player**: Lossless audio player with playlist management, seekbar, volume control, and real Web Audio API ambient synthesizer playback with live canvas visualizer.
+- **QuickTime Video Player**: 60fps video player with timeline scrubber, step offsets (-10s / +10s), speed selector (0.5×–2.0×), and timecode HUD.
+- **Aqua Snap Store**: Native software catalog and package center for discovering and installing strictly confined Snapcraft and native Linux packages.
+- **Finder**: Linux file explorer with Miller Columns view (<kbd>⌘3</kbd>), Gallery view (<kbd>⌘4</kbd>), List view, and deep REA binary analysis integration.
+- **System Settings**: macOS-style preference center with Appearance, Dock, Wallpaper, AI Compute, and a dedicated **Default Applications** manager.
 
 ---
 
