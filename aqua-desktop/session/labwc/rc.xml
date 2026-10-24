@@ -54,5 +54,115 @@
     <keybind key="W-e">
       <action name="Execute" command="nautilus" />
     </keybind>
+    <!-- Super+B -> Default Web Browser (Firefox) -->
+    <keybind key="W-b">
+      <action name="Execute" command="firefox" />
+    </keybind>
+    <!-- Super+M -> Default Email Manager (Thunderbird) -->
+    <keybind key="W-m">
+      <action name="Execute" command="thunderbird" />
+    </keybind>
+    <!-- Super+A -> Native App Store (Snap Store) -->
+    <keybind key="W-a">
+      <action name="Execute" command="snap-store" />
+    </keybind>
+    <!-- Super+F -> Toggle Fullscreen -->
+    <keybind key="W-f">
+      <action name="ToggleFullscreen" />
+    </keybind>
+    <!-- Super+H -> Minimize / Hide Window -->
+    <keybind key="W-h">
+      <action name="Iconify" />
+    </keybind>
+    <!-- Alt+Tab / Super+Tab Window Switcher -->
+    <keybind key="A-Tab">
+      <action name="NextWindow" />
+    </keybind>
+    <keybind key="A-S-Tab">
+      <action name="PreviousWindow" />
+    </keybind>
+    <keybind key="W-Tab">
+      <action name="NextWindow" />
+    </keybind>
+    <keybind key="W-S-Tab">
+      <action name="PreviousWindow" />
+    </keybind>
   </keyboard>
+
+  <!-- Mouse Bindings: Native 8-Way Window Resizing & Dragging -->
+  <mouse>
+    <default />
+    <context name="Frame">
+      <mousebind button="Left" action="Press">
+        <action name="Focus" />
+        <action name="Raise" />
+      </mousebind>
+    </context>
+    <context name="Title">
+      <mousebind button="Left" action="Press">
+        <action name="Focus" />
+        <action name="Raise" />
+      </mousebind>
+      <mousebind button="Left" action="Drag">
+        <action name="Move" />
+      </mousebind>
+      <mousebind button="Left" action="DoubleClick">
+        <action name="ToggleMaximize" />
+      </mousebind>
+    </context>
+    <!-- Edge & Corner Window Resizing -->
+    <context name="Top">
+      <mousebind button="Left" action="Drag">
+        <action name="Resize" direction="top" />
+      </mousebind>
+    </context>
+    <context name="Bottom">
+      <mousebind button="Left" action="Drag">
+        <action name="Resize" direction="bottom" />
+      </mousebind>
+    </context>
+    <context name="Left">
+      <mousebind button="Left" action="Drag">
+        <action name="Resize" direction="left" />
+      </mousebind>
+    </context>
+    <context name="Right">
+      <mousebind button="Left" action="Drag">
+        <action name="Resize" direction="right" />
+      </mousebind>
+    </context>
+    <!-- Modifier Window Dragging & Resizing (Alt/Super + Drag anywhere in window) -->
+    <context name="Window">
+      <mousebind button="A-Left" action="Press">
+        <action name="Focus" />
+        <action name="Raise" />
+      </mousebind>
+      <mousebind button="A-Left" action="Drag">
+        <action name="Move" />
+      </mousebind>
+      <mousebind button="A-Right" action="Press">
+        <action name="Focus" />
+        <action name="Raise" />
+      </mousebind>
+      <mousebind button="A-Right" action="Drag">
+        <action name="Resize" />
+      </mousebind>
+      <mousebind button="W-Left" action="Drag">
+        <action name="Move" />
+      </mousebind>
+      <mousebind button="W-Right" action="Drag">
+        <action name="Resize" />
+      </mousebind>
+    </context>
+  </mouse>
+
+  <!-- Window Rules for Server-Side Traffic Light Window Decorations -->
+  <windowRules>
+    <windowRule identifier="*" serverDecoration="yes" />
+    <windowRule identifier="firefox" serverDecoration="yes" />
+    <windowRule identifier="thunderbird" serverDecoration="yes" />
+    <windowRule identifier="snap-store" serverDecoration="yes" />
+    <windowRule identifier="nautilus" serverDecoration="yes" />
+    <windowRule identifier="foot" serverDecoration="yes" />
+  </windowRules>
 </labwc_config>

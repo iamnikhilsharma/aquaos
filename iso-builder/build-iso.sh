@@ -83,6 +83,13 @@ apt-get install -y --no-install-recommends \
     foot \
     nautilus \
     firefox \
+    thunderbird \
+    eog \
+    vlc \
+    rhythmbox \
+    gnome-software \
+    gnome-software-plugin-snap \
+    xdg-utils \
     curl \
     sudo \
     ca-certificates \
@@ -94,6 +101,30 @@ if ! id -u aqua >/dev/null 2>&1; then
     echo "aqua:aqua" | chpasswd
     echo "aqua ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/aqua
 fi
+
+# Configure Default Applications via XDG Mime Associations
+mkdir -p /etc/xdg
+cat << 'MIME' > /etc/xdg/mimeapps.list
+[Default Applications]
+text/html=firefox.desktop
+x-scheme-handler/http=firefox.desktop
+x-scheme-handler/https=firefox.desktop
+x-scheme-handler/about=firefox.desktop
+x-scheme-handler/unknown=firefox.desktop
+x-scheme-handler/mailto=thunderbird.desktop
+message/rfc822=thunderbird.desktop
+image/png=eog.desktop;preview.desktop
+image/jpeg=eog.desktop;preview.desktop
+image/webp=eog.desktop;preview.desktop
+image/svg+xml=eog.desktop;preview.desktop
+audio/mpeg=rhythmbox.desktop;music.desktop
+audio/x-wav=rhythmbox.desktop;music.desktop
+audio/flac=rhythmbox.desktop;music.desktop
+video/mp4=vlc.desktop;quicktime.desktop
+video/x-matroska=vlc.desktop;quicktime.desktop
+video/webm=vlc.desktop;quicktime.desktop
+inode/directory=org.aquaos.Finder.desktop;nautilus.desktop
+MIME
 
 # Configure OS identity inheriting Ubuntu 24.04.2 LTS (Noble Numbat)
 cat << 'OSREL' > /etc/os-release
