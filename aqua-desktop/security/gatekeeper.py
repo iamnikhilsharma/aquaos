@@ -65,6 +65,7 @@ class AquaGatekeeper:
         else:
             self.trust_db_path = Path(trust_db_path)
         self._trusted_hashes: Dict[str, Dict[str, str]] = {}
+        self._rea_evidence_cache: Dict[str, Any] = {}
         self._load_trust_db()
 
     def _load_trust_db(self) -> None:
@@ -309,25 +310,30 @@ class AquaGatekeeper:
                         })
 
             # Check if REA CLI is installed and can provide authoritative PE Evidence
-            try:
-                npm_cache = Path(os.environ.get("LOCALAPPDATA", "")) / "npm-cache" / "_npx"
-                rea_script = None
-                if npm_cache.exists():
-                    matches = list(npm_cache.glob("*/node_modules/rea-agents/scripts/rea.mjs"))
-                    if matches:
-                        rea_script = matches[-1]
+            if sha256_hash in self._rea_evidence_cache:
+                rea_evidence = self._rea_evidence_cache[sha256_hash]
+                rea_status = "rea_mcp_aligned"
+            else:
+                try:
+                    npm_cache = Path(os.environ.get("LOCALAPPDATA", "")) / "npm-cache" / "_npx"
+                    rea_script = None
+                    if npm_cache.exists():
+                        matches = list(npm_cache.glob("*/node_modules/rea-agents/scripts/rea.mjs"))
+                        if matches:
+                            rea_script = matches[-1]
 
-                if rea_script and rea_script.exists():
-                    cmd = ["node", str(rea_script), "inspect-pe-resources", str(target), "--format", "json"]
-                else:
-                    cmd = ["cmd.exe", "/c", "npx.cmd", "-y", "rea-agents@6.7.0", "inspect-pe-resources", str(target), "--format", "json"]
+                    if rea_script and rea_script.exists():
+                        cmd = ["node", str(rea_script), "inspect-pe-resources", str(target), "--format", "json"]
+                    else:
+                        cmd = ["cmd.exe", "/c", "npx.cmd", "-y", "rea-agents@6.7.0", "inspect-pe-resources", str(target), "--format", "json"]
 
-                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=6)
-                if proc.returncode == 0 and proc.stdout:
-                    rea_evidence = json.loads(proc.stdout)
-                    rea_status = "rea_mcp_aligned"
-            except Exception:
-                pass
+                    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=4)
+                    if proc.returncode == 0 and proc.stdout:
+                        rea_evidence = json.loads(proc.stdout)
+                        rea_status = "rea_mcp_aligned"
+                        self._rea_evidence_cache[sha256_hash] = rea_evidence
+                except Exception:
+                    pass
 
         elif raw_bytes.startswith(b"\x7fELF") and len(raw_bytes) >= 64:
             file_format = "ELF"
