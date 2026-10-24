@@ -1314,10 +1314,13 @@ class AquaLinuxEnvironment:
             if len(parts) < 2:
                 return (
                     "rea (Reverse Engineer Anything) — AquaOS Deep Binary Analysis\n"
-                    "Usage: rea <target-binary> [--strings [query]]\n"
+                    "Usage: rea <target-binary> [--strings [query]] [--hex [offset] [len]] [--imports] [--disasm [offset] [count]]\n"
                     "Examples:\n"
                     "  rea /usr/bin/python3\n"
-                    "  rea sample.exe\n"
+                    "  rea /usr/bin/python3 --hex 0 128\n"
+                    "  rea /usr/bin/python3 --imports\n"
+                    "  rea /usr/bin/python3 --disasm\n"
+                    "  rea sample.exe --hex\n"
                     "  rea script.sh --strings\n"
                 ), cwd
             target_arg = parts[1]
@@ -1332,6 +1335,46 @@ class AquaLinuxEnvironment:
 
             from security.gatekeeper import AquaGatekeeper
             gk = AquaGatekeeper()
+
+            if "--hex" in parts:
+                idx = parts.index("--hex")
+                off = int(parts[idx + 1]) if idx + 1 < len(parts) and parts[idx + 1].isdigit() else 0
+                length = int(parts[idx + 2]) if idx + 2 < len(parts) and parts[idx + 2].isdigit() else 128
+                dump = gk.generate_hex_dump(host_p, offset=off, length=length)
+                out_lines = [f"=== REA Hex Dump ({norm_linux} @ 0x{off:08X}, {dump['length']} bytes, total {dump['total_size']}) ==="]
+                out_lines.append("  OFFSET    00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  | ASCII")
+                out_lines.append("  --------  ------------------------------------------------  | ----------------")
+                for line in dump["lines"]:
+                    out_lines.append(f"  {line['offset_hex']}  {line['hex']:<48}  | {line['ascii']}")
+                if dump["has_more"]:
+                    out_lines.append(f"  ... [Next block at offset {dump['next_offset']} (run: rea {target_arg} --hex {dump['next_offset']} {length})]")
+                return "\n".join(out_lines), cwd
+
+            if "--imports" in parts:
+                imp = gk.extract_imports_and_exports(host_p)
+                out_lines = [f"=== REA Imports & Dynamic Libraries ({norm_linux}) ==="]
+                if imp["libraries"]:
+                    out_lines.append(f"  Dynamic Libraries / Modules ({len(imp['libraries'])}):")
+                    out_lines.append("    " + ", ".join(imp["libraries"]))
+                if imp["imports"]:
+                    out_lines.append(f"  Imported Symbols / APIs ({len(imp['imports'])}):")
+                    for sym in imp["imports"]:
+                        out_lines.append(f"    [{sym['severity']:<6}] {sym['symbol']} — {sym['description']}")
+                if imp["exports"]:
+                    out_lines.append(f"  Exported Symbols ({len(imp['exports'])}):")
+                    out_lines.append("    " + ", ".join(imp["exports"][:15]))
+                return "\n".join(out_lines), cwd
+
+            if "--disasm" in parts:
+                idx = parts.index("--disasm")
+                off = int(parts[idx + 1]) if idx + 1 < len(parts) and parts[idx + 1].isdigit() else 0
+                cnt = int(parts[idx + 2]) if idx + 2 < len(parts) and parts[idx + 2].isdigit() else 24
+                dis = gk.disassemble_code(host_p, offset=off, count=cnt)
+                out_lines = [f"=== REA Disassembly ({norm_linux} - {dis['format']}, entry 0x{dis['entry_offset']:04X}) ==="]
+                for instr in dis["instructions"]:
+                    comment_str = f" ; {instr['comment']}" if instr["comment"] else ""
+                    out_lines.append(f"  {instr['address']}  {instr['bytes']:<16}  {instr['mnemonic']:<8} {instr['operands']:<18}{comment_str}")
+                return "\n".join(out_lines), cwd
 
             if "--strings" in parts:
                 idx = parts.index("--strings")

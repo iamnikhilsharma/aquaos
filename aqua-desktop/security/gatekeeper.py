@@ -413,3 +413,284 @@ class AquaGatekeeper:
                     break
         return results
 
+    def disassemble_code(self, path: Union[str, Path], offset: int = 0, count: int = 32) -> Dict[str, Any]:
+        """Disassemble executable code or Python bytecode into readable assembly instructions."""
+        target = Path(path)
+        if not target.exists() or not target.is_file():
+            return {"format": "UNKNOWN", "instructions": [], "error": "File not found"}
+
+        raw_bytes = target.read_bytes()
+        file_size = len(raw_bytes)
+
+        # 1. Python bytecode disassembler (for .py and .pyc)
+        if target.suffix.lower() == ".py":
+            import dis
+            try:
+                code_obj = compile(raw_bytes.decode("utf-8", errors="replace"), target.name, "exec")
+                instructions: List[Dict[str, Any]] = []
+                for instr in dis.Bytecode(code_obj):
+                    instructions.append({
+                        "address": f"0x{instr.offset:04X}",
+                        "bytes": f"{instr.opcode:02X}" + (f" {instr.arg:02X}" if instr.arg is not None else ""),
+                        "mnemonic": instr.opname,
+                        "operands": str(instr.argrepr or instr.argval or ""),
+                        "comment": f"Line {instr.starts_line}" if instr.starts_line else "",
+                    })
+                    if len(instructions) >= count:
+                        break
+                return {
+                    "format": "PYTHON_BYTECODE",
+                    "target": target.name,
+                    "instructions": instructions,
+                    "total_instructions": len(instructions),
+                }
+            except Exception:
+                pass
+
+        # 2. Native x86_64 / ELF / PE disassembly
+        entry_offset = offset
+        is_pe = raw_bytes.startswith(b"MZ") and len(raw_bytes) >= 0x40
+        is_elf = raw_bytes.startswith(b"\x7fELF") and len(raw_bytes) >= 32
+        if is_pe and offset == 0:
+            try:
+                e_lfanew = struct.unpack_from("<I", raw_bytes, 0x3C)[0]
+                if e_lfanew + 40 < file_size:
+                    opt_offset = e_lfanew + 24
+                    entry_rva = struct.unpack_from("<I", raw_bytes, opt_offset + 16)[0]
+                    num_sections = struct.unpack_from("<H", raw_bytes, e_lfanew + 6)[0]
+                    size_opt = struct.unpack_from("<H", raw_bytes, e_lfanew + 20)[0]
+                    sec_base = opt_offset + size_opt
+                    for s in range(min(num_sections, 16)):
+                        s_off = sec_base + s * 40
+                        if s_off + 40 <= file_size:
+                            v_size, v_addr, raw_size, raw_ptr = struct.unpack_from("<IIII", raw_bytes, s_off + 8)
+                            if v_addr <= entry_rva < v_addr + v_size:
+                                entry_offset = raw_ptr + (entry_rva - v_addr)
+                                break
+            except Exception:
+                entry_offset = 0
+        elif is_elf and offset == 0:
+            try:
+                is_64 = raw_bytes[4] == 2
+                e_entry = struct.unpack_from("<Q" if is_64 else "<I", raw_bytes, 24)[0]
+                if 0 < e_entry < file_size:
+                    entry_offset = e_entry
+                elif e_entry >= 0x400000 and (e_entry - 0x400000) < file_size:
+                    entry_offset = e_entry - 0x400000
+            except Exception:
+                entry_offset = 0
+
+        code_slice = raw_bytes[entry_offset:min(file_size, entry_offset + 512)]
+        instructions: List[Dict[str, Any]] = []
+        idx = 0
+        base_addr = 0x140001000 + entry_offset if is_pe else 0x401000 + entry_offset
+
+        while idx < len(code_slice) and len(instructions) < count:
+            addr = base_addr + idx
+            addr_str = f"0x{addr:08X}"
+            b0 = code_slice[idx]
+
+            # Match common x86_64 instruction patterns
+            if b0 == 0x55:
+                instructions.append({"address": addr_str, "bytes": "55", "mnemonic": "push", "operands": "rbp", "comment": "Standard Prologue"})
+                idx += 1
+            elif b0 == 0x53:
+                instructions.append({"address": addr_str, "bytes": "53", "mnemonic": "push", "operands": "rbx", "comment": ""})
+                idx += 1
+            elif b0 == 0x56:
+                instructions.append({"address": addr_str, "bytes": "56", "mnemonic": "push", "operands": "rsi", "comment": ""})
+                idx += 1
+            elif b0 == 0x57:
+                instructions.append({"address": addr_str, "bytes": "57", "mnemonic": "push", "operands": "rdi", "comment": ""})
+                idx += 1
+            elif b0 == 0x5D:
+                instructions.append({"address": addr_str, "bytes": "5D", "mnemonic": "pop", "operands": "rbp", "comment": ""})
+                idx += 1
+            elif b0 == 0x5B:
+                instructions.append({"address": addr_str, "bytes": "5B", "mnemonic": "pop", "operands": "rbx", "comment": ""})
+                idx += 1
+            elif b0 == 0xC3:
+                instructions.append({"address": addr_str, "bytes": "C3", "mnemonic": "ret", "operands": "", "comment": "Return from procedure"})
+                idx += 1
+            elif b0 == 0x90:
+                instructions.append({"address": addr_str, "bytes": "90", "mnemonic": "nop", "operands": "", "comment": "Alignment padding"})
+                idx += 1
+            elif b0 == 0xCC:
+                instructions.append({"address": addr_str, "bytes": "CC", "mnemonic": "int3", "operands": "", "comment": "Debugger breakpoint"})
+                idx += 1
+            elif idx + 2 < len(code_slice) and code_slice[idx:idx+3] == b"\x48\x89\xe5":
+                instructions.append({"address": addr_str, "bytes": "48 89 E5", "mnemonic": "mov", "operands": "rbp, rsp", "comment": "Frame pointer setup"})
+                idx += 3
+            elif idx + 3 < len(code_slice) and code_slice[idx:idx+3] == b"\x48\x83\xec":
+                imm = code_slice[idx+3]
+                instructions.append({"address": addr_str, "bytes": f"48 83 EC {imm:02X}", "mnemonic": "sub", "operands": f"rsp, 0x{imm:02X}", "comment": f"Allocate {imm} bytes stack frame"})
+                idx += 4
+            elif idx + 3 < len(code_slice) and code_slice[idx:idx+3] == b"\x48\x83\xc4":
+                imm = code_slice[idx+3]
+                instructions.append({"address": addr_str, "bytes": f"48 83 C4 {imm:02X}", "mnemonic": "add", "operands": f"rsp, 0x{imm:02X}", "comment": f"Deallocate stack frame"})
+                idx += 4
+            elif idx + 1 < len(code_slice) and code_slice[idx:idx+2] == b"\x31\xc0":
+                instructions.append({"address": addr_str, "bytes": "31 C0", "mnemonic": "xor", "operands": "eax, eax", "comment": "Return code 0 (SUCCESS)"})
+                idx += 2
+            elif idx + 2 < len(code_slice) and code_slice[idx:idx+3] == b"\x48\x31\xc0":
+                instructions.append({"address": addr_str, "bytes": "48 31 C0", "mnemonic": "xor", "operands": "rax, rax", "comment": "Zero rax"})
+                idx += 3
+            elif b0 == 0xE8 and idx + 4 < len(code_slice):
+                rel = struct.unpack_from("<i", code_slice, idx + 1)[0]
+                target_addr = addr + 5 + rel
+                raw_hex = " ".join(f"{b:02X}" for b in code_slice[idx:idx+5])
+                instructions.append({"address": addr_str, "bytes": raw_hex, "mnemonic": "call", "operands": f"0x{target_addr:08X}", "comment": "Procedure call"})
+                idx += 5
+            elif b0 == 0xE9 and idx + 4 < len(code_slice):
+                rel = struct.unpack_from("<i", code_slice, idx + 1)[0]
+                target_addr = addr + 5 + rel
+                raw_hex = " ".join(f"{b:02X}" for b in code_slice[idx:idx+5])
+                instructions.append({"address": addr_str, "bytes": raw_hex, "mnemonic": "jmp", "operands": f"0x{target_addr:08X}", "comment": "Unconditional branch"})
+                idx += 5
+            elif b0 == 0xEB and idx + 1 < len(code_slice):
+                rel8 = struct.unpack_from("<b", code_slice, idx + 1)[0]
+                target_addr = addr + 2 + rel8
+                instructions.append({"address": addr_str, "bytes": f"EB {code_slice[idx+1]:02X}", "mnemonic": "jmp short", "operands": f"0x{target_addr:08X}", "comment": ""})
+                idx += 2
+            elif b0 in (0x74, 0x75) and idx + 1 < len(code_slice):
+                rel8 = struct.unpack_from("<b", code_slice, idx + 1)[0]
+                mnem = "je" if b0 == 0x74 else "jne"
+                target_addr = addr + 2 + rel8
+                instructions.append({"address": addr_str, "bytes": f"{b0:02X} {code_slice[idx+1]:02X}", "mnemonic": mnem, "operands": f"0x{target_addr:08X}", "comment": "Conditional branch"})
+                idx += 2
+            elif idx + 1 < len(code_slice) and code_slice[idx:idx+2] == b"\x0f\x05":
+                instructions.append({"address": addr_str, "bytes": "0F 05", "mnemonic": "syscall", "operands": "", "comment": "Fast system call into kernel"})
+                idx += 2
+            else:
+                instructions.append({"address": addr_str, "bytes": f"{b0:02X}", "mnemonic": "db", "operands": f"0x{b0:02X}", "comment": ""})
+                idx += 1
+
+        return {
+            "format": "PE_EXE" if is_pe else "ELF" if raw_bytes.startswith(b"\x7fELF") else "BINARY",
+            "target": target.name,
+            "entry_offset": entry_offset,
+            "instructions": instructions,
+            "total_instructions": len(instructions),
+        }
+
+    def extract_imports_and_exports(self, path: Union[str, Path]) -> Dict[str, Any]:
+        """Extract imported dynamic libraries, system calls, and exported functions."""
+        target = Path(path)
+        if not target.exists() or not target.is_file():
+            return {"libraries": [], "imports": [], "exports": []}
+
+        raw_bytes = target.read_bytes()[:1500000]
+        text_sample = raw_bytes.decode("ascii", errors="ignore")
+
+        libraries: List[str] = []
+        imports: List[Dict[str, str]] = []
+        exports: List[str] = []
+
+        # 1. Match DLL names (.dll) or shared objects (.so)
+        dll_matches = re.findall(r"\b([a-zA-Z0-9_\-\.]+\.(?:dll|so(?:\.[0-9]+)?))\b", text_sample, re.IGNORECASE)
+        libraries = list(dict.fromkeys(dll_matches))[:25]
+
+        # 2. Known Windows & Linux security-critical API signatures
+        known_apis = {
+            "VirtualAlloc": ("Memory Allocation", "MEDIUM"),
+            "VirtualProtect": ("Memory Permission Change (W^X bypass)", "HIGH"),
+            "CreateRemoteThread": ("Process Injection", "HIGH"),
+            "WriteProcessMemory": ("Process Memory Modification", "HIGH"),
+            "LoadLibraryA": ("Dynamic Module Loading", "LOW"),
+            "LoadLibraryW": ("Dynamic Module Loading", "LOW"),
+            "GetProcAddress": ("Dynamic Symbol Resolution", "LOW"),
+            "CreateProcessW": ("Subprocess Spawning", "MEDIUM"),
+            "RegOpenKeyExW": ("Windows Registry Access", "LOW"),
+            "RegSetValueExW": ("Windows Registry Modification", "MEDIUM"),
+            "WSAStartup": ("Network Socket Initialization", "LOW"),
+            "socket": ("Network Communication", "LOW"),
+            "connect": ("Remote Network Connect", "MEDIUM"),
+            "bind": ("Network Port Binding", "MEDIUM"),
+            "listen": ("Network Server Listening", "MEDIUM"),
+            "execve": ("Execute Process Image", "MEDIUM"),
+            "fork": ("Process Forking", "LOW"),
+            "ptrace": ("Process Tracing / Anti-Debugging", "HIGH"),
+            "mprotect": ("Memory Protection Modification", "HIGH"),
+            "chmod": ("File Permission Modification", "MEDIUM"),
+            "setuid": ("Privilege Escalation", "HIGH"),
+        }
+
+        for api, (desc, severity) in known_apis.items():
+            if api in text_sample:
+                imports.append({
+                    "symbol": api,
+                    "description": desc,
+                    "severity": severity,
+                })
+
+        # 3. For Python scripts, extract imports using AST
+        if target.suffix.lower() == ".py":
+            import ast
+            try:
+                tree = ast.parse(raw_bytes.decode("utf-8", errors="replace"))
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.Import):
+                        for alias in node.names:
+                            libraries.append(alias.name)
+                            imports.append({"symbol": alias.name, "description": "Python Standard / External Module", "severity": "LOW"})
+                    elif isinstance(node, ast.ImportFrom) and node.module:
+                        libraries.append(node.module)
+                        for alias in node.names:
+                            imports.append({"symbol": f"{node.module}.{alias.name}", "description": "Imported Function / Class", "severity": "LOW"})
+                    elif isinstance(node, ast.FunctionDef):
+                        exports.append(node.name)
+            except Exception:
+                pass
+
+        libraries = list(dict.fromkeys(libraries))
+        return {
+            "target": target.name,
+            "libraries": libraries,
+            "imports": imports,
+            "exports": exports[:30],
+        }
+
+    def generate_hex_dump(self, path: Union[str, Path], offset: int = 0, length: int = 256) -> Dict[str, Any]:
+        """Generate a colorized/formatted hex dump view (offset, 16-hex bytes, ASCII representation)."""
+        target = Path(path)
+        if not target.exists() or not target.is_file():
+            return {"lines": [], "offset": 0, "total_size": 0, "has_more": False}
+
+        file_size = target.stat().st_size
+        offset = max(0, min(offset, file_size))
+        length = min(length, 4096)
+
+        with target.open("rb") as f:
+            f.seek(offset)
+            chunk = f.read(length)
+
+        lines: List[Dict[str, Any]] = []
+        for i in range(0, len(chunk), 16):
+            sub = chunk[i:i+16]
+            cur_off = offset + i
+            off_str = f"{cur_off:08X}"
+            hex_parts = [f"{b:02X}" for b in sub]
+            left = " ".join(hex_parts[:8])
+            right = " ".join(hex_parts[8:])
+            hex_str = f"{left:<23}  {right:<23}".rstrip()
+            ascii_str = "".join(chr(b) if 32 <= b <= 126 else "." for b in sub)
+            lines.append({
+                "offset": cur_off,
+                "offset_hex": off_str,
+                "hex": hex_str,
+                "ascii": ascii_str,
+                "raw_bytes": list(sub),
+            })
+
+        return {
+            "file_name": target.name,
+            "offset": offset,
+            "length": len(chunk),
+            "total_size": file_size,
+            "has_more": (offset + len(chunk)) < file_size,
+            "next_offset": offset + len(chunk),
+            "prev_offset": max(0, offset - length),
+            "lines": lines,
+        }
+
+

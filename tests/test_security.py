@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import struct
 import sys
 from pathlib import Path
 
@@ -142,3 +143,89 @@ def test_gatekeeper_rea_deep_inspect_pe_mock(tmp_path: Path) -> None:
     assert "X" in res["sections"][0]["permissions"]
     assert res["sections"][1]["name"] == ".data"
     assert "W" in res["sections"][1]["permissions"]
+
+
+def test_gatekeeper_rea_hexdump(tmp_path: Path) -> None:
+    gk = AquaGatekeeper(trust_db_path=tmp_path / "trusted.json")
+    bin_file = tmp_path / "test.bin"
+    test_data = b"AquaOS Zero-Trust REA Binary Analysis Engine\x00\x01\x02\xFF\xFE\x00\x10\x20\x30\x40"
+    bin_file.write_bytes(test_data)
+
+    dump = gk.generate_hex_dump(bin_file, offset=0, length=32)
+    assert dump["file_name"] == "test.bin"
+    assert dump["offset"] == 0
+    assert dump["length"] == 32
+    assert dump["total_size"] == len(test_data)
+    assert len(dump["lines"]) == 2  # 32 bytes = 2 lines of 16
+    assert dump["lines"][0]["offset_hex"] == "00000000"
+    assert "41 71 75 61" in dump["lines"][0]["hex"]  # "Aqua"
+    assert "AquaOS" in dump["lines"][0]["ascii"]
+
+
+def test_gatekeeper_rea_imports_and_exports(tmp_path: Path) -> None:
+    gk = AquaGatekeeper(trust_db_path=tmp_path / "trusted.json")
+    script = tmp_path / "agent.py"
+    script.write_text(
+        "import os\n"
+        "import sys\n"
+        "from pathlib import Path\n\n"
+        "def launch_daemon():\n"
+        "    pass\n\n"
+        "def stop_daemon():\n"
+        "    pass\n",
+        encoding="utf-8",
+    )
+
+    imp = gk.extract_imports_and_exports(script)
+    assert "os" in imp["libraries"]
+    assert "sys" in imp["libraries"]
+    assert "pathlib" in imp["libraries"]
+    assert any("launch_daemon" in exp for exp in imp["exports"])
+    assert any("stop_daemon" in exp for exp in imp["exports"])
+
+    # Test binary imports pattern matching
+    binary = tmp_path / "mock_app.so"
+    binary.write_bytes(b"libc.so.6\x00libssl.so.3\x00KERNEL32.dll\x00VirtualProtect\x00mprotect\x00ptrace\x00")
+    bin_imp = gk.extract_imports_and_exports(binary)
+    assert any("libc.so" in lib for lib in bin_imp["libraries"])
+    assert any("KERNEL32.dll" in lib for lib in bin_imp["libraries"])
+    symbols = [item["symbol"] for item in bin_imp["imports"]]
+    assert "VirtualProtect" in symbols
+    assert "mprotect" in symbols
+    assert "ptrace" in symbols
+
+
+def test_gatekeeper_rea_disassembly(tmp_path: Path) -> None:
+    gk = AquaGatekeeper(trust_db_path=tmp_path / "trusted.json")
+
+    # 1. Python bytecode disassembly
+    py_script = tmp_path / "calc.py"
+    py_script.write_text("x = 10\ny = 20\nz = x + y\nprint(z)\n", encoding="utf-8")
+    dis_py = gk.disassemble_code(py_script, count=10)
+    assert dis_py["format"] == "PYTHON_BYTECODE"
+    assert len(dis_py["instructions"]) > 0
+    mnemonics = [ins["mnemonic"] for ins in dis_py["instructions"]]
+    assert any("LOAD_CONST" in m or "STORE_NAME" in m or "BINARY_OP" in m or "CALL" in m for m in mnemonics)
+
+    # 2. Native x86_64 opcode disassembly
+    elf_file = tmp_path / "mini.elf"
+    # ELF64 Header (64 bytes): magic \x7fELF, 64-bit (2), little-endian (1), version 1, e_entry at offset 24 pointing to 64
+    elf_hdr = bytearray(64)
+    elf_hdr[0:4] = b"\x7fELF"
+    elf_hdr[4] = 2  # 64-bit
+    elf_hdr[5] = 1  # little-endian
+    elf_hdr[6] = 1  # ELF version
+    struct.pack_into("<Q", elf_hdr, 24, 64)  # e_entry = 64
+
+    # Function prologue & epilogue: push rbp (55), mov rbp, rsp (48 89 E5), sub rsp, 16 (48 83 EC 10), ret (C3)
+    code = bytes(elf_hdr) + b"\x55\x48\x89\xe5\x48\x83\xec\x10\xc3"
+    elf_file.write_bytes(code)
+    dis_elf = gk.disassemble_code(elf_file, count=10)
+    assert dis_elf["format"] == "ELF"
+    assert dis_elf["entry_offset"] == 64
+    assert len(dis_elf["instructions"]) >= 4
+    inst_mnems = [ins["mnemonic"] for ins in dis_elf["instructions"]]
+    assert "push" in inst_mnems
+    assert "mov" in inst_mnems
+    assert "ret" in inst_mnems
+

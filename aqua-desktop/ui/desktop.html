@@ -1691,6 +1691,7 @@
         <span id="ql-title">Quick Look — README.md</span>
       </div>
       <div style="display:flex; gap:6px;">
+        <button class="aqua-btn secondary" style="padding:3px 9px; font-size:11px; border-color:#BF5AF2; color:#BF5AF2;" onclick="openReaHexForQuickLook()">🔬 REA Hex View</button>
         <button class="aqua-btn secondary" style="padding:3px 9px; font-size:11px;" onclick="openQuickLookInFinder()">Open in Finder</button>
         <button class="aqua-btn" style="padding:3px 9px; font-size:11px;" onclick="closeQuickLook()">Done (Esc)</button>
       </div>
@@ -2185,8 +2186,11 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
         <!-- Subnav Tabs for Deep Tables -->
         <div class="rea-subnav-bar">
           <button class="rea-subnav-btn active" id="btn-rea-sub-sections" onclick="switchReaSubnav('sections')">Sections Table (<span id="rea-sec-count">0</span>)</button>
-          <button class="rea-subnav-btn" id="btn-rea-sub-strings" onclick="switchReaSubnav('strings')">Extracted Indicators & APIs (<span id="rea-str-count">0</span>)</button>
-          <button class="rea-subnav-btn" id="btn-rea-sub-json" onclick="switchReaSubnav('json')">Authoritative REA Evidence JSON</button>
+          <button class="rea-subnav-btn" id="btn-rea-sub-imports" onclick="switchReaSubnav('imports')">Imports & Libraries (<span id="rea-imp-count">0</span>)</button>
+          <button class="rea-subnav-btn" id="btn-rea-sub-disasm" onclick="switchReaSubnav('disasm')">Disassembly / Bytecode (<span id="rea-dis-count">0</span>)</button>
+          <button class="rea-subnav-btn" id="btn-rea-sub-hexdump" onclick="switchReaSubnav('hexdump')">Hex & ASCII Inspector</button>
+          <button class="rea-subnav-btn" id="btn-rea-sub-strings" onclick="switchReaSubnav('strings')">Indicators & Strings (<span id="rea-str-count">0</span>)</button>
+          <button class="rea-subnav-btn" id="btn-rea-sub-json" onclick="switchReaSubnav('json')">Authoritative REA JSON</button>
         </div>
 
         <!-- Subtab 1: Sections Table -->
@@ -2207,6 +2211,118 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
               <tr><td colspan="7" style="text-align:center; padding:18px; color:var(--text-muted);">No binary inspected yet. Click 'Deep Inspect' above.</td></tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Subtab 2: Imports & Libraries -->
+        <div id="rea-subpane-imports" style="display:none; flex-direction:column; gap:10px;">
+          <!-- Loaded Dynamic Libraries -->
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.04em;">
+              Loaded Dynamic Libraries & Modules (<span id="rea-lib-count">0</span>)
+            </div>
+            <div id="rea-lib-chips" style="display:flex; flex-wrap:wrap; gap:6px; min-height:28px; padding:6px 8px; background:rgba(0,0,0,0.25); border:0.5px solid var(--glass-border); border-radius:8px;">
+              <span style="color:var(--text-muted); font-size:11px;">Inspect a target binary or script to extract dynamic libraries.</span>
+            </div>
+          </div>
+
+          <!-- Imported Functions & Security Severity Table -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em;">
+                Imported Symbols & Security Critical APIs (<span id="rea-imported-symbols-count">0</span>)
+              </div>
+              <input class="aqua-input" id="rea-imports-filter" placeholder="Filter symbols..." oninput="filterReaImportsDisplay(this.value)" style="padding:2px 8px; font-size:11px; width:200px;" />
+            </div>
+            <div style="border:0.5px solid var(--glass-border); border-radius:10px; background:rgba(0,0,0,0.25); max-height:170px; overflow-y:auto;">
+              <table class="rea-data-table">
+                <thead>
+                  <tr>
+                    <th style="width:200px;">Imported Symbol</th>
+                    <th style="width:90px;">Severity</th>
+                    <th>Description / Security Role</th>
+                  </tr>
+                </thead>
+                <tbody id="rea-imports-tbody">
+                  <tr><td colspan="3" style="text-align:center; padding:16px; color:var(--text-muted);">No imported symbols loaded yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Exported Functions -->
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-secondary); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.04em;">
+              Exported Functions & Entry Points (<span id="rea-exp-count">0</span>)
+            </div>
+            <div id="rea-exp-chips" style="display:flex; flex-wrap:wrap; gap:6px; min-height:28px; padding:6px 8px; background:rgba(0,0,0,0.25); border:0.5px solid var(--glass-border); border-radius:8px;">
+              <span style="color:var(--text-muted); font-size:11px;">No exports detected for interpreted script.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subtab 3: Disassembly & Bytecode -->
+        <div id="rea-subpane-disasm" style="display:none; flex-direction:column; gap:8px;">
+          <!-- Controls Bar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:rgba(0,0,0,0.25); border:0.5px solid var(--glass-border); border-radius:8px; padding:6px 10px;">
+            <div style="display:flex; align-items:center; gap:8px; font-size:11.5px;">
+              <span style="color:var(--text-secondary); font-weight:600;">Offset:</span>
+              <input class="aqua-input" id="rea-disasm-offset" value="0" placeholder="0" style="width:90px; padding:2px 8px; font-family:var(--font-mono); font-size:11px;" />
+              <span style="color:var(--text-secondary); font-weight:600;">Count:</span>
+              <select class="aqua-input" id="rea-disasm-count" style="padding:2px 6px; font-size:11px; background:rgba(20,20,30,0.85); color:var(--text-primary); border-radius:6px;">
+                <option value="32">32 instrs</option>
+                <option value="64" selected>64 instrs</option>
+                <option value="128">128 instrs</option>
+              </select>
+              <button class="aqua-btn" style="padding:3px 9px; font-size:11px;" onclick="loadReaDisasm(null, parseInt(document.getElementById('rea-disasm-offset').value || 0), parseInt(document.getElementById('rea-disasm-count').value || 64))">Disassemble</button>
+              <button class="aqua-btn secondary" style="padding:3px 9px; font-size:11px;" onclick="document.getElementById('rea-disasm-offset').value = '0'; loadReaDisasm(null, 0, parseInt(document.getElementById('rea-disasm-count').value || 64));">Entry Point</button>
+            </div>
+            <div style="font-size:11px; color:#5AC8FA; font-family:var(--font-mono);" id="rea-disasm-info">Format: Ready</div>
+          </div>
+
+          <!-- Instruction Table -->
+          <div style="border:0.5px solid var(--glass-border); border-radius:10px; background:rgba(0,0,0,0.3); max-height:220px; overflow-y:auto;">
+            <table class="rea-data-table">
+              <thead>
+                <tr>
+                  <th style="width:110px;">Address</th>
+                  <th style="width:130px;">Hex Opcodes</th>
+                  <th style="width:90px;">Mnemonic</th>
+                  <th style="width:170px;">Operands</th>
+                  <th>Analysis / Comment</th>
+                </tr>
+              </thead>
+              <tbody id="rea-disasm-tbody">
+                <tr><td colspan="5" style="text-align:center; padding:18px; color:var(--text-muted);">Click 'Deep Inspect' or 'Disassemble' above.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Subtab 4: Hex & ASCII Inspector -->
+        <div id="rea-subpane-hexdump" style="display:none; flex-direction:column; gap:8px;">
+          <!-- Hex Toolbar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:rgba(0,0,0,0.25); border:0.5px solid var(--glass-border); border-radius:8px; padding:6px 10px;">
+            <div style="display:flex; align-items:center; gap:8px; font-size:11.5px;">
+              <span style="color:var(--text-secondary); font-weight:600;">Offset:</span>
+              <input class="aqua-input" id="rea-hex-offset-input" value="0x00000000" placeholder="0x00000000" style="width:110px; padding:2px 8px; font-family:var(--font-mono); font-size:11px;" onkeydown="if(event.key==='Enter') reaHexJump()" />
+              <button class="aqua-btn secondary" style="padding:3px 9px; font-size:11px;" onclick="reaHexPrev()">◀ Prev 256B</button>
+              <button class="aqua-btn secondary" style="padding:3px 9px; font-size:11px;" onclick="reaHexNext()">Next 256B ▶</button>
+              <button class="aqua-btn" style="padding:3px 9px; font-size:11px;" onclick="reaHexJump()">Go to Offset</button>
+            </div>
+            <div style="font-size:11px; color:#5AC8FA; font-family:var(--font-mono);" id="rea-hex-stats">0 / 0 bytes</div>
+          </div>
+
+          <!-- Hex View Body -->
+          <div style="border:0.5px solid var(--glass-border); border-radius:10px; background:#080A14; max-height:230px; overflow-y:auto; padding:8px 12px; font-family:var(--font-mono); font-size:11.5px; line-height:1.55;">
+            <div style="display:grid; grid-template-columns:95px 1fr 180px; gap:16px; border-bottom:0.5px solid rgba(255,255,255,0.08); padding-bottom:4px; margin-bottom:6px; color:var(--text-muted); font-size:10px; font-weight:700; text-transform:uppercase;">
+              <div>Offset</div>
+              <div>00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F</div>
+              <div>ASCII Text</div>
+            </div>
+            <div id="rea-hexdump-rows">
+              <div style="color:var(--text-muted); text-align:center; padding:18px;">Inspect a binary to view interactive hexadecimal memory dump.</div>
+            </div>
+          </div>
         </div>
 
         <!-- Subtab 2: Indicators & Strings -->
@@ -4958,6 +5074,12 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   /* 8b. REA (Reverse Engineer Anything) Deep Binary Inspector */
   let currentReaReport = null;
   let currentReaCategory = 'all';
+  let currentReaTarget = '/usr/bin/python3';
+  let currentReaImports = null;
+  let currentReaDisasm = null;
+  let currentReaHexDump = null;
+  let currentReaHexOffset = 0;
+  let quickLookCurrentPath = '';
 
   function switchShieldTab(tab) {
     const btnGk = document.getElementById('btn-shield-tab-gatekeeper');
@@ -4989,7 +5111,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   }
 
   function switchReaSubnav(subtab) {
-    ['sections', 'strings', 'json'].forEach(s => {
+    ['sections', 'imports', 'disasm', 'hexdump', 'strings', 'json'].forEach(s => {
       document.getElementById(`btn-rea-sub-${s}`)?.classList.remove('active');
       const pane = document.getElementById(`rea-subpane-${s}`);
       if (pane) pane.style.display = 'none';
@@ -4998,6 +5120,14 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     const activePane = document.getElementById(`rea-subpane-${subtab}`);
     if (activePane) activePane.style.display = subtab === 'sections' ? 'block' : 'flex';
     playSystemSound('pop');
+
+    if (subtab === 'imports' && (!currentReaImports || currentReaImports.target !== currentReaTarget)) {
+      loadReaImports();
+    } else if (subtab === 'disasm' && (!currentReaDisasm || currentReaDisasm.target !== currentReaTarget)) {
+      loadReaDisasm();
+    } else if (subtab === 'hexdump' && (!currentReaHexDump || currentReaHexDump.target !== currentReaTarget)) {
+      loadReaHexDump();
+    }
   }
 
   function openReaForFile(filePath) {
@@ -5032,6 +5162,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   async function runReaInspection() {
     const input = document.getElementById('rea-target-input');
     const target = input ? input.value.trim() : '/usr/bin/python3';
+    currentReaTarget = target;
     showToast(`REA: Deep inspecting ${target}...`);
 
     try {
@@ -5047,6 +5178,10 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       }
       currentReaReport = rep;
       renderReaResults(rep);
+      // Simultaneously retrieve imports, disassembly, and hex dump
+      loadReaImports(target);
+      loadReaDisasm(target, 0, 64);
+      loadReaHexDump(target, 0, 256);
       showToast(`REA: Completed deep inspection for ${rep.file_name}`);
     } catch (err) {
       showToast(`REA Inspection failed: ${err.message}`);
@@ -5233,6 +5368,300 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     a.click();
     URL.revokeObjectURL(url);
     showToast('Downloaded REA Evidence JSON');
+  }
+
+  /* REA Imports & Dynamic Libraries */
+  async function loadReaImports(target) {
+    const t = target || document.getElementById('rea-target-input')?.value.trim() || currentReaTarget;
+    currentReaTarget = t;
+    try {
+      const res = await apiFetch('/api/rea/imports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: t })
+      });
+      if (res.error) return;
+      currentReaImports = res;
+      renderReaImports(res);
+    } catch (err) {
+      console.warn('Failed to load REA imports:', err);
+    }
+  }
+
+  function renderReaImports(data) {
+    const libChips = document.getElementById('rea-lib-chips');
+    const libCount = document.getElementById('rea-lib-count');
+    const impCount = document.getElementById('rea-imp-count');
+    if (libChips) {
+      if (data.libraries && data.libraries.length > 0) {
+        if (libCount) libCount.innerText = data.libraries.length;
+        libChips.innerHTML = data.libraries.map(lib => `
+          <span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(10,132,255,0.18); border:0.5px solid rgba(10,132,255,0.4); font-size:10.5px; font-family:var(--font-mono); color:#A6C8FF;">
+            <span style="width:5px; height:5px; border-radius:50%; background:#0A84FF;"></span>
+            ${lib}
+          </span>
+        `).join('');
+      } else {
+        if (libCount) libCount.innerText = '0';
+        libChips.innerHTML = `<span style="color:var(--text-muted); font-size:11px;">No dynamic libraries referenced directly.</span>`;
+      }
+    }
+
+    renderReaImportsTable();
+
+    const expChips = document.getElementById('rea-exp-chips');
+    const expCount = document.getElementById('rea-exp-count');
+    if (expChips) {
+      if (data.exports && data.exports.length > 0) {
+        if (expCount) expCount.innerText = data.exports.length;
+        expChips.innerHTML = data.exports.map(exp => `
+          <span style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; background:rgba(48,209,88,0.18); border:0.5px solid rgba(48,209,88,0.4); font-size:10.5px; font-family:var(--font-mono); color:#30D158;">
+            ${exp}
+          </span>
+        `).join('');
+      } else {
+        if (expCount) expCount.innerText = '0';
+        expChips.innerHTML = `<span style="color:var(--text-muted); font-size:11px;">No exports detected for interpreted script.</span>`;
+      }
+    }
+
+    const totalSymbols = (data.imports ? data.imports.length : 0);
+    if (impCount) impCount.innerText = totalSymbols + (data.libraries ? data.libraries.length : 0);
+  }
+
+  function renderReaImportsTable() {
+    if (!currentReaImports) return;
+    const tbody = document.getElementById('rea-imports-tbody');
+    const countEl = document.getElementById('rea-imported-symbols-count');
+    const q = (document.getElementById('rea-imports-filter')?.value || '').trim().toLowerCase();
+    const imports = currentReaImports.imports || [];
+
+    const filtered = q ? imports.filter(x => x.symbol.toLowerCase().includes(q) || x.description.toLowerCase().includes(q)) : imports;
+    if (countEl) countEl.innerText = imports.length;
+
+    if (tbody) {
+      if (filtered.length > 0) {
+        tbody.innerHTML = filtered.map(item => {
+          let badgeColor = '#30D158';
+          let badgeBg = 'rgba(48,209,88,0.2)';
+          if (item.severity === 'HIGH') {
+            badgeColor = '#FF453A';
+            badgeBg = 'rgba(255,69,58,0.2)';
+          } else if (item.severity === 'MEDIUM') {
+            badgeColor = '#FFD60A';
+            badgeBg = 'rgba(255,214,10,0.2)';
+          }
+          return `
+            <tr>
+              <td style="font-weight:700; color:var(--text-primary);">${item.symbol}</td>
+              <td><span style="padding:1px 6px; border-radius:4px; font-size:9.5px; font-weight:700; background:${badgeBg}; color:${badgeColor}; border:0.5px solid ${badgeColor};">${item.severity}</span></td>
+              <td style="color:var(--text-secondary);">${item.description}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:16px; color:var(--text-muted);">${q ? 'No matching symbols found.' : 'No imported function symbols detected in static sample.'}</td></tr>`;
+      }
+    }
+  }
+
+  function filterReaImportsDisplay() {
+    renderReaImportsTable();
+  }
+
+  /* REA Disassembly */
+  async function loadReaDisasm(target, offset = 0, count = 64) {
+    const t = target || document.getElementById('rea-target-input')?.value.trim() || currentReaTarget;
+    currentReaTarget = t;
+    try {
+      const res = await apiFetch('/api/rea/disasm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: t, offset, count })
+      });
+      if (res.error) return;
+      currentReaDisasm = res;
+      renderReaDisasm(res);
+    } catch (err) {
+      console.warn('Failed to load REA disassembly:', err);
+    }
+  }
+
+  function renderReaDisasm(data) {
+    const tbody = document.getElementById('rea-disasm-tbody');
+    const infoEl = document.getElementById('rea-disasm-info');
+    const countBadge = document.getElementById('rea-dis-count');
+    const offsetInp = document.getElementById('rea-disasm-offset');
+
+    if (infoEl) infoEl.innerText = `Format: ${data.format} • Entry: 0x${(data.entry_offset || 0).toString(16).toUpperCase()}`;
+    if (offsetInp && data.entry_offset !== undefined && offsetInp.value === '0') {
+      offsetInp.value = `0x${data.entry_offset.toString(16).toUpperCase()}`;
+    }
+
+    const instrs = data.instructions || [];
+    if (countBadge) countBadge.innerText = instrs.length;
+
+    if (tbody) {
+      if (instrs.length > 0) {
+        tbody.innerHTML = instrs.map(ins => {
+          let mColor = '#E5E7EB';
+          const mLow = (ins.mnemonic || '').toLowerCase();
+          if (mLow === 'call') mColor = '#5AC8FA';
+          else if (mLow.startsWith('j')) mColor = '#FFD60A';
+          else if (mLow === 'ret') mColor = '#30D158';
+          else if (mLow === 'syscall' || mLow === 'int3') mColor = '#FF453A';
+          else if (mLow === 'push' || mLow === 'pop') mColor = '#BF5AF2';
+          else if (mLow === 'mov' || mLow === 'sub' || mLow === 'add' || mLow === 'xor') mColor = '#64D2FF';
+
+          return `
+            <tr>
+              <td style="color:#5AC8FA;">${ins.address}</td>
+              <td style="color:var(--text-muted); font-size:10px;">${ins.bytes}</td>
+              <td style="font-weight:700; color:${mColor};">${ins.mnemonic}</td>
+              <td style="color:var(--text-primary);">${ins.operands || ''}</td>
+              <td style="color:var(--text-secondary); font-size:10.5px;">${ins.comment ? `; ${ins.comment}` : ''}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:18px; color:var(--text-muted);">No instructions disassembled.</td></tr>`;
+      }
+    }
+  }
+
+  /* REA Hex & ASCII Inspector */
+  async function loadReaHexDump(target, offset = 0, length = 256) {
+    const t = target || document.getElementById('rea-target-input')?.value.trim() || currentReaTarget;
+    currentReaTarget = t;
+    currentReaHexOffset = offset;
+    try {
+      const res = await apiFetch('/api/rea/hexdump', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: t, offset, length })
+      });
+      if (res.error) return;
+      currentReaHexDump = res;
+      renderReaHexDump(res);
+    } catch (err) {
+      console.warn('Failed to load REA hex dump:', err);
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function renderReaHexDump(data) {
+    const container = document.getElementById('rea-hexdump-rows');
+    const offsetInp = document.getElementById('rea-hex-offset-input');
+    const statsEl = document.getElementById('rea-hex-stats');
+
+    if (offsetInp) offsetInp.value = `0x${(data.offset || 0).toString(16).padStart(8, '0').toUpperCase()}`;
+    if (statsEl) {
+      const endByte = Math.min(data.total_size, (data.offset || 0) + (data.length || 0));
+      statsEl.innerText = `Viewing 0x${data.offset.toString(16).toUpperCase()}–0x${endByte.toString(16).toUpperCase()} of ${data.total_size.toLocaleString()} bytes`;
+    }
+
+    if (container) {
+      const lines = data.lines || [];
+      if (lines.length > 0) {
+        container.innerHTML = lines.map(line => `
+          <div style="display:grid; grid-template-columns:95px 1fr 180px; gap:16px; padding:2px 0; border-bottom:0.5px solid rgba(255,255,255,0.03);" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background='transparent'">
+            <div style="color:#5AC8FA; font-weight:600;">${line.offset_hex}</div>
+            <div style="color:#E2E8F0; letter-spacing:0.04em;">${line.hex}</div>
+            <div style="color:#30D158; letter-spacing:0.06em;">${escapeHtml(line.ascii)}</div>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = `<div style="color:var(--text-muted); text-align:center; padding:18px;">Binary empty or offset beyond EOF.</div>`;
+      }
+    }
+  }
+
+  function reaHexNext() {
+    if (!currentReaHexDump) return;
+    if (currentReaHexDump.has_more) {
+      loadReaHexDump(null, currentReaHexDump.next_offset, 256);
+    } else {
+      showToast('Reached end of file');
+    }
+  }
+
+  function reaHexPrev() {
+    if (!currentReaHexDump) return;
+    const prev = Math.max(0, (currentReaHexDump.offset || 0) - 256);
+    loadReaHexDump(null, prev, 256);
+  }
+
+  function reaHexJump() {
+    const val = (document.getElementById('rea-hex-offset-input')?.value || '0').trim();
+    let num = 0;
+    if (val.startsWith('0x') || val.startsWith('0X')) {
+      num = parseInt(val, 16);
+    } else {
+      num = parseInt(val, 10);
+    }
+    if (isNaN(num) || num < 0) num = 0;
+    loadReaHexDump(null, num, 256);
+  }
+
+  /* macOS Quick Look */
+  function openQuickLook(filePath) {
+    if (!filePath) return;
+    quickLookCurrentPath = filePath;
+    const modal = document.getElementById('quick-look-modal');
+    const titleEl = document.getElementById('ql-title');
+    const bodyEl = document.getElementById('ql-preview-body');
+    const sizeEl = document.getElementById('ql-meta-size');
+    const typeEl = document.getElementById('ql-meta-type');
+    const entEl = document.getElementById('ql-meta-entropy');
+
+    const fileName = filePath.split('/').pop();
+    if (titleEl) titleEl.innerText = `Quick Look — ${fileName}`;
+    if (bodyEl) bodyEl.innerText = 'Loading preview...';
+    if (modal) modal.style.display = 'flex';
+
+    apiFetch('/api/fs/read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: filePath })
+    }).then(res => {
+      if (res.error) {
+        if (bodyEl) bodyEl.innerText = `Error loading file: ${res.error}`;
+        return;
+      }
+      if (bodyEl) bodyEl.innerText = res.content || '(empty file)';
+      if (sizeEl) sizeEl.innerText = `Size: ${(res.size_bytes / 1024).toFixed(1)} KB`;
+      if (typeEl) typeEl.innerText = `Format: ${res.scan?.format || 'Text'}`;
+      if (entEl) entEl.innerText = `Gatekeeper: ${res.scan?.risk_level || 'Clean'} (${res.scan?.entropy?.toFixed(2) || '0.00'} bits)`;
+    }).catch(err => {
+      if (bodyEl) bodyEl.innerText = `Preview failed: ${err.message}`;
+    });
+  }
+
+  function closeQuickLook() {
+    const modal = document.getElementById('quick-look-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function openQuickLookInFinder() {
+    closeQuickLook();
+    if (quickLookCurrentPath) {
+      openFileInEditor(quickLookCurrentPath);
+    }
+  }
+
+  function openReaHexForQuickLook() {
+    closeQuickLook();
+    if (quickLookCurrentPath) {
+      openWindow('win-shield', 'Aqua Shield');
+      switchShieldTab('rea');
+      const input = document.getElementById('rea-target-input');
+      if (input) input.value = quickLookCurrentPath;
+      runReaInspection();
+      setTimeout(() => switchReaSubnav('hexdump'), 200);
+    }
   }
 
   async function planUniversalApp(targetName) {
@@ -5424,14 +5853,39 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       toggleMissionControl();
       return;
     }
-    if (e.key === 'Escape' && missionControlActive) {
-      e.preventDefault();
-      exitMissionControl();
-      return;
+    if (e.key === 'Escape') {
+      const qlModal = document.getElementById('quick-look-modal');
+      if (qlModal && qlModal.style.display === 'flex') {
+        e.preventDefault();
+        closeQuickLook();
+        return;
+      }
+      if (missionControlActive) {
+        e.preventDefault();
+        exitMissionControl();
+        return;
+      }
     }
     if ((e.ctrlKey || e.altKey || e.metaKey) && e.code === 'Space') {
       e.preventDefault();
       toggleSpotlight();
+      return;
+    }
+    if (e.code === 'Space' && !e.ctrlKey && !e.metaKey && !e.altKey && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName) && !document.activeElement?.isContentEditable) {
+      const qlModal = document.getElementById('quick-look-modal');
+      if (qlModal && qlModal.style.display === 'flex') {
+        e.preventDefault();
+        closeQuickLook();
+        return;
+      }
+      const curPath = document.getElementById('fs-current-path')?.value || '/home/aqua/AquaOS-Beta';
+      const fileName = document.getElementById('editor-file-name')?.innerText || 'README.md';
+      const fullPath = curPath.endsWith('/') ? `${curPath}${fileName}` : `${curPath}/${fileName}`;
+      if (fullPath) {
+        e.preventDefault();
+        openQuickLook(fullPath);
+        return;
+      }
     }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
       e.preventDefault();
