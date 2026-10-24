@@ -154,7 +154,7 @@
     backdrop-filter: blur(28px) saturate(190%);
     border-bottom: 0.5px solid var(--glass-border);
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 10px; font-size: 13px; font-weight: 500; z-index: 9000;
+    padding: 0 10px; font-size: 13px; font-weight: 500; z-index: 99900;
   }
   .mb-left, .mb-right { display: flex; align-items: center; gap: 2px; }
   .mb-item {
@@ -183,7 +183,7 @@
     border: 0.5px solid var(--glass-border);
     border-radius: 10px; padding: 5px;
     box-shadow: var(--win-shadow);
-    z-index: 9500; display: none;
+    z-index: 99995; display: none;
   }
   .dropdown-menu.open { display: block; }
   .dd-item {
@@ -373,6 +373,7 @@
     border-bottom: 0.5px solid var(--glass-border);
     display: flex; align-items: center; justify-content: space-between;
     cursor: grab; flex-shrink: 0;
+    user-select: none; -webkit-user-select: none;
   }
   .win-titlebar:active { cursor: grabbing; }
   .traffic-lights { display: flex; align-items: center; gap: 8px; width: 68px; }
@@ -1837,7 +1838,7 @@
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-finder')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-finder')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-finder')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-finder')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-finder')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -2034,7 +2035,7 @@
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-terminal')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-terminal')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-terminal')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-terminal')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-terminal')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -2075,7 +2076,7 @@
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-ai')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-ai')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-ai')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-ai')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-ai')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -2140,7 +2141,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-shield')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-shield')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-shield')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-shield')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-shield')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -2515,7 +2516,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-activity')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-activity')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-activity')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-activity')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-activity')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -2560,7 +2561,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-settings')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-settings')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-settings')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-settings')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-settings')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -3128,7 +3129,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-about')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-about')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-about')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-about')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-about')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">About This Machine</div>
@@ -3154,7 +3155,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-firefox')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-firefox')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-firefox')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-firefox')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-firefox')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -3206,7 +3207,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-preview')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-preview')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-preview')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-preview')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-preview')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -3250,7 +3251,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-music')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-music')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-music')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-music')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-music')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -3363,7 +3364,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-video')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-video')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-video')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-video')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-video')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -3404,7 +3405,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-thunderbird')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-thunderbird')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-thunderbird')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-thunderbird')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-thunderbird')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -3454,7 +3455,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     <div class="win-titlebar" onmousedown="startDrag(event, 'win-store')">
       <div class="traffic-lights" onmousedown="event.stopPropagation()">
         <div class="tl-btn tl-close" onclick="event.stopPropagation(); closeWindow('win-store')"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2L2 8"/></svg></div>
-        <div class="tl-btn tl-min" onclick="event.stopPropagation(); closeWindow('win-store')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
+        <div class="tl-btn tl-min" onclick="event.stopPropagation(); minimizeWindow('win-store')"><svg viewBox="0 0 10 10"><path d="M1.5 5h7"/></svg></div>
         <div class="tl-btn tl-max" onclick="event.stopPropagation(); maximizeWindow('win-store')"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M1.5 5h7"/></svg></div>
       </div>
       <div class="win-title">
@@ -3643,6 +3644,14 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   let newItemMode = "file";
   let cachedProcesses = [];
   let sandboxedUserProcs = [];
+
+  /* App initialization flags (hoisted for instant OS window launching) */
+  let firefoxInitialized = false;
+  let previewInitialized = false;
+  let musicInitialized = false;
+  let videoInitialized = false;
+  let tbInitialized = false;
+  let storeInitialized = false;
 
   function formatBashPrompt(cwd) {
     const clean = (cwd || "/home/aqua/AquaOS-Beta").replace(/\\/g, "/");
@@ -4138,6 +4147,11 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
 
   function dockLaunch(winId, title, el) {
     if (el) { el.classList.remove('bouncing'); void el.offsetWidth; el.classList.add('bouncing'); }
+    const win = document.getElementById(winId);
+    if (win && !win.classList.contains('hidden') && currentFocusedWinId === winId) {
+      minimizeWindow(winId);
+      return;
+    }
     openWindow(winId, title);
     if (winId === 'win-activity') refreshProcesses();
   }
@@ -4202,6 +4216,44 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     updateDockIndicators();
     renderStageManager();
   }
+  function minimizeWindow(winId) {
+    const win = document.getElementById(winId);
+    if (!win) return;
+    win.classList.add('hidden');
+    if (winId === 'win-ai') setAiGlow(false);
+    showToast('Minimized window to Dock');
+    const openWins = ALL_WINDOWS.filter(id => !document.getElementById(id)?.classList.contains('hidden'));
+    if (openWins.length === 0) {
+      document.getElementById('mb-active-app').innerText = 'Finder';
+    } else {
+      let topWin = null;
+      let maxZ = -1;
+      openWins.forEach(id => {
+        const w = document.getElementById(id);
+        const z = parseInt(w.style.zIndex || '0', 10);
+        if (z > maxZ) { maxZ = z; topWin = id; }
+      });
+      if (topWin) {
+        const titleMap = {
+          'win-finder': 'Finder',
+          'win-terminal': 'Terminal',
+          'win-ai': 'Aqua AI Studio',
+          'win-shield': 'Aqua Shield',
+          'win-activity': 'Activity Monitor',
+          'win-settings': 'System Settings',
+          'win-about': 'About AquaOS',
+          'win-firefox': 'Firefox',
+          'win-preview': 'Preview',
+          'win-music': 'Music',
+          'win-video': 'QuickTime Player',
+          'win-thunderbird': 'Thunderbird',
+          'win-store': 'Snap Store'
+        };
+        document.getElementById('mb-active-app').innerText = titleMap[topWin] || 'Finder';
+      }
+    }
+    renderStageManager();
+  }
   function closeWindow(winId) {
     const win = document.getElementById(winId);
     if (win) win.classList.add('hidden');
@@ -4244,7 +4296,16 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   function maximizeWindow(winId) {
     const win = document.getElementById(winId);
     if (win) win.classList.toggle('maximized');
+    focusWindow(winId);
   }
+
+  document.addEventListener('dblclick', (e) => {
+    const tb = e.target.closest('.win-titlebar');
+    if (tb && !e.target.closest('.tl-btn') && !e.target.closest('button') && !e.target.closest('input')) {
+      const win = tb.closest('.aqua-window');
+      if (win) maximizeWindow(win.id);
+    }
+  });
   function showAllWindows() {
     ALL_WINDOWS.forEach((id, idx) => {
       const w = document.getElementById(id);
@@ -7098,7 +7159,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
      ========================================================================= */
 
   /* ----------------- 3.1 MOZILLA FIREFOX (DEFAULT WEB BROWSER) ----------------- */
-  let firefoxInitialized = false;
+  firefoxInitialized = false;
   let ffTabs = [
     { title: 'AquaOS Portal', url: 'https://aquaos.local/start' },
     { title: 'GitHub / aquaos', url: 'https://github.com/iamnikhilsharma/aquaos' },
@@ -7157,7 +7218,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       if (target.includes('.') && !target.includes(' ')) {
         target = 'https://' + target;
       } else {
-        target = 'https://duckduckgo.com/?q=' + encodeURIComponent(target);
+        target = 'https://www.google.com/search?q=' + encodeURIComponent(target);
       }
     }
     const input = document.getElementById('ff-url-input');
@@ -7165,8 +7226,10 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     ffTabs[activeFfTab].url = target;
     let title = target.replace(/^https?:\/\//, '').split('/')[0];
     if (target.includes('aquaos.local/start')) title = 'AquaOS Portal';
+    else if (target.includes('google.com') || target.includes('google.')) title = 'Google';
     else if (target.includes('github.com')) title = 'GitHub / aquaos';
     else if (target.includes('duckduckgo.com')) title = 'DuckDuckGo';
+    else if (target.includes('wikipedia.org')) title = 'Wikipedia';
     ffTabs[activeFfTab].title = title;
     renderFirefoxTabs();
     if (recordHist) {
@@ -7201,6 +7264,289 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   function renderFirefoxViewport(url) {
     const vp = document.getElementById('ff-viewport');
     if (!vp) return;
+    vp.scrollTop = 0;
+
+    // 1. Google Homepage & Search Engine
+    if (url.includes('google.com') || url.includes('google.')) {
+      let q = '';
+      try {
+        const u = new URL(url);
+        q = u.searchParams.get('q') || '';
+      } catch(e) {
+        if (url.includes('?q=')) q = decodeURIComponent(url.split('?q=')[1].split('&')[0]);
+      }
+
+      if (!q && !url.includes('/search')) {
+        // Google Search Home
+        vp.innerHTML = `
+          <div style="width:100%; min-height:100%; display:flex; flex-direction:column; justify-content:space-between; background:#202124; color:#e8eaed; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:16px; padding:16px 24px; font-size:13px;">
+              <span style="cursor:pointer; color:#e8eaed;" onclick="showToast('Google Gmail (Webmail)')">Gmail</span>
+              <span style="cursor:pointer; color:#e8eaed;" onclick="navigateFirefox('https://www.google.com/search?q=images')">Images</span>
+              <span style="font-size:18px; cursor:pointer; opacity:0.8;" title="Google Apps">⠿</span>
+              <div style="width:32px; height:32px; border-radius:50%; background:#1a73e8; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">A</div>
+            </div>
+
+            <div style="max-width:680px; width:100%; margin:0 auto; text-align:center; padding:20px 20px 40px;">
+              <div style="margin-bottom:28px; user-select:none;">
+                <span style="font-size:72px; font-weight:700; letter-spacing:-2px; font-family:'Product Sans', sans-serif;">
+                  <span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span>
+                </span>
+              </div>
+
+              <div style="position:relative; width:100%; margin-bottom:24px;">
+                <div style="display:flex; align-items:center; width:100%; height:48px; border-radius:24px; background:#303134; border:1px solid #5f6368; padding:0 16px; box-shadow:0 1px 6px rgba(0,0,0,0.28);">
+                  <span style="font-size:16px; color:#9aa0a6; margin-right:12px;">🔍</span>
+                  <input id="google-search-box" style="flex:1; background:transparent; border:none; outline:none; color:#e8eaed; font-size:15px;" placeholder="Search Google or type a URL" onkeydown="if(event.key==='Enter') navigateFirefox('https://www.google.com/search?q=' + encodeURIComponent(this.value))" autofocus />
+                  <span style="cursor:pointer; margin-left:10px; font-size:16px; color:#9aa0a6;" title="Search by voice" onclick="showToast('Voice Search: Listening on Linux Audio Input...')">🎙️</span>
+                  <span style="cursor:pointer; margin-left:12px; font-size:16px; color:#9aa0a6;" title="Search by image" onclick="showToast('Google Lens: Ready for Image Capture')">📷</span>
+                </div>
+              </div>
+
+              <div style="display:flex; justify-content:center; gap:12px; margin-bottom:28px;">
+                <button class="aqua-btn" style="background:#303134; border:1px solid transparent; color:#e8eaed; padding:9px 18px; border-radius:4px; font-size:13px;" onclick="navigateFirefox('https://www.google.com/search?q=' + encodeURIComponent(document.getElementById('google-search-box').value || 'AquaOS Linux'))">Google Search</button>
+                <button class="aqua-btn secondary" style="background:#303134; border:1px solid transparent; color:#e8eaed; padding:9px 18px; border-radius:4px; font-size:13px;" onclick="navigateFirefox('https://github.com/iamnikhilsharma/aquaos')">I'm Feeling Lucky</button>
+              </div>
+
+              <div style="font-size:12.5px; color:#9aa0a6; margin-bottom:32px;">
+                Google offered in: <span style="color:#8ab4f8; cursor:pointer;" onclick="showToast('Locale switched')">English</span> &bull; <span style="color:#8ab4f8; cursor:pointer;" onclick="showToast('Locale switched')">हिन्दी</span> &bull; <span style="color:#8ab4f8; cursor:pointer;" onclick="showToast('Locale switched')">Español</span> &bull; <span style="color:#8ab4f8; cursor:pointer;" onclick="showToast('Locale switched')">Français</span> &bull; <span style="color:#8ab4f8; cursor:pointer;" onclick="showToast('Locale switched')">Deutsch</span>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(100px, 1fr)); gap:14px; text-align:center;">
+                <div class="settings-card" style="padding:12px 6px; cursor:pointer; background:#303134; border-radius:10px;" onclick="navigateFirefox('https://github.com/iamnikhilsharma/aquaos')">
+                  <div style="font-size:24px; margin-bottom:4px;">🐙</div>
+                  <div style="font-size:11.5px; font-weight:600; color:#e8eaed;">GitHub</div>
+                </div>
+                <div class="settings-card" style="padding:12px 6px; cursor:pointer; background:#303134; border-radius:10px;" onclick="navigateFirefox('https://en.wikipedia.org/wiki/Linux')">
+                  <div style="font-size:24px; margin-bottom:4px;">📚</div>
+                  <div style="font-size:11.5px; font-weight:600; color:#e8eaed;">Wikipedia</div>
+                </div>
+                <div class="settings-card" style="padding:12px 6px; cursor:pointer; background:#303134; border-radius:10px;" onclick="navigateFirefox('https://duckduckgo.com')">
+                  <div style="font-size:24px; margin-bottom:4px;">🦆</div>
+                  <div style="font-size:11.5px; font-weight:600; color:#e8eaed;">DuckDuckGo</div>
+                </div>
+                <div class="settings-card" style="padding:12px 6px; cursor:pointer; background:#303134; border-radius:10px;" onclick="navigateFirefox('https://ubuntu.com/noble')">
+                  <div style="font-size:24px; margin-bottom:4px;">🐧</div>
+                  <div style="font-size:11.5px; font-weight:600; color:#e8eaed;">Ubuntu</div>
+                </div>
+                <div class="settings-card" style="padding:12px 6px; cursor:pointer; background:#303134; border-radius:10px;" onclick="navigateFirefox('https://ollama.com')">
+                  <div style="font-size:24px; margin-bottom:4px;">🧠</div>
+                  <div style="font-size:11.5px; font-weight:600; color:#e8eaed;">Ollama AI</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#171717; border-top:1px solid #303134; font-size:12px; color:#9aa0a6;">
+              <div style="padding:12px 24px; border-bottom:1px solid #303134;">India &bull; AquaOS Linux Network &bull; Verified Connection</div>
+              <div style="padding:12px 24px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div style="display:flex; gap:16px;">
+                  <span style="cursor:pointer;" onclick="showToast('AquaOS 1.0 Beta Browser')">About</span>
+                  <span style="cursor:pointer;" onclick="showToast('Ad-free Linux Experience')">Advertising</span>
+                  <span style="cursor:pointer;" onclick="showToast('Commercial & Enterprise')">Business</span>
+                  <span style="cursor:pointer;" onclick="showToast('Direct Web Rendering')">How Search works</span>
+                </div>
+                <div style="display:flex; gap:16px;">
+                  <span style="cursor:pointer;" onclick="showToast('Zero-Trust Isolated Sandbox')">Privacy</span>
+                  <span style="cursor:pointer;" onclick="showToast('GNU GPL v3 License')">Terms</span>
+                  <span style="cursor:pointer;" onclick="openWindow('win-settings', 'System Settings')">Settings</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        // Google Search Results View
+        const queryText = q || 'AquaOS';
+        vp.innerHTML = `
+          <div style="width:100%; min-height:100%; background:#202124; color:#bdc1c6; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding-bottom:40px;">
+            <div style="position:sticky; top:0; z-index:20; background:#202124; border-bottom:1px solid #3c4043; padding:12px 24px 0;">
+              <div style="display:flex; align-items:center; gap:24px; margin-bottom:12px;">
+                <div style="cursor:pointer; font-size:24px; font-weight:700; letter-spacing:-1px; user-select:none;" onclick="navigateFirefox('https://www.google.com')">
+                  <span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span>
+                </div>
+                <div style="flex:1; max-width:680px; display:flex; align-items:center; height:42px; border-radius:24px; background:#303134; border:1px solid #5f6368; padding:0 16px;">
+                  <input id="google-results-input" style="flex:1; background:transparent; border:none; outline:none; color:#e8eaed; font-size:14.5px;" value="${queryText}" onkeydown="if(event.key==='Enter') navigateFirefox('https://www.google.com/search?q=' + encodeURIComponent(this.value))" />
+                  <span style="cursor:pointer; color:#9aa0a6; margin-right:10px;" onclick="document.getElementById('google-results-input').value=''; document.getElementById('google-results-input').focus();">×</span>
+                  <span style="color:#4285F4; cursor:pointer;" onclick="navigateFirefox('https://www.google.com/search?q=' + encodeURIComponent(document.getElementById('google-results-input').value))">🔍</span>
+                </div>
+              </div>
+              <div style="display:flex; gap:20px; font-size:13px; margin-left:100px;">
+                <span style="color:#8ab4f8; border-bottom:3px solid #8ab4f8; padding-bottom:8px; font-weight:600; cursor:pointer;">All</span>
+                <span style="color:#9aa0a6; padding-bottom:8px; cursor:pointer;" onclick="showToast('Filtering: Images')">Images</span>
+                <span style="color:#9aa0a6; padding-bottom:8px; cursor:pointer;" onclick="showToast('Filtering: Videos')">Videos</span>
+                <span style="color:#9aa0a6; padding-bottom:8px; cursor:pointer;" onclick="showToast('Filtering: News')">News</span>
+                <span style="color:#9aa0a6; padding-bottom:8px; cursor:pointer;" onclick="showToast('Filtering: Maps')">Maps</span>
+                <span style="color:#9aa0a6; padding-bottom:8px; cursor:pointer;" onclick="showToast('Filtering: Books')">Books</span>
+              </div>
+            </div>
+
+            <div style="max-width:880px; padding:16px 24px 0 124px;">
+              <div style="font-size:12.5px; color:#9aa0a6; margin-bottom:18px;">About 2,840,000 results (0.28 seconds)</div>
+
+              <!-- Knowledge Panel if query relates to AquaOS / Linux -->
+              ${queryText.toLowerCase().includes('aqua') || queryText.toLowerCase().includes('os') || queryText.toLowerCase().includes('linux') ? `
+                <div style="background:#303134; border:1px solid #3c4043; border-radius:12px; padding:18px 20px; margin-bottom:24px; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                      <h2 style="margin:0 0 4px; font-size:22px; color:#e8eaed; font-weight:600;">AquaOS 1.0 Beta (Sonoma-AI Linux)</h2>
+                      <div style="font-size:12.5px; color:#9aa0a6; margin-bottom:12px;">Operating System Environment &bull; Open-source Project</div>
+                    </div>
+                    <span class="badge-fit badge-gpu" style="font-size:11px;">Linux 6.12 LTS</span>
+                  </div>
+                  <div style="font-size:13.5px; line-height:1.6; color:#bdc1c6; margin-bottom:14px;">
+                    AquaOS is a next-generation desktop Linux distribution delivering macOS Sonoma and Sequoia design fidelity on Ubuntu 24.04 Noble Numbat. Built with a Wayland labwc compositor, immutable SquashFS root, Landlock zero-trust sandboxes, and Apple Intelligence local AI stack.
+                  </div>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; font-size:12.5px; border-top:1px solid #3c4043; padding-top:12px;">
+                    <div><strong style="color:#e8eaed;">Compositor:</strong> Wayland (labwc)</div>
+                    <div><strong style="color:#e8eaed;">Base System:</strong> Ubuntu 24.04 Noble</div>
+                    <div><strong style="color:#e8eaed;">Kernel:</strong> 6.12.0-aquaos-ai-lockdown</div>
+                    <div><strong style="color:#e8eaed;">License:</strong> GNU GPL v3.0</div>
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Main Results -->
+              <div style="display:flex; flex-direction:column; gap:26px;">
+                <!-- Result 1 -->
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <div style="width:20px; height:20px; border-radius:50%; background:#2b3137; display:flex; align-items:center; justify-content:center; font-size:11px;">🐙</div>
+                    <div style="font-size:12px; color:#bdc1c6;">github.com &rsaquo; iamnikhilsharma &rsaquo; aquaos</div>
+                  </div>
+                  <h3 style="margin:0 0 6px; font-size:19px; font-weight:400;">
+                    <span style="color:#8ab4f8; cursor:pointer;" onclick="navigateFirefox('https://github.com/iamnikhilsharma/aquaos')">AquaOS — macOS Sonoma/Sequoia Linux Desktop with Apple Intelligence</span>
+                  </h3>
+                  <div style="font-size:13.5px; line-height:1.55; color:#bdc1c6; margin-bottom:8px;">
+                    Official repository for AquaOS-Beta. Integrates labwc Wayland compositor, universal binary execution (running .exe via Proton, .dmg via Darling, .apk via Waydroid), and full Zero-Trust Bubblewrap sandboxing.
+                  </div>
+                  <div style="display:flex; gap:16px; font-size:12.5px; color:#8ab4f8;">
+                    <span style="cursor:pointer;" onclick="navigateFirefox('https://github.com/iamnikhilsharma/aquaos')">Releases &bull; 1.0-beta</span>
+                    <span style="cursor:pointer;" onclick="navigateFirefox('https://github.com/iamnikhilsharma/aquaos')">Architecture Guide</span>
+                    <span style="cursor:pointer;" onclick="navigateFirefox('https://github.com/iamnikhilsharma/aquaos')">Kernel Modules</span>
+                  </div>
+                </div>
+
+                <!-- Result 2 -->
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <div style="width:20px; height:20px; border-radius:50%; background:#30D158; display:flex; align-items:center; justify-content:center; font-size:11px;">🐧</div>
+                    <div style="font-size:12px; color:#bdc1c6;">kernel.org &rsaquo; releases &rsaquo; 6.12</div>
+                  </div>
+                  <h3 style="margin:0 0 6px; font-size:19px; font-weight:400;">
+                    <span style="color:#8ab4f8; cursor:pointer;" onclick="navigateFirefox('https://kernel.org/releases/6.12')">The Linux Kernel Archives: 6.12 LTS Architecture and Security</span>
+                  </h3>
+                  <div style="font-size:13.5px; line-height:1.55; color:#bdc1c6;">
+                    Documentation and source tarballs for the Linux 6.12 kernel series. Highlights include real-time PREEMPT_RT capabilities, Landlock LSM v4 filesystem protection, and direct DRM leasing for Wayland compositors.
+                  </div>
+                </div>
+
+                <!-- Result 3: Dynamic for query -->
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <div style="width:20px; height:20px; border-radius:50%; background:#4285F4; display:flex; align-items:center; justify-content:center; font-size:11px;">🌐</div>
+                    <div style="font-size:12px; color:#bdc1c6;">wikipedia.org &rsaquo; wiki &rsaquo; ${encodeURIComponent(queryText)}</div>
+                  </div>
+                  <h3 style="margin:0 0 6px; font-size:19px; font-weight:400;">
+                    <span style="color:#8ab4f8; cursor:pointer;" onclick="navigateFirefox('https://en.wikipedia.org/wiki/' + encodeURIComponent('${queryText}'))">${queryText} — Wikipedia, the free encyclopedia</span>
+                  </h3>
+                  <div style="font-size:13.5px; line-height:1.55; color:#bdc1c6;">
+                    Explore comprehensive technical reference articles, historical timelines, and cross-platform benchmarks regarding ${queryText}.
+                  </div>
+                </div>
+
+                <!-- People Also Ask -->
+                <div style="background:#303134; border:1px solid #3c4043; border-radius:8px; padding:12px 18px;">
+                  <div style="font-size:15px; font-weight:600; color:#e8eaed; margin-bottom:10px;">People also ask</div>
+                  <details style="margin-bottom:8px; cursor:pointer; font-size:13.5px;">
+                    <summary style="color:#8ab4f8; font-weight:500;">What makes AquaOS different from traditional Linux distros?</summary>
+                    <div style="margin-top:6px; color:#bdc1c6; font-size:13px; line-height:1.5; padding-left:10px;">
+                      AquaOS pairs pixel-perfect macOS Sequoia visual glass aesthetics with a hardened immutable SquashFS root, local Apple Intelligence LLMs via Ollama, and universal app dispatching.
+                    </div>
+                  </details>
+                  <details style="margin-bottom:8px; cursor:pointer; font-size:13.5px;">
+                    <summary style="color:#8ab4f8; font-weight:500;">How do I install apps on AquaOS?</summary>
+                    <div style="margin-top:6px; color:#bdc1c6; font-size:13px; line-height:1.5; padding-left:10px;">
+                      You can launch the built-in Snap Store from the dock or run <code style="color:#5AC8FA;">aqua-pkg install &lt;app&gt;</code> in Terminal.
+                    </div>
+                  </details>
+                  <details style="cursor:pointer; font-size:13.5px;">
+                    <summary style="color:#8ab4f8; font-weight:500;">Is Firefox the default browser in AquaOS?</summary>
+                    <div style="margin-top:6px; color:#bdc1c6; font-size:13px; line-height:1.5; padding-left:10px;">
+                      Yes, Mozilla Firefox 134 is the hardened default web browser in AquaOS, isolated with DNS-over-HTTPS and Wayland hardware WebRender.
+                    </div>
+                  </details>
+                </div>
+
+                <!-- Related Searches -->
+                <div style="margin-top:10px;">
+                  <div style="font-size:14px; font-weight:600; color:#e8eaed; margin-bottom:12px;">Related searches</div>
+                  <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    ${['AquaOS download', 'AquaOS vs macOS', 'Linux 6.12 features', 'Ubuntu 24.04 noble apps', 'Universal app runner'].map(term => `
+                      <div style="background:#303134; border:1px solid #3c4043; border-radius:18px; padding:7px 14px; font-size:12.5px; color:#8ab4f8; cursor:pointer;" onclick="navigateFirefox('https://www.google.com/search?q=' + encodeURIComponent('${term}'))">
+                        🔍 ${term}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    // 2. Wikipedia View
+    if (url.includes('wikipedia.org')) {
+      const topic = url.split('/wiki/')[1] || 'AquaOS';
+      const cleanTopic = decodeURIComponent(topic).replace(/_/g, ' ');
+      vp.innerHTML = `
+        <div style="width:100%; min-height:100%; background:#ffffff; color:#202122; font-family:'Linux Biolinum', 'Georgia', serif; padding:24px 36px;">
+          <div style="border-bottom:1px solid #a2a9b1; padding-bottom:8px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:baseline;">
+            <h1 style="margin:0; font-size:28px; font-weight:400; font-family:'Georgia', serif;">${cleanTopic}</h1>
+            <div style="font-size:12px; color:#72777d; font-family:sans-serif;">From Wikipedia, the free encyclopedia</div>
+          </div>
+          <div style="font-size:13px; line-height:1.4; color:#54595d; margin-bottom:16px; font-family:sans-serif;">
+            This article is about the computing concept and operating system architecture.
+          </div>
+          <div style="display:flex; gap:24px;">
+            <div style="flex:1; font-size:14.5px; line-height:1.7;">
+              <p>
+                <strong>${cleanTopic}</strong> represents modern paradigms in operating systems, combining Unix philosophy with zero-trust sandboxing, microkernel principles, and high-performance compositor architecture.
+              </p>
+              <h2 style="font-size:20px; border-bottom:1px solid #a2a9b1; padding-bottom:4px; margin-top:24px; font-family:'Georgia', serif;">Architecture & Design</h2>
+              <p>
+                Modern iterations feature Wayland display server protocols, hardware WebRender acceleration, and integrated localized AI inference bridges running in unprivileged user namespaces.
+              </p>
+              <div style="background:#f8f9fa; border:1px solid #a2a9b1; border-radius:4px; padding:14px; margin:16px 0; font-family:sans-serif; font-size:13px;">
+                <strong>Key Specifications:</strong>
+                <ul style="margin:6px 0 0 18px; padding:0;">
+                  <li>Kernel: Linux 6.12.0 LTS with Landlock LSM</li>
+                  <li>Compositor: Labwc Wayland / Openbox protocols</li>
+                  <li>Package Architecture: Canonical Snap, Debian .deb, Flatpak</li>
+                  <li>Security: Immutable SquashFS root, Bubblewrap sandbox</li>
+                </ul>
+              </div>
+            </div>
+            <div style="width:240px; background:#f8f9fa; border:1px solid #a2a9b1; border-radius:4px; padding:12px; font-family:sans-serif; font-size:12px; flex-shrink:0;">
+              <div style="font-weight:700; text-align:center; padding-bottom:8px; border-bottom:1px solid #a2a9b1; font-size:14px;">${cleanTopic}</div>
+              <div style="margin:10px 0; text-align:center;">
+                <div style="width:100%; height:90px; background:linear-gradient(135deg, #0A84FF, #BF5AF2); border-radius:4px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:32px;">🌐</div>
+                <div style="font-size:10.5px; color:#54595d; margin-top:4px;">Technical Schema</div>
+              </div>
+              <table style="width:100%; font-size:11.5px; line-height:1.5;">
+                <tr><td style="color:#54595d; font-weight:600;">Type:</td><td>Operating System</td></tr>
+                <tr><td style="color:#54595d; font-weight:600;">Platform:</td><td>x86_64, ARM64</td></tr>
+                <tr><td style="color:#54595d; font-weight:600;">UI Style:</td><td>Aqua Glassmorphism</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // 3. AquaOS Start Portal
     if (url.includes('aquaos.local/start') || url === 'about:home' || url === 'https://aquaos.local') {
       vp.innerHTML = `
         <div style="max-width:720px; width:100%; text-align:center; padding-top:20px;">
@@ -7212,10 +7558,15 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
             </div>
           </div>
           <div style="display:flex; gap:10px; margin-bottom:28px;">
-            <input id="ff-portal-search" class="aqua-input" style="flex:1; padding:10px 16px; font-size:14px; border-radius:24px; box-shadow:0 4px 18px rgba(0,0,0,0.3);" placeholder="Search the web with DuckDuckGo or enter URL..." onkeydown="if(event.key==='Enter') navigateFirefox(this.value)" />
-            <button class="aqua-btn" style="padding:10px 20px; border-radius:24px;" onclick="navigateFirefox(document.getElementById('ff-portal-search').value)">Search</button>
+            <input id="ff-portal-search" class="aqua-input" style="flex:1; padding:10px 16px; font-size:14px; border-radius:24px; box-shadow:0 4px 18px rgba(0,0,0,0.3);" placeholder="Search the web with Google or enter URL..." onkeydown="if(event.key==='Enter') navigateFirefox('https://www.google.com/search?q=' + encodeURIComponent(this.value))" />
+            <button class="aqua-btn" style="padding:10px 20px; border-radius:24px;" onclick="navigateFirefox('https://www.google.com/search?q=' + encodeURIComponent(document.getElementById('ff-portal-search').value))">Search</button>
           </div>
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:14px; margin-bottom:28px;">
+            <div class="settings-card" style="text-align:center; padding:14px 10px; cursor:pointer;" onclick="navigateFirefox('https://www.google.com')">
+              <div style="font-size:24px; margin-bottom:6px;">🔍</div>
+              <div style="font-weight:600; font-size:12px;">Google</div>
+              <div style="font-size:10.5px; color:var(--text-secondary);">Web Search</div>
+            </div>
             <div class="settings-card" style="text-align:center; padding:14px 10px; cursor:pointer;" onclick="navigateFirefox('https://github.com/iamnikhilsharma/aquaos')">
               <div style="font-size:24px; margin-bottom:6px;">🐙</div>
               <div style="font-weight:600; font-size:12px;">GitHub Repo</div>
@@ -7303,22 +7654,25 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       `;
     } else {
       vp.innerHTML = `
-        <div style="max-width:760px; width:100%; text-align:left; padding:20px 0;">
-          <div class="settings-card" style="padding:24px;">
-            <div style="font-size:11px; color:#5AC8FA; font-family:var(--font-mono); margin-bottom:6px;">${url}</div>
-            <h2 style="margin:0 0 12px; font-size:20px;">Web Page Render View</h2>
-            <div style="font-size:12.5px; line-height:1.6; color:var(--text-secondary); margin-bottom:16px;">
-              Content loaded securely through AquaOS hardened proxy gateway. All scripts and third-party cookies are strictly isolated.
+        <div style="width:100%; height:100%; display:flex; flex-direction:column; background:#1c1c1e;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 16px; background:rgba(0,0,0,0.6); border-bottom:0.5px solid var(--glass-border); font-size:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="color:#30D158;">🔒 TLS 1.3 Verified</span>
+              <span style="color:var(--text-secondary); font-family:var(--font-mono); font-size:11.5px;">${url}</span>
             </div>
-            <button class="aqua-btn" onclick="navigateFirefox('https://aquaos.local/start')">Return to AquaOS Start</button>
+            <div style="display:flex; gap:8px;">
+              <button class="aqua-btn secondary" style="padding:3px 10px; font-size:11px;" onclick="window.open('${url}', '_blank')">Open in New Tab ↗</button>
+              <button class="aqua-btn" style="padding:3px 10px; font-size:11px;" onclick="navigateFirefox('https://www.google.com/search?q=' + encodeURIComponent('${url.replace(/^https?:\/\//, '')}'))">Search on Google 🔍</button>
+            </div>
           </div>
+          <iframe src="${url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style="flex:1; width:100%; border:none; background:#ffffff;"></iframe>
         </div>
       `;
     }
   }
 
   /* ----------------- 3.2 AQUA PREVIEW (IMAGE VIEWER) ----------------- */
-  let previewInitialized = false;
+  previewInitialized = false;
   let previewImages = [
     { title: 'Sonoma Dunes', res: '3840 × 2160 • P3 Wide Color', grad: 'linear-gradient(135deg, #0A84FF, #BF5AF2, #FF375F)', desc: 'macOS Sonoma Default Gradient Wallpaper' },
     { title: 'Sequoia Dawn', res: '4096 × 2304 • HDR 1000', grad: 'linear-gradient(160deg, #FF9500, #AF52DE, #2E1534)', desc: 'macOS Sequoia California Forest Twilight' },
@@ -7439,7 +7793,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   }
 
   /* ----------------- 3.3 AQUA MUSIC PLAYER ----------------- */
-  let musicInitialized = false;
+  musicInitialized = false;
   let musicTracks = [
     { title: 'Chillhop Waves', artist: 'AquaOS Sound System', duration: '3:24', totalSecs: 204, freq: 220 },
     { title: 'Synthwave 6.12', artist: 'Linux Kernel Beats', duration: '4:12', totalSecs: 252, freq: 174 },
@@ -7636,7 +7990,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   }
 
   /* ----------------- 3.4 QUICKTIME VIDEO PLAYER ----------------- */
-  let videoInitialized = false;
+  videoInitialized = false;
   let isVideoPlaying = false;
   let videoTimeSec = 14;
   let videoTotalSec = 150;
@@ -7765,7 +8119,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   }
 
   /* ----------------- 3.5 MOZILLA THUNDERBIRD (DEFAULT EMAIL) ----------------- */
-  let tbInitialized = false;
+  tbInitialized = false;
   let currentTbFolder = 'inbox';
   let tbThreads = [
     {
@@ -7913,7 +8267,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   }
 
   /* ----------------- 3.6 AQUA SNAP STORE ----------------- */
-  let storeInitialized = false;
+  storeInitialized = false;
   let storeCategory = 'discover';
   let installedSnaps = ['firefox', 'thunderbird', 'terminal', 'files', 'shield', 'store'];
   const storeCatalog = [
@@ -7925,7 +8279,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     { id: 'libreoffice', name: 'LibreOffice', dev: 'The Document Foundation', cat: 'productivity', ver: '24.2.4', size: '280 MB', icon: '📄', desc: 'Free and open source office productivity suite with Word & Calc.', installed: false },
     { id: 'gimp', name: 'GIMP Image Editor', dev: 'The GIMP Team', cat: 'media', ver: '2.10.38', size: '240 MB', icon: '🖌️', desc: 'GNU Image Manipulation Program for high-end photo retouching.', installed: false },
     { id: 'vlc', name: 'VLC Media Player', dev: 'VideoLAN Organization', cat: 'media', ver: '3.0.21', size: '88 MB', icon: '🎬', desc: 'Plays everything: files, discs, webcams, devices, and streams.', installed: false },
-    { id: 'wireshark', name: 'Wireshark Analyzer', dev: 'Wireshark Foundation', cat: 'security', ver: '4.2.5', size: '75 MB', icon: '🦈', desc: 'The world\\'s foremost and widely-used network protocol analyzer.', installed: false },
+    { id: 'wireshark', name: 'Wireshark Analyzer', dev: 'Wireshark Foundation', cat: 'security', ver: '4.2.5', size: '75 MB', icon: '🦈', desc: "The world's foremost and widely-used network protocol analyzer.", installed: false },
     { id: 'bitwarden', name: 'Bitwarden Password Manager', dev: 'Bitwarden Inc.', cat: 'security', ver: '2024.9.0', size: '92 MB', icon: '🛡️', desc: 'Secure and free password manager for all of your devices.', installed: false },
     { id: 'firefox', name: 'Mozilla Firefox', dev: 'Mozilla', cat: 'productivity', ver: '134.0', size: '84 MB', icon: '🌐', desc: 'Fast, private and secure web browser with Zero-Trust isolation.', installed: true },
     { id: 'thunderbird', name: 'Mozilla Thunderbird', dev: 'Mozilla', cat: 'productivity', ver: '128.3', size: '95 MB', icon: '✉️', desc: 'Free email, newsfeed, chat, and calendar client.', installed: true }
