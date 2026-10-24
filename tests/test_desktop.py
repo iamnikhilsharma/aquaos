@@ -189,4 +189,28 @@ def test_desktop_html_windows_and_resizing() -> None:
     assert "installSnapPackage" in content
 
 
+def test_virtual_machine_scripts() -> None:
+    root = Path(__file__).resolve().parents[1]
+    ps1_script = root / "scripts" / "run-vm.ps1"
+    bat_script = root / "scripts" / "run-vm.bat"
+    vm_doc = root / "docs" / "VIRTUAL_MACHINE.md"
+
+    assert ps1_script.exists(), "scripts/run-vm.ps1 must exist"
+    assert bat_script.exists(), "scripts/run-vm.bat must exist"
+    assert vm_doc.exists(), "docs/VIRTUAL_MACHINE.md must exist"
+
+    ps1_text = ps1_script.read_text(encoding="utf-8")
+    assert "qemu-system-x86_64" in ps1_text
+    assert "whpx" in ps1_text
+    assert "8765" in ps1_text
+    assert "2222" in ps1_text
+    assert "dist" in ps1_text
+
+    doc_text = vm_doc.read_text(encoding="utf-8")
+    assert "QEMU" in doc_text
+    assert "VirtualBox" in doc_text
+    assert "VMware" in doc_text
+
+
+
 
