@@ -332,9 +332,113 @@ class AquaGatekeeper:
         elif raw_bytes.startswith(b"\x7fELF") and len(raw_bytes) >= 64:
             file_format = "ELF"
             ei_class = raw_bytes[4]
-            architecture = "x86_64" if ei_class == 2 else "x86 (32-bit)"
+            is_64 = (ei_class == 2)
+            machine = struct.unpack_from("<H", raw_bytes, 18)[0]
+            mach_map = {0x03: "x86 (32-bit)", 0x3E: "x86_64 (AMD64)", 0x28: "ARM", 0xB7: "AArch64 (ARM64)", 0xF3: "RISC-V"}
+            architecture = mach_map.get(machine, "x86_64" if is_64 else "x86")
             mitigations["nx_dep_compatible"] = True
             mitigations["dynamic_base_aslr"] = (raw_bytes[16] == 3)  # ET_DYN (PIE)
+
+            # Parse ELF Section Headers
+            try:
+                if is_64 and len(raw_bytes) >= 64:
+                    e_shoff = struct.unpack_from("<Q", raw_bytes, 40)[0]
+                    e_shentsize = struct.unpack_from("<H", raw_bytes, 58)[0]
+                    e_shnum = struct.unpack_from("<H", raw_bytes, 60)[0]
+                    e_shstrndx = struct.unpack_from("<H", raw_bytes, 62)[0]
+
+                    if 0 < e_shoff < file_size and e_shnum > 0 and e_shstrndx < e_shnum:
+                        strtab_sh_off = e_shoff + e_shstrndx * e_shentsize
+                        if strtab_sh_off + 40 <= file_size:
+                            strtab_offset = struct.unpack_from("<Q", raw_bytes, strtab_sh_off + 24)[0]
+                            strtab_size = struct.unpack_from("<Q", raw_bytes, strtab_sh_off + 32)[0]
+                            shstrtab = raw_bytes[strtab_offset:min(file_size, strtab_offset + strtab_size)] if strtab_offset < file_size else b""
+
+                            for s_idx in range(min(e_shnum, 32)):
+                                s_entry = e_shoff + s_idx * e_shentsize
+                                if s_entry + 64 <= file_size:
+                                    sh_name_idx = struct.unpack_from("<I", raw_bytes, s_entry)[0]
+                                    sh_flags = struct.unpack_from("<Q", raw_bytes, s_entry + 8)[0]
+                                    sh_addr = struct.unpack_from("<Q", raw_bytes, s_entry + 16)[0]
+                                    sh_offset = struct.unpack_from("<Q", raw_bytes, s_entry + 24)[0]
+                                    sh_size = struct.unpack_from("<Q", raw_bytes, s_entry + 32)[0]
+
+                                    s_name = ""
+                                    if shstrtab and sh_name_idx < len(shstrtab):
+                                        null_term = shstrtab.find(b"\x00", sh_name_idx)
+                                        s_name = shstrtab[sh_name_idx:null_term].decode("ascii", errors="replace") if null_term != -1 else ""
+
+                                    if s_name:
+                                        sec_slice = raw_bytes[sh_offset:sh_offset + min(sh_size, file_size - sh_offset)] if sh_offset < file_size else b""
+                                        sec_ent = self.calculate_shannon_entropy(sec_slice) if sec_slice else 0.0
+                                        perms = ("R" if sh_flags & 0x2 else "") + ("W" if sh_flags & 0x1 else "") + ("X" if sh_flags & 0x4 else "")
+                                        sections.append({
+                                            "name": s_name,
+                                            "virtual_address": f"0x{sh_addr:08X}",
+                                            "virtual_size": sh_size,
+                                            "raw_size": sh_size,
+                                            "entropy": sec_ent,
+                                            "permissions": perms or "R",
+                                        })
+            except Exception:
+                pass
+
+        elif raw_bytes[:4] in (b"\xfe\xed\xfa\xce", b"\xfe\xed\xfa\xcf", b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe", b"\xca\xfe\xba\xbe") and len(raw_bytes) >= 32:
+            file_format = "MACH_O"
+            magic = raw_bytes[:4]
+            is_fat = (magic == b"\xca\xfe\xba\xbe")
+            is_64 = (magic in (b"\xfe\xed\xfa\xcf", b"\xcf\xfa\xed\xfe"))
+
+            if is_fat:
+                architecture = "Universal Binary (FAT)"
+            elif is_64:
+                cputype = struct.unpack_from("<I", raw_bytes, 4)[0]
+                arch_map = {0x01000007: "x86_64 (Intel Mac)", 0x0100000C: "ARM64 (Apple Silicon M1/M2/M3/M4)"}
+                architecture = arch_map.get(cputype, "Mach-O 64-bit")
+            else:
+                architecture = "Mach-O 32-bit"
+
+            mitigations["nx_dep_compatible"] = True
+            mitigations["dynamic_base_aslr"] = True  # macOS PIE default
+
+            # Parse Mach-O Load Commands
+            try:
+                if is_64 and not is_fat:
+                    ncmds = struct.unpack_from("<I", raw_bytes, 16)[0]
+                    cmd_offset = 32
+                    for _ in range(min(ncmds, 32)):
+                        if cmd_offset + 8 > file_size:
+                            break
+                        cmd = struct.unpack_from("<I", raw_bytes, cmd_offset)[0]
+                        cmdsize = struct.unpack_from("<I", raw_bytes, cmd_offset + 4)[0]
+
+                        # LC_SEGMENT_64 = 0x19
+                        if cmd == 0x19 and cmd_offset + 72 <= file_size:
+                            segname = raw_bytes[cmd_offset + 8:cmd_offset + 24].split(b"\x00")[0].decode("ascii", errors="replace")
+                            vmaddr, vmsize, fileoff, filesize = struct.unpack_from("<QQQQ", raw_bytes, cmd_offset + 24)
+                            nsects = struct.unpack_from("<I", raw_bytes, cmd_offset + 64)[0]
+
+                            sec_cur = cmd_offset + 72
+                            for _ in range(min(nsects, 16)):
+                                if sec_cur + 80 <= file_size:
+                                    secname = raw_bytes[sec_cur:sec_cur + 16].split(b"\x00")[0].decode("ascii", errors="replace")
+                                    s_addr, s_size, s_off = struct.unpack_from("<QQI", raw_bytes, sec_cur + 32)
+                                    sec_slice = raw_bytes[s_off:s_off + min(s_size, file_size - s_off)] if s_off < file_size else b""
+                                    sec_ent = self.calculate_shannon_entropy(sec_slice) if sec_slice else 0.0
+                                    perms = "RX" if "TEXT" in segname else ("RW" if "DATA" in segname else "R")
+                                    sections.append({
+                                        "name": f"{segname}.{secname}",
+                                        "virtual_address": f"0x{s_addr:08X}",
+                                        "virtual_size": s_size,
+                                        "raw_size": s_size,
+                                        "entropy": sec_ent,
+                                        "permissions": perms,
+                                    })
+                                    sec_cur += 80
+
+                        cmd_offset += cmdsize
+            except Exception:
+                pass
 
         elif raw_bytes.startswith(b"\x00asm"):
             file_format = "WASM"
@@ -586,11 +690,12 @@ class AquaGatekeeper:
         imports: List[Dict[str, str]] = []
         exports: List[str] = []
 
-        # 1. Match DLL names (.dll) or shared objects (.so)
-        dll_matches = re.findall(r"\b([a-zA-Z0-9_\-\.]+\.(?:dll|so(?:\.[0-9]+)?))\b", text_sample, re.IGNORECASE)
-        libraries = list(dict.fromkeys(dll_matches))[:25]
+        # 1. Match DLL names (.dll), shared objects (.so), dylibs (.dylib), and macOS frameworks (.framework)
+        dll_matches = re.findall(r"\b([a-zA-Z0-9_\-\.]+\.(?:dll|so(?:\.[0-9]+)?|dylib))\b", text_sample, re.IGNORECASE)
+        framework_matches = re.findall(r"\b([A-Za-z0-9_]+\.framework)\b", text_sample)
+        libraries = list(dict.fromkeys(dll_matches + framework_matches))[:35]
 
-        # 2. Known Windows & Linux security-critical API signatures
+        # 2. Known Windows, Linux & macOS security-critical API signatures
         known_apis = {
             "VirtualAlloc": ("Memory Allocation", "MEDIUM"),
             "VirtualProtect": ("Memory Permission Change (W^X bypass)", "HIGH"),
@@ -613,6 +718,11 @@ class AquaGatekeeper:
             "mprotect": ("Memory Protection Modification", "HIGH"),
             "chmod": ("File Permission Modification", "MEDIUM"),
             "setuid": ("Privilege Escalation", "HIGH"),
+            "task_for_pid": ("Mach Task Port Hijacking / Code Injection", "HIGH"),
+            "mach_vm_write": ("Mach Virtual Memory Write / Code Injection", "HIGH"),
+            "mach_vm_protect": ("Mach Memory Permission Change (W^X bypass)", "HIGH"),
+            "posix_spawn": ("Process Spawning", "MEDIUM"),
+            "sysctlbyname": ("Kernel State Query / Anti-Analysis", "LOW"),
         }
 
         for api, (desc, severity) in known_apis.items():
@@ -692,5 +802,176 @@ class AquaGatekeeper:
             "prev_offset": max(0, offset - length),
             "lines": lines,
         }
+
+    def decompile_code(self, path: Union[str, Path], offset: int = 0, limit_lines: int = 200) -> Dict[str, Any]:
+        """Reconstruct high-level C / Python pseudo-code from disassembly, AST, or native opcodes."""
+        target = Path(path)
+        if not target.exists() or not target.is_file():
+            return {
+                "target": str(path),
+                "format": "UNKNOWN",
+                "decompiled_lines": [{"line": 1, "code": "// Error: Target binary or script not found on disk", "type": "comment"}],
+                "raw_pseudo_code": "// Error: File not found",
+                "functions": [],
+                "security_annotations": [],
+            }
+
+        raw_bytes = target.read_bytes()
+        file_size = len(raw_bytes)
+
+        # 1. Python AST Decompilation & Reconstruction
+        if target.suffix.lower() == ".py":
+            import ast
+            try:
+                tree = ast.parse(raw_bytes.decode("utf-8", errors="replace"), filename=target.name)
+                lines: List[Dict[str, Any]] = []
+                security_annotations: List[Dict[str, str]] = []
+                functions: List[str] = []
+
+                lines.append({"line": len(lines) + 1, "code": f"// AquaOS REA Decompiler — Python AST Reconstruction: {target.name}", "type": "comment"})
+                lines.append({"line": len(lines) + 1, "code": f"// Target Size: {file_size} bytes | Reconstructed from Source AST", "type": "comment"})
+                lines.append({"line": len(lines) + 1, "code": "", "type": "blank"})
+
+                for node in ast.iter_child_nodes(tree):
+                    if isinstance(node, ast.Import):
+                        for n in node.names:
+                            lines.append({"line": len(lines) + 1, "code": f"#include <{n.name}> // import {n.name}", "type": "include"})
+                    elif isinstance(node, ast.ImportFrom) and node.module:
+                        for n in node.names:
+                            lines.append({"line": len(lines) + 1, "code": f"using {node.module}::{n.name};", "type": "include"})
+                    elif isinstance(node, ast.FunctionDef):
+                        functions.append(node.name)
+                        lines.append({"line": len(lines) + 1, "code": "", "type": "blank"})
+                        args = [a.arg for a in node.args.args]
+                        lines.append({"line": len(lines) + 1, "code": f"any {node.name}({', '.join(f'any {a}' for a in args)}) {{", "type": "fn_start"})
+                        
+                        # Inspect function body statements
+                        for stmt in node.body:
+                            if isinstance(stmt, ast.Return):
+                                lines.append({"line": len(lines) + 1, "code": "    return result;", "type": "return"})
+                            elif isinstance(stmt, ast.Assign):
+                                targets = [t.id for t in stmt.targets if isinstance(t, ast.Name)]
+                                lines.append({"line": len(lines) + 1, "code": f"    auto {', '.join(targets)} = expression();", "type": "code"})
+                            elif isinstance(stmt, ast.If):
+                                lines.append({"line": len(lines) + 1, "code": "    if (condition) {", "type": "control"})
+                                lines.append({"line": len(lines) + 1, "code": "        // branch body", "type": "comment"})
+                                lines.append({"line": len(lines) + 1, "code": "    }", "type": "control"})
+                            elif isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call):
+                                func_name = stmt.value.func.id if isinstance(stmt.value.func, ast.Name) else "subroutine"
+                                if func_name in ("eval", "exec", "system", "popen", "spawn"):
+                                    security_annotations.append({
+                                        "line": len(lines) + 1,
+                                        "severity": "HIGH",
+                                        "message": f"Dangerous dynamic execution call: {func_name}()",
+                                    })
+                                    lines.append({"line": len(lines) + 1, "code": f"    /* [!] SECURITY RISK: {func_name}() */", "type": "risk"})
+                                lines.append({"line": len(lines) + 1, "code": f"    {func_name}();", "type": "call"})
+                            else:
+                                lines.append({"line": len(lines) + 1, "code": "    /* statement */", "type": "code"})
+                        lines.append({"line": len(lines) + 1, "code": "}", "type": "fn_end"})
+
+                raw_pseudo = "\n".join(l["code"] for l in lines)
+                return {
+                    "target": target.name,
+                    "format": "PYTHON_AST",
+                    "entry_offset": 0,
+                    "decompiled_lines": lines[:limit_lines],
+                    "raw_pseudo_code": raw_pseudo,
+                    "functions": functions,
+                    "security_annotations": security_annotations,
+                }
+            except Exception:
+                pass
+
+        # 2. Native Binary (ELF / PE / Mach-O) Opcode Pseudo-Code Decompiler
+        disasm = self.disassemble_code(target, offset=offset, count=64)
+        instructions = disasm.get("instructions", [])
+        fmt = disasm.get("format", "BINARY")
+        entry_off = disasm.get("entry_offset", 0)
+
+        lines = []
+        security_annotations = []
+        functions = [f"sub_{entry_off:08X}"]
+
+        lines.append({"line": len(lines) + 1, "code": f"// AquaOS REA Decompiler — Native Reverse Engineering Reconstructor", "type": "comment"})
+        lines.append({"line": len(lines) + 1, "code": f"// Target: {target.name} | Format: {fmt} | Entry Offset: 0x{entry_off:08X}", "type": "comment"})
+        lines.append({"line": len(lines) + 1, "code": f"// Generated by REA Decompiler Engine (64-bit calling conventions)", "type": "comment"})
+        lines.append({"line": len(lines) + 1, "code": "", "type": "blank"})
+
+        # Scan for imported security APIs from gatekeeper
+        imp_data = self.extract_imports_and_exports(target)
+        known_sec_symbols = {item["symbol"]: item for item in imp_data.get("imports", [])}
+
+        lines.append({"line": len(lines) + 1, "code": f"// --- High-Level Procedure Reconstruction ---", "type": "comment"})
+        lines.append({"line": len(lines) + 1, "code": f"uint64_t sub_{entry_off:08X}(uint64_t rdi_arg0, uint64_t rsi_arg1) {{", "type": "fn_start"})
+        lines.append({"line": len(lines) + 1, "code": "    uint64_t rax_result = 0;", "type": "code"})
+        lines.append({"line": len(lines) + 1, "code": "    uint8_t  stack_frame[64];", "type": "code"})
+
+        in_condition = False
+        for instr in instructions:
+            mnem = instr.get("mnemonic", "").lower()
+            operands = instr.get("operands", "")
+            addr = instr.get("address", "")
+
+            if mnem == "push":
+                lines.append({"line": len(lines) + 1, "code": f"    // [{addr}] preserve register: {operands}", "type": "comment"})
+            elif mnem == "sub" and "rsp" in operands:
+                lines.append({"line": len(lines) + 1, "code": f"    // [{addr}] allocate local frame: {operands}", "type": "comment"})
+            elif mnem == "mov":
+                lines.append({"line": len(lines) + 1, "code": f"    {operands.replace(',', ' =')} /* [{addr}] */;", "type": "code"})
+            elif mnem == "xor" and ("eax, eax" in operands or "rax, rax" in operands):
+                lines.append({"line": len(lines) + 1, "code": f"    rax_result = 0; // return status 0 (SUCCESS)", "type": "code"})
+            elif mnem == "call":
+                target_proc = operands
+                # Check if target is a known security API
+                matched_sec = next((s for s in known_sec_symbols if s.lower() in target_proc.lower()), None)
+                if matched_sec:
+                    sec_info = known_sec_symbols[matched_sec]
+                    security_annotations.append({
+                        "line": len(lines) + 1,
+                        "severity": sec_info["severity"],
+                        "message": f"Critical API Call: {matched_sec} ({sec_info['description']})",
+                    })
+                    lines.append({"line": len(lines) + 1, "code": f"    /* [!] SECURITY RISK: Invoking {matched_sec} */", "type": "risk"})
+                    lines.append({"line": len(lines) + 1, "code": f"    rax_result = {matched_sec}(rdi_arg0, rsi_arg1);", "type": "call"})
+                else:
+                    lines.append({"line": len(lines) + 1, "code": f"    rax_result = call_proc({target_proc}) /* [{addr}] */;", "type": "call"})
+            elif mnem in ("je", "jne", "jg", "jl"):
+                cond_sym = "==" if mnem == "je" else ("!=" if mnem == "jne" else (">" if mnem == "jg" else "<"))
+                lines.append({"line": len(lines) + 1, "code": f"    if (condition {cond_sym} 0) {{ // branch to {operands}", "type": "control"})
+                in_condition = True
+            elif mnem in ("jmp", "jmp short"):
+                if in_condition:
+                    lines.append({"line": len(lines) + 1, "code": "    }", "type": "control"})
+                    in_condition = False
+                lines.append({"line": len(lines) + 1, "code": f"    goto loc_{operands.replace('0x', '')};", "type": "jump"})
+            elif mnem == "syscall":
+                security_annotations.append({
+                    "line": len(lines) + 1,
+                    "severity": "HIGH",
+                    "message": "Raw kernel fast syscall (bypasses libc wrapper functions)",
+                })
+                lines.append({"line": len(lines) + 1, "code": f"    /* [!] Fast System Call */ rax_result = kernel_syscall(rax_result, rdi_arg0, rsi_arg1);", "type": "risk"})
+            elif mnem == "ret":
+                if in_condition:
+                    lines.append({"line": len(lines) + 1, "code": "    }", "type": "control"})
+                    in_condition = False
+                lines.append({"line": len(lines) + 1, "code": f"    return rax_result; // procedure return", "type": "return"})
+
+        if in_condition:
+            lines.append({"line": len(lines) + 1, "code": "    }", "type": "control"})
+        lines.append({"line": len(lines) + 1, "code": "}", "type": "fn_end"})
+
+        raw_pseudo = "\n".join(l["code"] for l in lines)
+        return {
+            "target": target.name,
+            "format": fmt,
+            "entry_offset": entry_off,
+            "decompiled_lines": lines[:limit_lines],
+            "raw_pseudo_code": raw_pseudo,
+            "functions": functions,
+            "security_annotations": security_annotations,
+        }
+
 
 

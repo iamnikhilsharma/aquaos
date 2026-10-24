@@ -229,3 +229,157 @@ def test_gatekeeper_rea_disassembly(tmp_path: Path) -> None:
     assert "mov" in inst_mnems
     assert "ret" in inst_mnems
 
+
+def test_gatekeeper_rea_elf_sections_and_architecture(tmp_path: Path) -> None:
+    gk = AquaGatekeeper(trust_db_path=tmp_path / "trusted.json")
+    elf_file = tmp_path / "sample_elf.bin"
+
+    # 1. ELF Header (64 bytes)
+    # e_shoff at 40: 64, e_shentsize at 58: 64, e_shnum at 60: 3, e_shstrndx at 62: 2
+    hdr = bytearray(64)
+    hdr[0:4] = b"\x7fELF"
+    hdr[4] = 2  # 64-bit
+    hdr[5] = 1  # little-endian
+    hdr[6] = 1  # ELF version
+    hdr[16] = 3  # ET_DYN (PIE)
+    struct.pack_into("<H", hdr, 18, 0x3E)  # AMD64
+    struct.pack_into("<Q", hdr, 24, 0x401000)  # e_entry
+    struct.pack_into("<Q", hdr, 40, 64)  # e_shoff = 64
+    struct.pack_into("<H", hdr, 58, 64)  # e_shentsize = 64
+    struct.pack_into("<H", hdr, 60, 3)   # e_shnum = 3
+    struct.pack_into("<H", hdr, 62, 2)   # e_shstrndx = 2 (.shstrtab)
+
+    # 2. Section Headers (3 * 64 = 192 bytes from offset 64 to 256)
+    sec_null = bytearray(64)
+
+    # Section 1: .text (sh_name=1, sh_type=1 (PROGBITS), sh_flags=6 (ALLOC|EXEC), addr=0x401000, offset=256, size=32)
+    sec_text = bytearray(64)
+    struct.pack_into("<IIQQQQ", sec_text, 0, 1, 1, 6, 0x401000, 256, 32)
+
+    # Section 2: .shstrtab (sh_name=7, sh_type=3 (STRTAB), sh_flags=0, addr=0, offset=288, size=18)
+    sec_strtab = bytearray(64)
+    struct.pack_into("<IIQQQQ", sec_strtab, 0, 7, 3, 0, 0, 288, 17)
+
+    # 3. Payload at offset 256
+    text_data = b"\x90" * 32  # 32 NOPs
+    shstrtab_data = b"\x00.text\x00.shstrtab\x00"
+
+    raw = bytes(hdr) + bytes(sec_null) + bytes(sec_text) + bytes(sec_strtab) + text_data + shstrtab_data
+    elf_file.write_bytes(raw)
+
+    res = gk.rea_deep_inspect(elf_file)
+    assert res["file_format"] == "ELF"
+    assert "x86_64" in res["architecture"]
+    assert res["mitigations"]["dynamic_base_aslr"] is True
+    assert len(res["sections"]) >= 1
+    text_sec = next((s for s in res["sections"] if s["name"] == ".text"), None)
+    assert text_sec is not None
+    assert "X" in text_sec["permissions"]
+
+
+def test_gatekeeper_rea_macho_parsing(tmp_path: Path) -> None:
+    gk = AquaGatekeeper(trust_db_path=tmp_path / "trusted.json")
+    macho_file = tmp_path / "test_app.dylib"
+
+    # Mach-O 64-bit Header (32 bytes)
+    # Magic: 0xFEEDFACF (little-endian: \xcf\xfa\xed\xfe)
+    # cputype: 0x0100000C (ARM64 / Apple Silicon), cpusubtype: 0, filetype: 2 (MH_EXECUTE), ncmds: 1, sizeofcmds: 152, flags: 0x200000 (PIE)
+    hdr = struct.pack("<IIIIIII", 0xFEEDFACF, 0x0100000C, 0, 2, 1, 152, 0x200000)
+    hdr += b"\x00" * 4  # reserved
+
+    # Load Command: LC_SEGMENT_64 (cmd=0x19, cmdsize=152)
+    # segname: "__TEXT\0\0\0\0\0\0\0\0\0\0" (16 bytes)
+    # vmaddr=0x100000000, vmsize=0x4000, fileoff=0, filesize=512, maxprot=7, initprot=5, nsects=1, flags=0
+    seg_hdr = struct.pack("<II16sQQQQiiII", 0x19, 152, b"__TEXT\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 0x100000000, 0x4000, 0, 512, 7, 5, 1, 0)
+
+    # Section 1 in __TEXT: __text (80 bytes)
+    # sectname: "__text\0\0\0\0\0\0\0\0\0\0", segname: "__TEXT\0\0\0\0\0\0\0\0\0\0"
+    # addr=0x100000500, size=128, offset=200, align=2, reloff=0, nreloc=0, flags=0x80000400, reserved1=0, reserved2=0, reserved3=0
+    sec_hdr = struct.pack("<16s16sQQIIIIIIII", b"__text\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", b"__TEXT\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 0x100000500, 128, 200, 2, 0, 0, 0x80000400, 0, 0, 0)
+
+    raw_macho = hdr + seg_hdr + sec_hdr + (b"\x90" * 512)
+    macho_file.write_bytes(raw_macho)
+
+    res = gk.rea_deep_inspect(macho_file)
+    assert res["file_format"] == "MACH_O"
+    assert "ARM64" in res["architecture"] or "Apple Silicon" in res["architecture"]
+    assert res["mitigations"]["dynamic_base_aslr"] is True
+    assert len(res["sections"]) >= 1
+    assert any("__TEXT" in s["name"] for s in res["sections"])
+
+
+def test_ai_engine_rea_binary_forensics() -> None:
+    from ai.ai_engine import AquaAIEngine
+    ai = AquaAIEngine()
+
+    # 1. Clean report
+    clean_rep = {
+        "file_name": "clean_tool",
+        "file_format": "ELF",
+        "architecture": "x86_64",
+        "overall_entropy": 5.4,
+        "risk_score": 0,
+        "risk_level": "CLEAN",
+        "file_size": 18400,
+        "sections": [{"name": ".text", "permissions": "RX", "entropy": 5.8}],
+        "suspicious_apis": [],
+        "urls": [],
+        "recommended_action": "ALLOW",
+    }
+    analysis_clean = ai.analyze_binary_forensics(clean_rep)
+    assert analysis_clean["verdict"] == "CLEAN"
+    assert analysis_clean["risk_score"] == 0
+    assert "Aqua AI Reverse Engineering Forensics" in analysis_clean["analysis_markdown"]
+
+    # 2. Suspicious/Malicious report with injection APIs
+    sus_rep = {
+        "file_name": "dropper.exe",
+        "file_format": "PE_EXE",
+        "architecture": "AMD64",
+        "overall_entropy": 7.85,
+        "risk_score": 85,
+        "risk_level": "MALICIOUS",
+        "file_size": 84200,
+        "sections": [{"name": ".text", "permissions": "RWX", "entropy": 7.9}],
+        "suspicious_apis": ["VirtualProtect", "CreateRemoteThread"],
+        "urls": ["http://evil.internal/beacon"],
+        "recommended_action": "BLOCK",
+    }
+    analysis_sus = ai.analyze_binary_forensics(sus_rep)
+    assert analysis_sus["verdict"] == "MALICIOUS"
+    assert analysis_sus["risk_score"] == 85
+    assert "High Payload Entropy" in analysis_sus["analysis_markdown"]
+    assert "Process Injection Vectors" in analysis_sus["analysis_markdown"]
+
+
+def test_gatekeeper_rea_decompiler(tmp_path: Path) -> None:
+    gk = AquaGatekeeper(trust_db_path=tmp_path / "trusted.json")
+
+    # 1. Test Python script decompilation
+    py_script = tmp_path / "logic.py"
+    py_script.write_text(
+        "import os\n"
+        "import sys\n\n"
+        "def compute(val):\n"
+        "    if val > 10:\n"
+        "        return val * 2\n"
+        "    return val\n",
+        encoding="utf-8",
+    )
+    dec_py = gk.decompile_code(py_script)
+    assert dec_py["format"] == "PYTHON_AST"
+    assert "compute" in dec_py["functions"]
+    assert any("#include <os>" in l["code"] for l in dec_py["decompiled_lines"])
+    assert any("any compute" in l["code"] for l in dec_py["decompiled_lines"])
+
+    # 2. Test native opcode pseudo-code decompiler
+    bin_file = tmp_path / "app.bin"
+    # Function prologue & epilogue: push rbp (55), mov rbp, rsp (48 89 E5), xor eax, eax (31 C0), ret (C3)
+    bin_file.write_bytes(b"\x55\x48\x89\xe5\x31\xc0\xc3")
+    dec_bin = gk.decompile_code(bin_file)
+    assert "sub_00000000" in dec_bin["raw_pseudo_code"]
+    assert "rax_result = 0" in dec_bin["raw_pseudo_code"]
+    assert any("return rax_result" in l["code"] for l in dec_bin["decompiled_lines"])
+
+
+

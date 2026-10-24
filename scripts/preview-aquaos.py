@@ -389,6 +389,39 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
             self._send_json(res)
             return
 
+        if clean_path == "/api/rea/explain":
+            target_str = str(body.get("target") or body.get("path") or "").strip()
+            candidate, norm_linux = linux_env.to_host_path(target_str)
+            if not candidate.exists() or not candidate.is_file():
+                if target_str in ("python", "python3", "/usr/bin/python3"):
+                    candidate = Path(sys.executable)
+                    norm_linux = "/usr/bin/python3"
+                else:
+                    self._send_json({"error": f"Binary not found: {norm_linux}"}, status=404)
+                    return
+            rep = gatekeeper.rea_deep_inspect(candidate)
+            analysis = ai_engine.analyze_binary_forensics(rep)
+            analysis["linux_path"] = norm_linux
+            self._send_json(analysis)
+            return
+
+        if clean_path == "/api/rea/decompile":
+            target_str = str(body.get("target") or body.get("path") or "").strip()
+            offset = int(body.get("offset", 0))
+            limit_lines = int(body.get("limit_lines", 200))
+            candidate, norm_linux = linux_env.to_host_path(target_str)
+            if not candidate.exists() or not candidate.is_file():
+                if target_str in ("python", "python3", "/usr/bin/python3"):
+                    candidate = Path(sys.executable)
+                    norm_linux = "/usr/bin/python3"
+                else:
+                    self._send_json({"error": f"Binary not found: {norm_linux}"}, status=404)
+                    return
+            res = gatekeeper.decompile_code(candidate, offset=offset, limit_lines=limit_lines)
+            res["linux_path"] = norm_linux
+            self._send_json(res)
+            return
+
         if clean_path == "/api/universal/plan":
             target = str(body.get("target", "")).strip()
             if target.endswith((".rpm", ".pkg.tar.zst", ".deb")):

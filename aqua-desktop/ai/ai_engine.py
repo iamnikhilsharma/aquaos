@@ -295,3 +295,64 @@ class AquaAIEngine:
             "• To run full 7B–32B parameter weights locally, ensure the Ollama service is started (`systemctl start ollama` or `ollama run deepseek-r1:7b`).\n"
             "• You can also ask me to switch themes (\"switch to dark mode\"), optimize memory (\"enable neural boost\"), or scan files (\"scan for malware\")."
         )
+
+    def analyze_binary_forensics(self, report: Dict[str, Any]) -> Dict[str, Any]:
+        """Perform AI reverse engineering forensics & threat analysis on an REA inspection report."""
+        target_name = report.get("file_name", "Unknown Binary")
+        fmt = report.get("file_format", "UNKNOWN")
+        arch = report.get("architecture", "Unknown")
+        entropy = float(report.get("overall_entropy", 0.0))
+        risk_score = int(report.get("risk_score", 0))
+        mitigations = report.get("mitigations", {})
+        sections = report.get("sections", [])
+        suspicious = report.get("suspicious_apis", [])
+        urls = report.get("urls", [])
+        size_bytes = report.get("file_size", 0)
+
+        sec_summary = ", ".join(f"{s['name']} ({s.get('permissions', 'R')}, ent={s.get('entropy', 0.0):.2f})" for s in sections[:6]) if sections else "No binary sections"
+        mit_summary = ", ".join(k for k, v in mitigations.items() if v) if mitigations else "Standard defaults"
+
+        packed_alert = entropy >= 7.6 or any(s.get("entropy", 0) >= 7.6 for s in sections)
+        has_injection = any(api in suspicious for api in ("CreateRemoteThread", "WriteProcessMemory", "VirtualProtect", "ptrace", "task_for_pid", "mach_vm_write"))
+
+        verdict = "MALICIOUS" if (risk_score >= 70 or has_injection) else ("SUSPICIOUS" if (risk_score >= 35 or packed_alert) else "CLEAN")
+
+        findings_md = []
+        if packed_alert:
+            findings_md.append(f"• **High Payload Entropy ({entropy:.2f} bits/byte)**: Indicates encryption or executable packing (e.g. UPX, custom crypter).")
+        if has_injection:
+            findings_md.append("• **Process Injection Vectors**: Found low-level cross-process memory manipulation APIs (`VirtualProtect`, `ptrace`, or `mach_vm_write`).")
+        if any(api in suspicious for api in ("setuid", "chmod")):
+            findings_md.append("• **Privilege Escalation Risk**: Binary invokes file system permission modification or user identity changes.")
+        if urls:
+            findings_md.append(f"• **Network Communication**: Found {len(urls)} external endpoint(s) compiled into strings.")
+        if not findings_md:
+            findings_md.append("• **Clean Profile**: Standard compiler layout with typical runtime initializations and no unauthorized injection mechanisms.")
+
+        explanation = (
+            f"### 🛡️ Aqua AI Reverse Engineering Forensics: `{target_name}`\n\n"
+            f"**Executive Verdict**: <strong style=\"color:{'#FF453A' if verdict=='MALICIOUS' else ('#FF9F0A' if verdict=='SUSPICIOUS' else '#30D158')};\">[{verdict}]</strong> (Risk Score: {risk_score}/100)\n\n"
+            f"#### 1. Architecture & Binary Characteristics\n"
+            f"- **Target Format**: `{fmt}` on `{arch}`\n"
+            f"- **Binary Size**: `{size_bytes / 1024:.1f} KB` (`{size_bytes:,}` bytes)\n"
+            f"- **Active Mitigations**: `{mit_summary}`\n"
+            f"- **Section Count**: `{len(sections)}` parsed segment(s)\n\n"
+            f"#### 2. Entropy & Obfuscation Heuristics\n"
+            f"The global Shannon entropy is **{entropy:.3f} bits/byte** (theoretical maximum 8.00). "
+            f"{'High entropy chunks suggest packed code sections or encrypted configuration.' if packed_alert else 'Entropy distribution conforms to normal uncompressed code and structured constant tables.'}\n\n"
+            f"#### 3. Security Findings & Identified Behaviors\n"
+            + "\n".join(findings_md) + "\n\n"
+            f"#### 4. Sandboxing & Runtime Recommendations\n"
+            f"- **Aqua Gatekeeper Action**: `{report.get('recommended_action', 'RUN_SANDBOXED')}`\n"
+            f"- **Bubblewrap Isolation**: {'Enforce strict namespace isolation with `--unshare-net` and mask `~/.ssh` / `~/.gnupg`.' if verdict != 'CLEAN' else 'Permit local execution inside standard Bubblewrap sandbox.'}\n"
+        )
+
+        return {
+            "target": target_name,
+            "verdict": verdict,
+            "risk_score": risk_score,
+            "analysis_markdown": explanation,
+            "findings_count": len(findings_md),
+            "generated_by": "Aqua AI Neural Forensics Engine",
+        }
+

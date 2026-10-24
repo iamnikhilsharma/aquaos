@@ -1320,6 +1320,7 @@ class AquaLinuxEnvironment:
                     "  rea /usr/bin/python3 --hex 0 128\n"
                     "  rea /usr/bin/python3 --imports\n"
                     "  rea /usr/bin/python3 --disasm\n"
+                    "  rea /usr/bin/python3 --decompile\n"
                     "  rea sample.exe --hex\n"
                     "  rea script.sh --strings\n"
                 ), cwd
@@ -1375,6 +1376,27 @@ class AquaLinuxEnvironment:
                     comment_str = f" ; {instr['comment']}" if instr["comment"] else ""
                     out_lines.append(f"  {instr['address']}  {instr['bytes']:<16}  {instr['mnemonic']:<8} {instr['operands']:<18}{comment_str}")
                 return "\n".join(out_lines), cwd
+
+            if "--decompile" in parts:
+                idx = parts.index("--decompile")
+                off = int(parts[idx + 1]) if idx + 1 < len(parts) and parts[idx + 1].isdigit() else 0
+                dec = gk.decompile_code(host_p, offset=off, limit_lines=60)
+                out_lines = [f"=== REA Pseudo-Code Decompilation ({norm_linux} - {dec['format']}) ==="]
+                if dec.get("security_annotations"):
+                    out_lines.append("  [!] Security Audit Warnings:")
+                    for ann in dec["security_annotations"]:
+                        out_lines.append(f"    Line {ann['line']}: [{ann['severity']}] {ann['message']}")
+                    out_lines.append("")
+                out_lines.append("  --- Decompiled Source / C-like Pseudo-Code ---")
+                for l in dec["decompiled_lines"]:
+                    out_lines.append(f"  {l['line']:>3} | {l['code']}")
+                return "\n".join(out_lines), cwd
+
+            if "--explain" in parts or "--ai" in parts:
+                res = gk.rea_deep_inspect(host_p)
+                ai_rep = self.ai_engine.analyze_binary_forensics(res)
+                clean_text = re.sub(r"<[^>]+>", "", ai_rep["analysis_markdown"]).replace("`", "")
+                return clean_text, cwd
 
             if "--strings" in parts:
                 idx = parts.index("--strings")

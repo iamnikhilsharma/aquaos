@@ -2016,6 +2016,12 @@
               <span>Ask AI</span>
             </button>
           </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top:1px; font-size:11px;">
+            <span style="color:var(--text-muted); font-size:10.5px;">🔬 REA Quick Prompts:</span>
+            <button class="aqua-btn secondary" style="padding:2px 7px; font-size:10.5px;" onclick="setAiPromptAndFocus('Decompile and analyze memory safety vulnerability vectors in /usr/bin/python3')">⚡ Decompile & Audit</button>
+            <button class="aqua-btn secondary" style="padding:2px 7px; font-size:10.5px;" onclick="setAiPromptAndFocus('Identify potential process injection APIs, suspicious syscalls, and dynamic library dependencies in the inspected binary')">🛡️ Audit Injection APIs</button>
+            <button class="aqua-btn secondary" style="padding:2px 7px; font-size:10.5px;" onclick="setAiPromptAndFocus('Explain Mach-O 64-bit load commands, ASLR PIE protections, and Apple Silicon ARM64 calling conventions')">🍏 Explain Mach-O ARM64</button>
+          </div>
 
           <div style="border-top:0.5px solid var(--glass-border); padding-top:8px; margin-top:4px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -2112,6 +2118,10 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
             <svg class="ico" width="14" height="14"><use href="#ico-search"/></svg>
             <span>Deep Inspect</span>
           </button>
+          <button class="aqua-btn secondary" style="border-color:#BF5AF2; color:#BF5AF2;" onclick="explainCurrentBinaryWithAI()" id="btn-rea-ai-explain">
+            <svg class="ico" width="14" height="14"><use href="#ico-ai"/></svg>
+            <span>🧠 Explain with AI</span>
+          </button>
           <button class="aqua-btn secondary" onclick="triggerNativeFilePicker('rea')">
             <svg class="ico" width="14" height="14"><use href="#ico-file"/></svg>
             <span>Pick Host File...</span>
@@ -2129,6 +2139,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
           <button class="aqua-btn secondary" style="padding:2px 8px; font-size:10.5px;" onclick="loadReaPreset('/bin/bash')">GNU Bash (/bin/bash)</button>
           <button class="aqua-btn secondary" style="padding:2px 8px; font-size:10.5px;" onclick="loadReaPreset('/home/aqua/AquaOS-Beta/aqua-desktop/security/gatekeeper.py')">Gatekeeper Script</button>
           <button class="aqua-btn secondary" style="padding:2px 8px; font-size:10.5px;" onclick="loadReaPreset('sample.exe')">PE64 Executable</button>
+          <button class="aqua-btn secondary" style="padding:2px 8px; font-size:10.5px;" onclick="loadReaPreset('AppKit.dylib')">macOS .dylib (Mach-O)</button>
         </div>
 
         <!-- REA Engine Status Strip -->
@@ -2138,6 +2149,25 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
             <span><strong>REA Engine Aligned:</strong> <code style="font-size:10.5px;">rea-agents@6.7.0</code> (Antigravity MCP Server • 207 Tools)</span>
           </div>
           <span class="badge-fit badge-gpu" id="rea-engine-status-badge">ALIGNED</span>
+        </div>
+
+        <!-- AI Forensic Assessment Box -->
+        <div id="rea-ai-box" style="display:none; background:rgba(191,90,242,0.08); border:0.5px solid rgba(191,90,242,0.38); border-radius:12px; padding:12px 16px; margin:4px 0 8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <svg class="ico" width="16" height="16" style="color:#BF5AF2;"><use href="#ico-ai"/></svg>
+              <span style="font-size:12px; font-weight:700; color:#E0B0FF; letter-spacing:0.02em;">Aqua AI Binary Security Forensics</span>
+              <span id="rea-ai-verdict-badge" class="badge-fit" style="background:rgba(48,209,88,0.2); color:#30D158; border:0.5px solid #30D158; font-size:10px;">CLEAN</span>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="aqua-btn secondary" style="padding:2px 8px; font-size:10.5px;" onclick="sendReaToAiStudio()">Open in AI Studio</button>
+              <button class="aqua-btn secondary" style="padding:2px 8px; font-size:10.5px;" onclick="copyReaAiAnalysis()">Copy</button>
+              <button class="aqua-btn secondary" style="padding:2px 8px; font-size:10.5px;" onclick="document.getElementById('rea-ai-box').style.display='none'">✕</button>
+            </div>
+          </div>
+          <div id="rea-ai-content" class="selectable" style="font-size:11.5px; line-height:1.6; color:#F5F5F7; max-height:200px; overflow-y:auto; padding-right:6px;">
+            Analyzing binary architecture, sections, and vulnerability vectors...
+          </div>
         </div>
 
         <!-- Metrics Cards -->
@@ -2188,6 +2218,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
           <button class="rea-subnav-btn active" id="btn-rea-sub-sections" onclick="switchReaSubnav('sections')">Sections Table (<span id="rea-sec-count">0</span>)</button>
           <button class="rea-subnav-btn" id="btn-rea-sub-imports" onclick="switchReaSubnav('imports')">Imports & Libraries (<span id="rea-imp-count">0</span>)</button>
           <button class="rea-subnav-btn" id="btn-rea-sub-disasm" onclick="switchReaSubnav('disasm')">Disassembly / Bytecode (<span id="rea-dis-count">0</span>)</button>
+          <button class="rea-subnav-btn" id="btn-rea-sub-decompile" onclick="switchReaSubnav('decompile')">⚡ Decompiler (<span id="rea-dec-fn-count">0</span>)</button>
           <button class="rea-subnav-btn" id="btn-rea-sub-hexdump" onclick="switchReaSubnav('hexdump')">Hex & ASCII Inspector</button>
           <button class="rea-subnav-btn" id="btn-rea-sub-strings" onclick="switchReaSubnav('strings')">Indicators & Strings (<span id="rea-str-count">0</span>)</button>
           <button class="rea-subnav-btn" id="btn-rea-sub-json" onclick="switchReaSubnav('json')">Authoritative REA JSON</button>
@@ -2295,6 +2326,32 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
                 <tr><td colspan="5" style="text-align:center; padding:18px; color:var(--text-muted);">Click 'Deep Inspect' or 'Disassemble' above.</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Subtab: Decompiler / Pseudo-Code -->
+        <div id="rea-subpane-decompile" style="display:none; flex-direction:column; gap:8px;">
+          <!-- Decompiler Toolbar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; background:rgba(0,0,0,0.25); border:0.5px solid var(--glass-border); border-radius:8px; padding:6px 10px;">
+            <div style="display:flex; align-items:center; gap:8px; font-size:11.5px;">
+              <span style="color:#BF5AF2; font-weight:700;">⚡ REA Decompiler:</span>
+              <span id="rea-dec-target-badge" style="background:rgba(191,90,242,0.18); border:0.5px solid rgba(191,90,242,0.4); border-radius:6px; padding:2px 7px; font-size:11px; font-family:var(--font-mono); color:#E0B0FF;">Ready</span>
+              <span id="rea-dec-security-badge" style="background:rgba(48,209,88,0.18); border:0.5px solid rgba(48,209,88,0.4); border-radius:6px; padding:2px 7px; font-size:11px; color:#30D158;">0 Security Warnings</span>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="aqua-btn secondary" style="padding:3px 9px; font-size:11px;" onclick="copyReaDecompiledCode()">Copy Code</button>
+              <button class="aqua-btn secondary" style="padding:3px 9px; font-size:11px; border-color:#BF5AF2; color:#BF5AF2;" onclick="auditDecompiledCodeWithAI()">🧠 Audit with AI Studio</button>
+            </div>
+          </div>
+
+          <!-- Security Warnings Bar -->
+          <div id="rea-dec-warnings-bar" style="display:none; flex-direction:column; gap:4px; padding:8px 12px; background:rgba(255,69,58,0.12); border:0.5px solid rgba(255,69,58,0.35); border-radius:8px; font-size:11px;"></div>
+
+          <!-- Pseudo-Code Viewer -->
+          <div style="border:0.5px solid var(--glass-border); border-radius:10px; background:#0B0E1B; max-height:230px; overflow-y:auto; padding:10px 14px; font-family:var(--font-mono); font-size:11.5px; line-height:1.55;">
+            <div id="rea-decompile-rows">
+              <div style="color:var(--text-muted); text-align:center; padding:18px;">Click 'Deep Inspect' above to decompile target binary or script into structured C/Python pseudo-code.</div>
+            </div>
           </div>
         </div>
 
@@ -5077,8 +5134,10 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   let currentReaTarget = '/usr/bin/python3';
   let currentReaImports = null;
   let currentReaDisasm = null;
+  let currentReaDecompile = null;
   let currentReaHexDump = null;
   let currentReaHexOffset = 0;
+  let currentReaAiAnalysis = null;
   let quickLookCurrentPath = '';
 
   function switchShieldTab(tab) {
@@ -5111,7 +5170,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   }
 
   function switchReaSubnav(subtab) {
-    ['sections', 'imports', 'disasm', 'hexdump', 'strings', 'json'].forEach(s => {
+    ['sections', 'imports', 'disasm', 'decompile', 'hexdump', 'strings', 'json'].forEach(s => {
       document.getElementById(`btn-rea-sub-${s}`)?.classList.remove('active');
       const pane = document.getElementById(`rea-subpane-${s}`);
       if (pane) pane.style.display = 'none';
@@ -5125,6 +5184,8 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       loadReaImports();
     } else if (subtab === 'disasm' && (!currentReaDisasm || currentReaDisasm.target !== currentReaTarget)) {
       loadReaDisasm();
+    } else if (subtab === 'decompile' && (!currentReaDecompile || currentReaDecompile.target !== currentReaTarget)) {
+      loadReaDecompile();
     } else if (subtab === 'hexdump' && (!currentReaHexDump || currentReaHexDump.target !== currentReaTarget)) {
       loadReaHexDump();
     }
@@ -5178,9 +5239,10 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       }
       currentReaReport = rep;
       renderReaResults(rep);
-      // Simultaneously retrieve imports, disassembly, and hex dump
+      // Simultaneously retrieve imports, disassembly, decompilation, and hex dump
       loadReaImports(target);
       loadReaDisasm(target, 0, 64);
+      loadReaDecompile(target, 0, 150);
       loadReaHexDump(target, 0, 256);
       showToast(`REA: Completed deep inspection for ${rep.file_name}`);
     } catch (err) {
@@ -5604,6 +5666,215 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     }
     if (isNaN(num) || num < 0) num = 0;
     loadReaHexDump(null, num, 256);
+  }
+
+  /* REA Decompiler / Pseudo-Code */
+  async function loadReaDecompile(target, offset = 0, limit_lines = 150) {
+    const t = target || document.getElementById('rea-target-input')?.value.trim() || currentReaTarget;
+    currentReaTarget = t;
+    try {
+      const res = await apiFetch('/api/rea/decompile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: t, offset, limit_lines })
+      });
+      if (res.error) return;
+      currentReaDecompile = res;
+      renderReaDecompile(res);
+    } catch (err) {
+      console.warn('Failed to load REA decompilation:', err);
+    }
+  }
+
+  function renderReaDecompile(data) {
+    const rowsContainer = document.getElementById('rea-decompile-rows');
+    const fnCountEl = document.getElementById('rea-dec-fn-count');
+    const targetBadge = document.getElementById('rea-dec-target-badge');
+    const secBadge = document.getElementById('rea-dec-security-badge');
+    const warnBar = document.getElementById('rea-dec-warnings-bar');
+
+    const functions = data.functions || [];
+    const annotations = data.security_annotations || [];
+    if (fnCountEl) fnCountEl.innerText = functions.length || 1;
+    if (targetBadge) targetBadge.innerText = `${data.target} (${data.format})`;
+
+    if (secBadge) {
+      if (annotations.length > 0) {
+        secBadge.innerText = `${annotations.length} Security Warning(s)`;
+        secBadge.style.background = 'rgba(255,69,58,0.2)';
+        secBadge.style.color = '#FF453A';
+        secBadge.style.borderColor = '#FF453A';
+      } else {
+        secBadge.innerText = '0 Security Warnings';
+        secBadge.style.background = 'rgba(48,209,88,0.18)';
+        secBadge.style.color = '#30D158';
+        secBadge.style.borderColor = 'rgba(48,209,88,0.4)';
+      }
+    }
+
+    if (warnBar) {
+      if (annotations.length > 0) {
+        warnBar.style.display = 'flex';
+        warnBar.innerHTML = annotations.map(a => `
+          <div style="display:flex; align-items:center; gap:6px; color:#FF6961;">
+            <span style="font-weight:700;">[!] Line ${a.line}:</span>
+            <span>${escapeHtml(a.message)}</span>
+          </div>
+        `).join('');
+      } else {
+        warnBar.style.display = 'none';
+      }
+    }
+
+    if (rowsContainer) {
+      const lines = data.decompiled_lines || [];
+      if (lines.length > 0) {
+        rowsContainer.innerHTML = lines.map(l => {
+          let color = '#E2E8F0';
+          let bg = 'transparent';
+          let fontWeight = 'normal';
+
+          if (l.type === 'comment') {
+            color = '#7C8BA1';
+          } else if (l.type === 'include') {
+            color = '#5AC8FA';
+          } else if (l.type === 'fn_start' || l.type === 'fn_end') {
+            color = '#BF5AF2';
+            fontWeight = '600';
+          } else if (l.type === 'control') {
+            color = '#FF9F0A';
+            fontWeight = '600';
+          } else if (l.type === 'return') {
+            color = '#30D158';
+            fontWeight = '600';
+          } else if (l.type === 'risk') {
+            color = '#FF453A';
+            bg = 'rgba(255,69,58,0.18)';
+            fontWeight = '700';
+          } else if (l.type === 'call') {
+            color = '#64D2FF';
+          }
+
+          return `
+            <div style="display:grid; grid-template-columns:40px 1fr; gap:12px; padding:1.5px 0; background:${bg};" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background='${bg}'">
+              <div style="color:var(--text-muted); text-align:right; user-select:none; font-size:10.5px;">${l.line}</div>
+              <div style="color:${color}; font-weight:${fontWeight}; white-space:pre-wrap;">${escapeHtml(l.code)}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        rowsContainer.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:18px;">No pseudo-code available.</div>';
+      }
+    }
+  }
+
+  function copyReaDecompiledCode() {
+    if (!currentReaDecompile || !currentReaDecompile.raw_pseudo_code) {
+      showToast('No decompiled code to copy.');
+      return;
+    }
+    navigator.clipboard.writeText(currentReaDecompile.raw_pseudo_code);
+    showToast('Copied Decompiled Pseudo-Code to Clipboard');
+    playSystemSound('pop');
+  }
+
+  function auditDecompiledCodeWithAI() {
+    if (!currentReaDecompile || !currentReaDecompile.raw_pseudo_code) {
+      showToast('No decompiled code to audit.');
+      return;
+    }
+    openWindow('win-ai', 'Aqua AI Studio');
+    const promptInp = document.getElementById('ai-prompt-input');
+    const target = currentReaDecompile.target || 'binary';
+    if (promptInp) {
+      promptInp.value = `Perform an in-depth vulnerability audit and security decompilation review of '${target}':\n\n${currentReaDecompile.raw_pseudo_code.substring(0, 600)}...`;
+      promptInp.focus();
+    }
+    showToast(`Transferred decompiled pseudo-code for ${target} to AI Studio`);
+    playSystemSound('pop');
+  }
+
+  /* Aqua AI Binary Forensics & Explainer */
+  async function explainCurrentBinaryWithAI() {
+    const input = document.getElementById('rea-target-input');
+    const target = input ? input.value.trim() : (currentReaTarget || '/usr/bin/python3');
+    const box = document.getElementById('rea-ai-box');
+    const content = document.getElementById('rea-ai-content');
+    const badge = document.getElementById('rea-ai-verdict-badge');
+    if (!box || !content) return;
+
+    box.style.display = 'block';
+    content.innerHTML = '<span style="color:#5AC8FA;">Querying Aqua AI Forensics Engine for binary security assessment...</span>';
+    playSystemSound('pop');
+
+    try {
+      const res = await apiFetch('/api/rea/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target })
+      });
+      if (res.error) {
+        content.innerHTML = `<span style="color:#FF453A;">Error: ${escapeHtml(res.error)}</span>`;
+        return;
+      }
+      currentReaAiAnalysis = res;
+      if (badge) {
+        badge.innerText = `${res.verdict || 'ANALYZED'} (${res.risk_score || 0}/100)`;
+        badge.style.background = res.verdict === 'MALICIOUS' ? 'rgba(255,69,58,0.2)' : (res.verdict === 'SUSPICIOUS' ? 'rgba(255,159,10,0.2)' : 'rgba(48,209,88,0.2)');
+        badge.style.color = res.verdict === 'MALICIOUS' ? '#FF453A' : (res.verdict === 'SUSPICIOUS' ? '#FF9F0A' : '#30D158');
+        badge.style.borderColor = badge.style.color;
+      }
+      let md = res.analysis_markdown || '';
+      let formatted = md
+        .replace(/### (.*?)\n/g, '<div style="font-size:13px; font-weight:700; color:#E0B0FF; margin:6px 0 3px;">$1</div>')
+        .replace(/#### (.*?)\n/g, '<div style="font-size:12px; font-weight:700; color:#5AC8FA; margin:5px 0 2px;">$1</div>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#FFF;">$1</strong>')
+        .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.08); padding:1px 5px; border-radius:4px; font-family:var(--font-mono); font-size:11px;">$1</code>')
+        .replace(/- \*\*(.*?)\*\*: (.*?)\n/g, '<div style="margin-left:8px;">• <strong style="color:#FFF;">$1:</strong> $2</div>')
+        .replace(/- (.*?)\n/g, '<div style="margin-left:8px;">• $1</div>')
+        .replace(/\n\n/g, '<br/>');
+      content.innerHTML = formatted;
+      showToast(`Aqua AI Forensics: ${res.verdict} verdict for ${res.file_name || target}`);
+    } catch (err) {
+      content.innerHTML = `<span style="color:#FF453A;">AI Forensics failed: ${escapeHtml(err.message)}</span>`;
+    }
+  }
+
+  function sendReaToAiStudio() {
+    if (!currentReaAiAnalysis && !currentReaReport) {
+      showToast('No active REA inspection data to export.');
+      return;
+    }
+    openWindow('win-ai', 'Aqua AI Studio');
+    const promptInp = document.getElementById('ai-prompt-input');
+    const target = currentReaTarget || (currentReaReport ? currentReaReport.file_name : 'binary');
+    const analysis = currentReaAiAnalysis ? currentReaAiAnalysis.analysis_markdown : JSON.stringify(currentReaReport, null, 2);
+    if (promptInp) {
+      promptInp.value = `Perform a deep code audit and suggest defensive mitigations for reverse-engineered target '${target}':\n\n${analysis.substring(0, 500)}...`;
+      promptInp.focus();
+    }
+    showToast(`Transferred REA analysis for ${target} to AI Studio`);
+    playSystemSound('pop');
+  }
+
+  function copyReaAiAnalysis() {
+    if (!currentReaAiAnalysis || !currentReaAiAnalysis.analysis_markdown) {
+      showToast('No AI analysis generated yet.');
+      return;
+    }
+    navigator.clipboard.writeText(currentReaAiAnalysis.analysis_markdown);
+    showToast('Copied AI Forensics Markdown to Clipboard');
+    playSystemSound('pop');
+  }
+
+  function setAiPromptAndFocus(promptText) {
+    openWindow('win-ai', 'Aqua AI Studio');
+    const inp = document.getElementById('ai-prompt-input');
+    if (inp) {
+      inp.value = promptText;
+      inp.focus();
+    }
+    playSystemSound('pop');
   }
 
   /* macOS Quick Look */
