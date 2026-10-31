@@ -33,7 +33,9 @@ def _load_server_module():
         spec = importlib.util.spec_from_file_location(
             "preview_aquaos_server", PROJECT_ROOT / "scripts" / "preview-aquaos.py"
         )
+        assert spec is not None, "preview-aquaos.py spec missing"
         module = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None, "preview-aquaos.py spec loader missing"
         sys.modules["preview_aquaos_server"] = module
         spec.loader.exec_module(module)
     return sys.modules["preview_aquaos_server"], tmp_config_dir

@@ -1552,7 +1552,7 @@
     <input type="range" min="40" max="100" value="100" oninput="setBrightness(this.value)" />
     <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:8px;">
       <button class="aqua-btn secondary" style="padding:2px 8px; font-size:10.5px;" onclick="toggleDarkMode()">Appearance</button>
-      <button class="aqua-btn secondary" id="btn-cc-nightshift" style="padding:2px 8px; font-size:10.5px;" onclick="toggleNightShiftQuick()">Night Shift</button>
+      <button class="aqua-btn secondary" id="btn-cc-nightshift" style="padding:2px 8px; font-size:10.5px;" onclick="setNightShift(!nightShiftActive)">Night Shift</button>
     </div>
   </div>
 
@@ -2819,7 +2819,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
                 <div style="font-weight:600;">Night Shift</div>
                 <div style="font-size:11.5px; color:var(--text-secondary);">Warm color temperature for reduced eye strain</div>
               </div>
-              <div class="settings-toggle" id="toggle-night-shift" onclick="toggleNightShift(this)"><div class="settings-toggle-knob"></div></div>
+              <div class="settings-toggle" id="toggle-night-shift" onclick="setNightShift(!nightShiftActive)"><div class="settings-toggle-knob"></div></div>
             </div>
           </div>
         </div>
@@ -2981,10 +2981,10 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
             <div class="settings-card-title"><span>Power Mode & Sleep</span></div>
             <div class="settings-row">
               <span>Energy Performance Mode</span>
-              <select class="aqua-input" style="max-width:180px; padding:4px 8px;" onchange="showToast('Set Power Mode: ' + this.value)">
-                <option>Automatic (Default)</option>
-                <option>Low Power Mode</option>
-                <option>High Power Mode</option>
+              <select id="sel-power-mode" class="aqua-input" style="max-width:180px; padding:4px 8px;" onchange="setPowerMode(this.value)">
+                <option value="Automatic">Automatic (Default)</option>
+                <option value="Low Power Mode">Low Power Mode</option>
+                <option value="High Power Mode">High Power Mode</option>
               </select>
             </div>
             <div class="settings-row">
@@ -3002,6 +3002,17 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
 
         <!-- 10. KEYBOARD & TRACKPAD PANE -->
         <div id="set-pane-keyboard" class="settings-grid-pane" style="display:none;">
+          <div class="settings-card">
+            <div class="settings-card-title"><span>Input Source</span></div>
+            <div class="settings-row">
+              <span>Input Method</span>
+              <div style="display:flex; gap:6px;">
+                <button class="aqua-btn" id="btn-input-US" style="padding:4px 9px; font-size:11.5px;" onclick="setInputSource('US')">US</button>
+                <button class="aqua-btn secondary" id="btn-input-International" style="padding:4px 9px; font-size:11.5px;" onclick="setInputSource('International')">International</button>
+                <button class="aqua-btn secondary" id="btn-input-Dvorak" style="padding:4px 9px; font-size:11.5px;" onclick="setInputSource('Dvorak')">Dvorak</button>
+              </div>
+            </div>
+          </div>
           <div class="settings-card">
             <div class="settings-card-title"><span>Key Repeat & Timing</span></div>
             <div class="settings-row">
@@ -4858,11 +4869,64 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     showToast(`Dock Auto-Hide ${el.classList.contains('active') ? 'Active' : 'Off'}`);
   }
 
-  function toggleNightShift(el) {
-    el.classList.toggle('active');
-    const active = el.classList.contains('active');
+  /* Menu Bar & Control Center persisted system prefs (Night Shift / Input Source / Power Mode) */
+  let nightShiftActive = false;
+  const INPUT_SOURCES = ['US', 'International', 'Dvorak'];
+  const POWER_MODES = ['Automatic', 'Low Power Mode', 'High Power Mode'];
+  let powerModeCurrent = 'Automatic';
+
+  function applyNightShift(active) {
+    nightShiftActive = !!active;
     document.getElementById('wallpaper').style.filter = active ? 'sepia(35%) brightness(92%)' : '';
+    const displaysToggle = document.getElementById('toggle-night-shift');
+    if (displaysToggle) displaysToggle.classList.toggle('active', active);
+    const ccBtn = document.getElementById('btn-cc-nightshift');
+    if (ccBtn) ccBtn.style.background = active ? 'rgba(100,210,255,0.35)' : '';
+  }
+
+  function setNightShift(active) {
+    applyNightShift(active);
     showToast(`Night Shift ${active ? 'Enabled (Warm Tone)' : 'Disabled'}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/night-shift', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({enabled: active}) });
+  }
+
+  function applyInputSource(source) {
+    INPUT_SOURCES.forEach(src => {
+      const btn = document.getElementById(`btn-input-${src}`);
+      if (btn) btn.classList.toggle('secondary', src !== source);
+    });
+  }
+
+  function setInputSource(source) {
+    applyInputSource(source);
+    showToast(`Input Source: ${source}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/input-source', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({source}) });
+  }
+
+  function applyPowerMode(mode) {
+    powerModeCurrent = mode;
+    const sel = document.getElementById('sel-power-mode');
+    if (sel) sel.value = mode;
+    const lpm = document.getElementById('bat-lpm-toggle');
+    if (lpm) lpm.classList.toggle('active', mode === 'Low Power Mode');
+  }
+
+  function setPowerMode(mode) {
+    applyPowerMode(mode);
+    showToast(`Power Mode: ${mode}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/power-mode', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({mode}) });
+  }
+
+  function loadPersistedPrefs() {
+    apiFetch('/api/settings/get').then(prefs => {
+      if (!prefs || typeof prefs !== 'object') return;
+      if (prefs.display && prefs.display.night_shift === true) applyNightShift(true);
+      if (prefs.keyboard && prefs.keyboard.input_source) applyInputSource(prefs.keyboard.input_source);
+      if (prefs.battery && prefs.battery.power_mode) applyPowerMode(prefs.battery.power_mode);
+    }).catch(() => {});
   }
 
   /* Finder 4-View Engine: Icons, List, Columns, Gallery */
@@ -5419,10 +5483,8 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   }
 
   function toggleLowPowerMode(el) {
-    el.classList.toggle('active');
-    const active = el.classList.contains('active');
-    showToast(active ? 'Low Power Mode Enabled' : 'Low Power Mode Disabled');
-    playSystemSound('pop');
+    const enabling = !el.classList.contains('active');
+    setPowerMode(enabling ? 'Low Power Mode' : 'Automatic');
   }
 
   function toggleWifi(el) {
@@ -5505,14 +5567,6 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     trackIdx = (trackIdx + 1) % tracks.length;
     document.getElementById('cc-track-title').innerText = tracks[trackIdx].title;
     showToast(`Skipped track: ${tracks[trackIdx].title}`);
-  }
-
-  function toggleNightShiftQuick() {
-    const active = document.getElementById('wallpaper').style.filter.includes('sepia');
-    document.getElementById('wallpaper').style.filter = !active ? 'sepia(35%) brightness(92%)' : '';
-    const btn = document.getElementById('btn-cc-nightshift');
-    if (btn) btn.classList.toggle('aqua-btn', !active);
-    showToast(`Night Shift ${!active ? 'Enabled (Warm Tone)' : 'Disabled'}`);
   }
 
   function toggleFocusMode(el) {
@@ -8615,6 +8669,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   setInterval(updateAnalogClock, 1000);
   setInterval(refreshTelemetry, 5000);
   refreshTelemetry();
+  loadPersistedPrefs();
   const savedNote = localStorage.getItem('aqua_quick_note');
   if (savedNote && document.getElementById('nc-quick-notes')) {
     document.getElementById('nc-quick-notes').value = savedNote;

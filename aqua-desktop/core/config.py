@@ -12,6 +12,8 @@ import os
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
+from core.system_prefs import PREF_SECTION_DEFAULTS
+
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     "appearance": {
@@ -92,6 +94,10 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "context_length": 8192,
     },
 }
+
+# Menu Bar & Control Center persisted prefs (display/keyboard/battery) share
+# one source of truth in core.system_prefs so the UI, routes, and defaults agree.
+DEFAULT_CONFIG.update(PREF_SECTION_DEFAULTS)
 
 
 class AquaConfig:

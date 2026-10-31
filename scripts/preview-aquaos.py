@@ -43,6 +43,7 @@ from ai.ai_studio import extract_first_code_block
 from apps.about_aquaos import get_about_info
 from core.config import AquaConfig
 from core.linux_env import AquaLinuxEnvironment
+from core.system_prefs import normalize_input_source, normalize_night_shift, normalize_power_mode
 from security.gatekeeper import AquaGatekeeper
 from security.shield_center import ShieldDiagnostics
 from spotlight.spotlight import SpotlightEngine
@@ -176,6 +177,10 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
                     "dnd": ss._dnd_enabled,
                 }
             )
+            return
+
+        if clean_path == "/api/settings/get":
+            self._send_json(config.as_dict())
             return
 
         self.send_error(404)
@@ -513,6 +518,36 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
             b = int(body.get("brightness", 85))
             new_b = ai_engine.system_services.set_brightness(b)
             self._send_json({"brightness": new_b})
+            return
+
+        if clean_path == "/api/system/night-shift":
+            try:
+                enabled = normalize_night_shift(body.get("enabled"))
+            except ValueError as exc:
+                self._send_json({"error": str(exc)}, status=400)
+                return
+            config.set("display", "night_shift", enabled)
+            self._send_json({"enabled": enabled})
+            return
+
+        if clean_path == "/api/system/input-source":
+            try:
+                source = normalize_input_source(body.get("source"))
+            except ValueError as exc:
+                self._send_json({"error": str(exc)}, status=400)
+                return
+            config.set("keyboard", "input_source", source)
+            self._send_json({"source": source})
+            return
+
+        if clean_path == "/api/system/power-mode":
+            try:
+                mode = normalize_power_mode(body.get("mode"))
+            except ValueError as exc:
+                self._send_json({"error": str(exc)}, status=400)
+                return
+            config.set("battery", "power_mode", mode)
+            self._send_json({"mode": mode})
             return
 
         if clean_path == "/api/system/toggle":
