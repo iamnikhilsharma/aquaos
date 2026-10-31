@@ -226,7 +226,7 @@ macOS Finder provides a unified visual shell for files and windows:
 
 | Feature | User Options Provided |
 | :--- | :--- |
-| **Views** | - **Icon View** (<kbd>⌘1</kbd>): Grid alignment, icon size (16-512px), text size, label placement (bottom/right).<br>- **List View** (<kbd>⌘2</kbd>): Column sorting (Name, Date Modified, Size, Kind), calculate all folder sizes.<br>- **Column View** (<kbd>⌘3</kbd>): Hierarchical tree navigation with instant preview column.<br>- **Gallery View** (<kbd>⌘4</kbd>): Large visual preview carousel with full EXIF metadata and quick action buttons. |
+| **Views** | - **Icon View** (<kbd>⌘1</kbd>): Grid alignment, icon size (16-512px), text size, label placement (bottom/right).<br>- **List View** (<kbd>⌘2</kbd>): Column sorting (Name, Date Modified, Size, Kind), calculate all folder sizes. **AquaOS**: click-to-sort headers with asc/desc toggle and persistence implemented; folders stay on top; folder sizes show the macOS `—` placeholder (real folder-size calculation deferred).<br>- **Column View** (<kbd>⌘3</kbd>): Hierarchical tree navigation with instant preview column.<br>- **Gallery View** (<kbd>⌘4</kbd>): Large visual preview carousel with full EXIF metadata and quick action buttons. |
 | **Quick Look (<kbd>Space</kbd>)** | Instant document, image, audio, video, 3D model, and code preview without launching an application. |
 | **Tags & Color Labels** | Color coding files with 7 tags (Red, Orange, Yellow, Green, Blue, Purple, Gray) and custom label names. |
 | **Window Controls (Traffic Lights)** | - **Red button**: Close window (<kbd>⌘W</kbd>).<br>- **Yellow button**: Minimize window to Dock (<kbd>⌘M</kbd>).<br>- **Green button**: Click to enter macOS Native Full Screen. Hover to reveal **Window Tiling Options**: Tile Left, Tile Right, Tile Quarter, Move to other display. |
@@ -270,8 +270,9 @@ flowchart LR
 - **Dock Settings Tab**: Dock magnification slider + magnification toggle, the Bottom/Left/Right position selector, and the Genie vs Scale "Minimize Effect" animation selector are exposed in System Settings (Genie warp implemented via `aqua-genie-out`/`aqua-genie-in`; choice persists in-session and across reloads via localStorage).
 
 #### 2. Finder View Modes
-- Implemented: Real Linux directory listing (`/api/fs/list`), file reading (`/api/fs/read`), writing (`/api/fs/write`), folder creation, and all four view modes — **Icon Grid ⌘1, List ⌘2, Miller Columns ⌘3, Gallery ⌘4** — with a preview pane (`setFinderView` in `aqua-desktop/ui/desktop.html`).
-- Remaining: **List-view column sorting** (Name, Date Modified, Size, Kind — click-to-sort headers) and real folder-size calculation (rows currently hardcode "4.0 KB (dir)").
+- Implemented: Real Linux directory listing (`/api/fs/list`), file reading (`/api/fs/read`), writing (`/api/fs/write`), folder creation, and all four view modes — **Icon Grid ⌘1, List ⌘2, Miller Columns ⌘3, Gallery ⌘4** — with a preview pane (`setFinderView` in `aqua-desktop/ui/desktop.html`). Gallery View now renders immediately on switch (previously its content only appeared after the next directory navigation).
+- Implemented (2026-10-31): **List-view column sorting** — clickable **Name / Date Modified / Size / Kind** headers (macOS column order) with ▲/▼ indicators, asc↔desc toggle on repeated clicks, sort state persisted across directory navigation, folders kept on top under every key ("Keep folders on top"), and a Kind column backed by the shared `finderItemKind()` classifier. Directory sizes display the macOS `—` placeholder in List rows, Miller preview, Gallery inspector, and Icons Grid tooltips, replacing the hardcoded "4.0 KB (dir)".
+- Remaining: real recursive folder-size calculation (the backends still report a 4.0 KB data placeholder for dirs; the UI shows `—`).
 
 #### 3. Aqua Gatekeeper & Permission Dialogs
 - Static entropy and SHA-256 scanner is operational.
