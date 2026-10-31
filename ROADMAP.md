@@ -6,7 +6,7 @@ Provide a complete, structured catalog of **every option, preference pane, menu 
 
 ---
 
-## User Review Required
+## Priority Decision — Resolved 2026-10-31
 
 > [!IMPORTANT]
 > macOS exposes over **250+ distinct user-configurable toggles, sliders, and preference panes** across its desktop shell and `System Settings`. In AquaOS, these options map to our underlying Linux stack:
@@ -15,10 +15,12 @@ Provide a complete, structured catalog of **every option, preference pane, menu 
 > - **Security & Privacy (TCC & Gatekeeper)** → `aqua-shield`, Bubblewrap (`bwrap`), Linux namespaces, and file integrity scanning (`gatekeeper.py`).
 > - **Intelligence & Search** → `aqua-ai` (local Ollama/llama.cpp) and `aqua-spotlight`.
 
-Review the categorized catalog below and determine whether your immediate priority for implementation is:
-1. Expanding **System Settings** in [aqua-desktop/ui/desktop.html](file:///c:/Users/iamni/Desktop/AquaOS-Beta/aqua-desktop/ui/desktop.html) to include additional preference tabs.
-2. Expanding the **Global Top Menu Bar** and **Control Center** controls.
-3. Adding **Finder View Options** (List, Columns, Gallery views and sorting).
+**Decision:** the next implementation priority is **(3) Finder View Options** — finish List-view column sorting and verify the existing four-view architecture. Execution order: **Finder views → Menu Bar & Control Center → System Settings tabs**.
+
+Rationale (verified in code, `aqua-desktop/ui/desktop.html`, 2026-10-31):
+1. **Finder** — all four views are already implemented (Icons ⌘1 / List ⌘2 / Miller Columns ⌘3 / Gallery ⌘4 via `setFinderView`, plus the preview pane). The only remaining catalog §4 gap is **column sorting on the List view** (Name, Date Modified, Size, Kind) and real folder sizes. Least remaining work; closes a full catalog row.
+2. **Menu Bar & Control Center** — Wi-Fi, Bluetooth, brightness, and volume are already wired to real endpoints (`/api/system/toggle`, `/api/system/volume`, `/api/system/brightness`); catalog §1 status rows already read Implemented. Remaining items (input-source switcher, Night Shift, battery power mode) are incremental; second in order.
+3. **System Settings** — 11 panes exist (appearance, dock, wallpaper, displays, sound, network, battery, keyboard, security, default apps, general), but several toggles are cosmetic (`showToast` only) and the backend has no notifications/storage/focus/sharing endpoints (`scripts/preview-aquaos.py`). Adding panes now would multiply decorative surface; third in order, once panes are wired to real services and persisted settings.
 
 ---
 
@@ -268,8 +270,8 @@ flowchart LR
 - **Dock Settings Tab**: Dock magnification slider + magnification toggle, the Bottom/Left/Right position selector, and the Genie vs Scale "Minimize Effect" animation selector are exposed in System Settings (Genie warp implemented via `aqua-genie-out`/`aqua-genie-in`; choice persists in-session and across reloads via localStorage).
 
 #### 2. Finder View Modes
-- Currently implemented: Real Linux directory listing (`/api/fs/list`), file reading (`/api/fs/read`), writing (`/api/fs/write`), and folder creation.
-- Add toggle for **List View**, **Icon Grid View**, and **Split Column View**.
+- Implemented: Real Linux directory listing (`/api/fs/list`), file reading (`/api/fs/read`), writing (`/api/fs/write`), folder creation, and all four view modes — **Icon Grid ⌘1, List ⌘2, Miller Columns ⌘3, Gallery ⌘4** — with a preview pane (`setFinderView` in `aqua-desktop/ui/desktop.html`).
+- Remaining: **List-view column sorting** (Name, Date Modified, Size, Kind — click-to-sort headers) and real folder-size calculation (rows currently hardcode "4.0 KB (dir)").
 
 #### 3. Aqua Gatekeeper & Permission Dialogs
 - Static entropy and SHA-256 scanner is operational.
