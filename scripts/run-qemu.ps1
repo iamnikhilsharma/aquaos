@@ -15,14 +15,27 @@ if (-not (Test-Path $IsoPath)) {
     Write-Error "ISO not found at $IsoPath. Run .\scripts\build-iso.ps1 first!"
 }
 
-$QemuExe = "qemu-system-x86_64"
-if (-not (Get-Command $QemuExe -ErrorAction SilentlyContinue)) {
-    $DefaultQemu = "C:\Program Files\qemu\qemu-system-x86_64.exe"
-    if (Test-Path $DefaultQemu) {
-        $QemuExe = $DefaultQemu
-    } else {
-        Write-Error "QEMU not found. Install QEMU (winget install SoftwareFreedomConservancy.QEMU) or boot $IsoPath in VirtualBox/VMware."
+$QemuExe = $null
+$PossiblePaths = @(
+    "qemu-system-x86_64",
+    "C:\Program Files\qemu\qemu-system-x86_64.exe",
+    "C:\Program Files (x86)\qemu\qemu-system-x86_64.exe",
+    "$env:LOCALAPPDATA\Programs\qemu\qemu-system-x86_64.exe"
+)
+
+foreach ($p in $PossiblePaths) {
+    if (Get-Command $p -ErrorAction SilentlyContinue) {
+        $QemuExe = (Get-Command $p).Source
+        break
     }
+    if (Test-Path $p) {
+        $QemuExe = $p
+        break
+    }
+}
+
+if (-not $QemuExe) {
+    Write-Error "QEMU not found. Install QEMU (winget install SoftwareFreedomConservancy.QEMU) or boot $IsoPath in VirtualBox/VMware."
 }
 
 Write-Host "Booting AquaOS-Beta in QEMU ($MemoryMB MB RAM, $Cpus CPUs)..." -ForegroundColor Cyan

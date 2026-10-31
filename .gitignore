@@ -23,3 +23,7 @@ scratch/
 
 # Runtime rootfs generated mounts
 linux-rootfs/proc/
+
+# Debug & temp logs
+qemu_*.txt
+*.log

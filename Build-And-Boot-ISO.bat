@@ -1,8 +1,9 @@
 @echo off
-title AquaOS 1.0 Beta - ISO Builder and QEMU Launcher
+title AquaOS 1.0 Beta - Automated ISO Builder and VM Launcher
 cd /d "%~dp0"
-powershell -ExecutionPolicy Bypass -File scripts\build-iso.ps1
-if exist "dist\aquaos-1.0-amd64.iso" (
-    powershell -ExecutionPolicy Bypass -File scripts\run-qemu.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\setup-build-environment.ps1"
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo Pipeline finished with code %ERRORLEVEL%.
+    pause
 )
-pause

@@ -17,7 +17,9 @@ param(
     [string]$DiskPath = "dist\aquaos-disk.qcow2",
     [int]$RamMB = 4096,
     [int]$Cores = 4,
+    [string]$Display = "sdl",
     [switch]$NoGui,
+    [switch]$Detached,
     [switch]$ForceInstall,
     [switch]$DryRun
 )
@@ -73,13 +75,17 @@ Write-Host ('[+] QEMU Engine Found: {0}' -f $QemuExe) -ForegroundColor Green
 # 2. Check Acceleration (WHPX vs TCG)
 $Accel = "tcg"
 try {
-    # Check if Windows Hypervisor Platform is active
-    $testProc = Start-Process -FilePath $QemuExe -ArgumentList "-accel whpx -version" -NoNewWindow -PassThru -Wait -ErrorAction SilentlyContinue
+    # Check if Windows Hypervisor Platform is active and can initialize
+    $tmpErr = [System.IO.Path]::GetTempFileName()
+    $testProc = Start-Process -FilePath $QemuExe -ArgumentList "-accel whpx -machine q35 -display none -S -qmp stdio" -RedirectStandardError $tmpErr -NoNewWindow -PassThru -Wait -ErrorAction SilentlyContinue
+    Remove-Item $tmpErr -Force -ErrorAction SilentlyContinue
     if ($testProc.ExitCode -eq 0) {
-        $Accel = "whpx,accel=tcg"
+        $Accel = "whpx"
         Write-Host '[+] Hardware Acceleration: Windows Hypervisor Platform (WHPX) Enabled' -ForegroundColor Green
     } else {
-        Write-Host '[*] Hypervisor WHPX unavailable. Using multi-threaded TCG CPU emulation.' -ForegroundColor Yellow
+        $Accel = "tcg"
+        Write-Host '[*] Windows Hypervisor Platform (WHPX) inactive. Using multi-threaded TCG CPU emulation.' -ForegroundColor Yellow
+        Write-Host '    (Tip: To enable WHPX on Windows, run as Admin: Enable-WindowsOptionalFeature -Online -FeatureName HypervisorPlatform)' -ForegroundColor DarkGray
     }
 } catch {
     $Accel = "tcg"
@@ -117,7 +123,7 @@ if (Test-Path $FullIsoPath) {
 
 # 5. Assemble Full QEMU Command Line
 $QemuArgs = @(
-    "-name", "AquaOS 1.0 Beta (Sonoma-AI Linux)",
+    "-name", "AquaOS-1.0-Beta",
     "-machine", "q35",
     "-accel", $Accel,
     "-m", "${RamMB}M",
@@ -132,7 +138,7 @@ $QemuArgs = @(
 if ($NoGui) {
     $QemuArgs += @("-display", "none")
 } else {
-    $QemuArgs += @("-vga", "virtio", "-display", "default,show-cursor=on")
+    $QemuArgs += @("-vga", "virtio", "-display", "${Display},show-cursor=on")
 }
 
 $QemuArgs += $BootArgs
@@ -141,6 +147,7 @@ Write-Host "------------------------------------------------------------------" 
 Write-Host "VM Configuration:" -ForegroundColor White
 Write-Host "  RAM:           $RamMB MB" -ForegroundColor White
 Write-Host "  CPU Cores:     $Cores" -ForegroundColor White
+Write-Host "  Display:       $Display" -ForegroundColor White
 Write-Host "  Port Forwards: Host 8765 -> Guest 8765 (AquaOS Web / API)" -ForegroundColor Cyan
 Write-Host "                 Host 2222 -> Guest 22 (SSH)" -ForegroundColor Cyan
 Write-Host "------------------------------------------------------------------" -ForegroundColor DarkGray
@@ -152,6 +159,14 @@ if ($DryRun) {
     return
 }
 
-Write-Host '[*] Starting AquaOS Virtual Machine...' -ForegroundColor Green
-
-& $QemuExe @QemuArgs
+if ($Detached) {
+    Write-Host '[*] Starting AquaOS Virtual Machine in background...' -ForegroundColor Green
+    $QemuWExe = Join-Path (Split-Path $QemuExe) "qemu-system-x86_64w.exe"
+    $TargetExe = if (Test-Path $QemuWExe) { $QemuWExe } else { $QemuExe }
+    $vmProc = Start-Process -FilePath $TargetExe -ArgumentList $QemuArgs -PassThru
+    Write-Host ("[+] AquaOS VM Process Started! PID: {0}" -f $vmProc.Id) -ForegroundColor Green
+    Write-Host "    Virtual Machine window is active. Port 8765 is forwarded to guest." -ForegroundColor Cyan
+} else {
+    Write-Host '[*] Starting AquaOS Virtual Machine (close VM window to exit)...' -ForegroundColor Green
+    & $QemuExe @QemuArgs
+}

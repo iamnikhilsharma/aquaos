@@ -19,6 +19,31 @@ echo "=================================================================="
 
 mkdir -p "${BUILD_ROOT}" "${ISO_STAGING}/live" "${ISO_STAGING}/boot/grub" "${DIST_DIR}"
 
+# 0. Ensure host build tools are installed (especially when running in WSL)
+REQUIRED_TOOLS=("debootstrap" "mksquashfs" "xorriso" "grub-mkrescue" "mformat")
+MISSING_TOOLS=()
+for tool in "${REQUIRED_TOOLS[@]}"; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+        MISSING_TOOLS+=("$tool")
+    fi
+done
+
+if [ ${#MISSING_TOOLS[@]} -gt 0 ]; then
+    echo "[*] Installing required build dependencies (${MISSING_TOOLS[*]})..."
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -y && apt-get install -y --no-install-recommends \
+        debootstrap \
+        squashfs-tools \
+        xorriso \
+        grub-pc-bin \
+        grub-efi-amd64-bin \
+        grub-common \
+        mtools \
+        dosfstools \
+        ca-certificates \
+        curl
+fi
+
 # 1. Bootstrap Ubuntu 24.04 LTS (Noble Numbat) base system
 if [ ! -f "${CHROOT_DIR}/bin/bash" ]; then
     echo "[1/6] Running debootstrap (${UBUNTU_RELEASE} - Ubuntu 24.04 LTS)..."
