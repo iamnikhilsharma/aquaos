@@ -12,6 +12,7 @@ sys.path.insert(0, str(TESTS_DIR))
 sys.path.insert(0, str(TESTS_DIR.parent / "aqua-desktop"))
 
 import test_ai_engine
+import test_credential_flow
 import test_desktop
 import test_security
 import test_system_prefs
@@ -60,6 +61,12 @@ def run_all_tests() -> int:
         ("test_desktop.test_builtin_apps_indexed", test_desktop.test_builtin_apps_indexed, False),
         ("test_desktop.test_desktop_html_windows_and_resizing", test_desktop.test_desktop_html_windows_and_resizing, False),
         ("test_desktop.test_virtual_machine_scripts", test_desktop.test_virtual_machine_scripts, False),
+        ("test_credential_flow.test_lock_screen_has_no_plaintext_demo_password", test_credential_flow.test_lock_screen_has_no_plaintext_demo_password, False),
+        ("test_credential_flow.test_lock_screen_first_run_and_verify_flow_is_wired", test_credential_flow.test_lock_screen_first_run_and_verify_flow_is_wired, False),
+        ("test_credential_flow.test_credential_hash_round_trip_and_salt_uniqueness", test_credential_flow.test_credential_hash_round_trip_and_salt_uniqueness, False),
+        ("test_credential_flow.test_password_validation_and_malformed_credentials", test_credential_flow.test_password_validation_and_malformed_credentials, False),
+        ("test_credential_flow.test_lock_routes_setup_verify_rotation_and_persist", test_credential_flow.test_lock_routes_setup_verify_rotation_and_persist, False),
+        ("test_credential_flow.test_lock_routes_reject_bad_payloads", test_credential_flow.test_lock_routes_reject_bad_payloads, False),
     ]
 
     passed = 0
