@@ -1302,7 +1302,7 @@
 <input type="file" id="native-dir-picker" webkitdirectory directory multiple style="display:none" onchange="onNativeDirPicked(event)" />
 
 <!-- Lock Screen Overlay (macOS Sequoia) -->
-<div id="lock-screen" style="position:fixed; inset:0; z-index:99990; background:rgba(6,8,18,0.85); backdrop-filter:blur(45px) saturate(200%); display:none; flex-direction:column; align-items:center; justify-content:center; color:#fff; user-select:none;">
+<div id="lock-screen" style="position:fixed; inset:0; z-index:99990; background:rgba(6,8,18,0.85); backdrop-filter:blur(45px) saturate(200%); display:none; flex-direction:column; align-items:center; justify-content:center; color:#fff; user-select:none; padding-bottom:96px;">
   <!-- Clock & Date -->
   <div style="text-align:center; margin-bottom:28px;">
     <div id="lock-time" style="font-size:78px; font-weight:700; letter-spacing:-2px; line-height:1; text-shadow:0 10px 30px rgba(0,0,0,0.5);">03:00</div>
@@ -4709,7 +4709,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     if (setupInput) setupInput.value = '';
     if (setupConfirm) { setupConfirm.value = ''; setupConfirm.classList.remove('aqua-lock-shake'); }
     if (lockHasPassword) { passInput?.focus(); setLockStatus('Enter your password to unlock'); }
-    else setLockStatus('Set a password to secure your AquaOS session (first run)');
+    else setLockStatus('Set a password to secure your session');
   }
 
   async function prepareLockScreen() {
