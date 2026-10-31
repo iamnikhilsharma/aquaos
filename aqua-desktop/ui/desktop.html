@@ -5000,6 +5000,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       document.getElementById('btn-view-gallery')?.classList.add('active');
       if (splitView) splitView.style.display = 'none';
       if (colsEl) colsEl.style.display = 'none';
+      if (galleryEl) { galleryEl.style.display = 'flex'; renderGalleryView(); }
       if (previewBtn) previewBtn.style.display = 'none';
       showToast('Finder: Gallery View (⌘4)');
     }

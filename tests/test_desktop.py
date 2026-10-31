@@ -303,6 +303,12 @@ def test_finder_list_view_sorting_and_dir_size_placeholder() -> None:
     assert "function renderFsListRows(" in content
     assert content.count("renderFsListRows();") >= 2, "renderDirectory and sortFinderBy must both re-render rows"
 
+    # 7. Switching directly into Gallery View (⌘4) must reveal and render it
+    #    immediately — not only after the next directory navigation (parity with
+    #    the Icons/Columns branches, which render on switch).
+    assert "if (galleryEl) { galleryEl.style.display = 'flex'; renderGalleryView(); }" in content, \
+        "setFinderView('gallery') must show #fs-gallery-view and call renderGalleryView()"
+
 
 
 
