@@ -252,5 +252,57 @@ def test_virtual_machine_scripts() -> None:
     assert "VMware" in doc_text
 
 
+def test_finder_list_view_sorting_and_dir_size_placeholder() -> None:
+    """Finder List view parity: click-to-sort column headers (Name, Date Modified, Size,
+    Kind in macOS order) that toggle asc/desc and persist across directory navigations,
+    plus the macOS-style '—' placeholder replacing the hardcoded '4.0 KB (dir)'."""
+    html_path = Path(__file__).resolve().parents[1] / "aqua-desktop" / "ui" / "desktop.html"
+    content = html_path.read_text(encoding="utf-8")
+
+    # 1. Sort state + engine: default Name ascending; re-applied on every directory
+    #    render so the sort choice persists across browseTo/navigate/refresh.
+    assert "let finderSort = { key: 'name', dir: 'asc' };" in content
+    assert "function sortFinderEntries(" in content
+    assert "function sortFinderBy(" in content
+    assert "currentFsEntries = sortFinderEntries(fsData.entries || []);" in content
+    # Repeated click on the same header toggles asc -> desc -> asc
+    assert "finderSort.key === key ? (finderSort.dir === 'asc' ? 'desc' : 'asc') : 'asc'" in content
+    # Folders stay on top under every sort key (macOS 'Keep folders on top')
+    assert "if (a.is_dir !== b.is_dir) return a.is_dir ? -1 : 1;" in content
+
+    # 2. Sortable headers exist for all four keys, in macOS column order
+    i_name = content.find("sortFinderBy('name')")
+    i_mtime = content.find("sortFinderBy('mtime')")
+    i_size = content.find("sortFinderBy('size')")
+    i_kind = content.find("sortFinderBy('kind')")
+    assert 0 < i_name < i_mtime < i_size < i_kind, "Headers must appear in macOS order: Name, Date Modified, Size, Kind"
+    assert 'data-sort-key="name"' in content
+    assert 'data-sort-key="mtime"' in content
+    assert 'data-sort-key="size"' in content
+    assert 'data-sort-key="kind"' in content
+
+    # 3. Sort direction indicators (▲ ascending / ▼ descending) on the active column
+    assert "function updateSortIndicators(" in content
+    assert "fs-sort-arrow" in content
+    assert "'▲' : '▼'" in content
+
+    # 4. Kind column backed by a shared kind classifier
+    assert "function finderItemKind(" in content
+    assert "return 'Python Script';" in content
+    assert "return 'Folder';" in content
+
+    # 5. The macOS '—' folder-size placeholder replaces the hardcoded value in every
+    #    surface that displays a directory size: list rows, Miller preview, Gallery inspector.
+    assert "4.0 KB" not in content, "Folder size must no longer hardcode '4.0 KB (dir)'"
+    assert "sizeStr = item.is_dir ? '—' :" in content, "List-view rows must show '—' for folders"
+    assert "item.is_dir ? '—' : item.size_kb + ' KB'" in content, "Gallery inspector must show '—' for folders"
+    assert "isDir ? '—' : item.size_kb + ' KB'" in content, "Miller columns preview must show '—' for folders"
+
+    # 6. Row rendering factors into renderFsListRows so sorting can re-render the
+    #    table without refetching, and renderDirectory calls it on every load.
+    assert "function renderFsListRows(" in content
+    assert content.count("renderFsListRows();") >= 2, "renderDirectory and sortFinderBy must both re-render rows"
+
+
 
 
