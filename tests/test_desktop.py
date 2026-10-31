@@ -359,3 +359,118 @@ def test_menu_bar_control_center_persisted_prefs() -> None:
     assert "loadPersistedPrefs();" in content
 
 
+def test_settings_panes_persisted_parity() -> None:
+    """System Settings expansion (ROADMAP §3.B/§3.C): Notifications, Focus, Storage,
+    and AirDrop & Sharing panes are backed by real validated endpoints with persisted
+    state; the Wi-Fi & Network pane serves live connection state instead of hardcoded
+    data; the Sound pane output slider drives the real volume endpoint."""
+    html_path = Path(__file__).resolve().parents[1] / "aqua-desktop" / "ui" / "desktop.html"
+    content = html_path.read_text(encoding="utf-8")
+
+    # 1. Four new sidebar panes registered directly below Wi-Fi & Network,
+    #    in macOS Settings order: Connectivity…, Notifications, Focus, Storage, Sharing
+    i_net = content.find('id="sb-set-network"')
+    i_notifications = content.find('id="sb-set-notifications"')
+    i_focus = content.find('id="sb-set-focus"')
+    i_storage = content.find('id="sb-set-storage"')
+    i_sharing = content.find('id="sb-set-sharing"')
+    i_battery = content.find('id="sb-set-battery"')
+    assert 0 < i_net < i_notifications < i_focus < i_storage < i_sharing < i_battery, \
+        "Sidebar must gain Notifications, Focus, Storage, Sharing after Wi-Fi & Network"
+    assert "switchSettingsTab('notifications', this)" in content
+    assert "switchSettingsTab('focus', this)" in content
+    assert "switchSettingsTab('storage', this)" in content
+    assert "switchSettingsTab('sharing', this)" in content
+
+    # 2. The tab switcher knows the new badges
+    assert "notifications: 'Notifications'," in content
+    assert "focus: 'Focus'," in content
+    assert "storage: 'Storage'," in content
+    assert "sharing: 'AirDrop & Sharing'," in content
+
+    # 3. Pane bodies exist
+    for pane_id in ("set-pane-notifications", "set-pane-focus", "set-pane-storage", "set-pane-sharing"):
+        assert f'id="{pane_id}"' in content
+
+    # 4. Notifications pane controls route through /api/system/notifications
+    assert "toggleNotifPref('allow_when_sleeping', this)" in content
+    assert "toggleNotifPref('allow_when_mirroring', this)" in content
+    assert "toggleNotifPref('badge_app_icon', this)" in content
+    assert "toggleNotifPref('play_alert_sound', this)" in content
+    assert 'id="sel-notif-grouping"' in content
+    assert "onchange=\"setNotificationGrouping(this.value)\"" in content
+    assert '<option value="automatic"' in content
+    assert '<option value="by_app"' in content
+    assert '<option value="off"' in content
+    assert "function applyNotificationPrefs(" in content
+    assert "function toggleNotifPref(" in content
+    assert "function setNotificationGrouping(" in content
+    assert content.count("'/api/system/notifications'") >= 1
+
+    # 5. Focus pane: master DND toggle shared with the Control Center + Focus profiles
+    assert "FOCUS_MODES" in content
+    assert 'id="pane-toggle-focus-dnd"' in content
+    assert "onclick=\"setFocusDND(!focusDNDActive)\"" in content
+    assert 'id="sel-focus-mode"' in content
+    assert "onchange=\"setFocusMode(this.value)\"" in content
+    assert '<option value="Do Not Disturb"' in content
+    assert '<option value="Sleep">' in content
+    assert "function setFocusDND(" in content
+    assert "function applyFocusDND(" in content
+    assert "function setFocusMode(" in content
+    assert content.count("'/api/system/focus'") >= 1
+    assert "JSON.stringify({mode})" in content
+
+    # 6. Storage pane: real usage endpoint + stacked color-coded bar + largest files
+    assert 'id="storage-usage-bar"' in content
+    assert 'id="storage-largest-list"' in content
+    assert "onclick=\"refreshStorageUsage()\"" in content
+    assert "apiFetch('/api/storage/usage')" in content
+    assert "function refreshStorageUsage(" in content
+    assert "function renderStorageUsage(" in content
+
+    # 7. Sharing pane: AirDrop visibility + four persisted service toggles
+    assert 'id="sel-airdrop"' in content
+    assert "onchange=\"setAirdropVisibility(this.value)\"" in content
+    assert "toggleSharingService('screen_sharing', this)" in content
+    assert "toggleSharingService('file_sharing', this)" in content
+    assert "toggleSharingService('remote_login', this)" in content
+    assert "toggleSharingService('internet_sharing', this)" in content
+    assert "function setAirdropVisibility(" in content
+    assert "function toggleSharingService(" in content
+    assert content.count("'/api/system/airdrop'") >= 1
+    assert content.count("'/api/system/sharing'") >= 1
+    # The Control Center AirDrop toggle now drives the same persisted pref
+    assert "setAirdropVisibility(active ? 'contacts' : 'off')" in content
+
+    # 8. Wi-Fi & Network (connectivity) pane is live: no hardcoded IP or fake lease,
+    #    real status fetch, and toggles shared with the menu bar/Control Center
+    assert "192.168.1.142" not in content, "Network pane must not hardcode a fake IP"
+    assert "function syncRuntimeStatus(" in content
+    assert "apiFetch('/api/system/status')" in content
+    assert 'id="net-conn-ssid"' in content
+    assert 'id="pane-toggle-wifi"' in content
+    assert "onclick=\"setWifiEnabled(!wifiPowered)\"" in content
+    assert 'id="pane-toggle-bluetooth"' in content
+    assert "onclick=\"setBluetoothEnabled(!bluetoothPowered)\"" in content
+    assert 'id="pane-toggle-private-mac"' in content
+    assert "onclick=\"togglePrivateMac(this)\"" in content
+    assert "toggleFirewallPref('firewall_enabled', this)" in content
+    assert "toggleFirewallPref('stealth_mode', this)" in content
+    assert content.count("'/api/system/firewall'") >= 1
+    assert content.count("'/api/system/private-mac'") >= 1
+    assert content.count("'/api/system/toggle'") >= 2
+    # The stale toast-only popover handler is gone in favor of the shared setter
+    assert "function toggleWifi(el)" not in content
+    assert "function toggleWiFi(el)" not in content
+
+    # 9. Sound pane output slider drives the real shared volume endpoint
+    assert 'oninput="setVolume(this.value)"' in content
+    assert "showToast('Output Volume: '" not in content
+
+    # 10. Boot restore reads the new pref sections into the UI
+    assert "applyNotificationPrefs(" in content
+    assert "syncRuntimeStatus();" in content
+    assert "refreshStorageUsage();" in content
+
+
