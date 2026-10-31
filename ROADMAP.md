@@ -79,13 +79,13 @@ The Dock provides application launching, running process feedback, and file mana
 
 | Option / Setting | Description & User Choices | AquaOS Parity Status |
 | :--- | :--- | :--- |
-| **Dock Position** | Pin dock to **Bottom**, **Left**, or **Right** edge of the monitor. | Bottom currently styled; dynamic edge anchoring planned. |
+| **Dock Position** | Pin dock to **Bottom**, **Left**, or **Right** edge of the monitor. | **Implemented**: Bottom/Left/Right position selector in System Settings (`setDockPosition`) with `dock-left`/`dock-right` CSS edge anchoring on the dock container. |
 | **Magnification & Size** | Smooth parabolic hover magnification with adjustable zoom ratio and base icon size (16px to 128px). | **Fully Implemented**: Cosine-squared magnification physics. |
-| **Minimization Effects** | Choose between **Genie Effect** (fluid warping) and **Scale Effect** (simple shrink). | Scale transition active in CSS. |
+| **Minimization Effects** | Choose between **Genie Effect** (fluid warping) and **Scale Effect** (simple shrink). | **Implemented**: Genie/Scale "Minimize Effect" selector in System Settings → Desktop & Dock (default Scale, persisted via localStorage). **Genie** = CSS warp keyframes (`aqua-genie-out`/`aqua-genie-in`) that translate, squash/stretch and rotate the window toward its matching Dock icon (falls back to Dock center for unmapped windows); **Scale** = classic 0.95× shrink transition on `.aqua-window.hidden`. Restoring a Genie-minimized window replays the warp in reverse. |
 | **Auto-Hide** | Automatically slide Dock offscreen until pointer touches monitor edge. | Configurable via CSS/Settings. |
 | **Indicators & Recents** | - "Show indicator lights for open applications" (little dots underneath icons).<br>- "Show recent applications in Dock" (isolated separator on right for unpinned running apps). | **Implemented**: Active glowing dots under running processes. |
 | **Stacks & Trash** | - Right-side folder stacks (Fan, Grid, List views).<br>- Trash can with drag-to-delete, right-click "Empty Trash", and auto-ejection for mounted drives. | Trash icon and file deletion handlers active. |
-| **Desktop Stacks & Icons** | - "Use Stacks" to auto-group files by Kind, Date Last Opened, Date Added, Date Modified, Date Created, or Tags.<br>- Icon Grid spacing, size, and label positioning (bottom vs right). | Planned for AquaOS desktop canvas. |
+| **Desktop Stacks & Icons** | - "Use Stacks" to auto-group files by Kind, Date Last Opened, Date Added, Date Modified, Date Created, or Tags.<br>- Icon Grid spacing, size, and label positioning (bottom vs right). | **Partial**: "Use Stacks" toggle implemented (kind-based grouping with pile-box icons, count badges, click-to-expand fan); other group-by modes (Date Last Opened, Date Added, Date Modified, Date Created, Tags) still planned. |
 
 ---
 
@@ -263,9 +263,9 @@ flowchart LR
 
 #### 1. System Settings Expansion (`aqua-desktop/ui/desktop.html`)
 - **Appearance & Accent**: Already wired with 5 accent color pickers and dark/light mode toggle.
-- **Display Brightness & Volume**: Wire the sliders in Control Center to call `/api/system/brightness` and `/api/system/volume`.
+- **Display Brightness & Volume**: Both Control Center and Settings/Displays sliders are wired to the API — volume via `setVolume()` → `/api/system/volume` and brightness via `setBrightness()` → `/api/system/brightness` (shared `oninput` handler, POST round-trip verified); instant visual feedback (brightness label + wallpaper CSS filter) is retained alongside the API call.
 - **Wallpapers**: 4 dynamic wallpapers implemented (Sonoma Aurora, Sequoia Sunrise, Ventura Gold, Cyber Neural). Add wallpaper drag-and-drop or local file selector.
-- **Dock Settings Tab**: Expose Dock magnification slider, position selector (Bottom/Left/Right), and Genie vs Scale animation selector in System Settings.
+- **Dock Settings Tab**: Dock magnification slider + magnification toggle, the Bottom/Left/Right position selector, and the Genie vs Scale "Minimize Effect" animation selector are exposed in System Settings (Genie warp implemented via `aqua-genie-out`/`aqua-genie-in`; choice persists in-session and across reloads via localStorage).
 
 #### 2. Finder View Modes
 - Currently implemented: Real Linux directory listing (`/api/fs/list`), file reading (`/api/fs/read`), writing (`/api/fs/write`), and folder creation.

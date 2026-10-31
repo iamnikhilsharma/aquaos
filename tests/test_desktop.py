@@ -189,6 +189,46 @@ def test_desktop_html_windows_and_resizing() -> None:
     assert "installSnapPackage" in content
 
 
+def test_genie_minimize_effect_and_selector() -> None:
+    """Genie minimize effect (warp to dock) + Genie/Scale selector in Dock settings."""
+    html_path = Path(__file__).resolve().parents[1] / "aqua-desktop" / "ui" / "desktop.html"
+    content = html_path.read_text(encoding="utf-8")
+
+    # 1. Genie warp keyframes and animation classes are present
+    assert "@keyframes aqua-genie-out" in content
+    assert "@keyframes aqua-genie-in" in content
+    assert ".aqua-window.genie-min" in content
+    assert ".aqua-window.genie-restore" in content
+
+    # 2. Genie/Scale "Minimize Effect" selector exists in the Dock settings pane
+    assert 'id="btn-min-effect-scale"' in content
+    assert 'id="btn-min-effect-genie"' in content
+    assert "setMinimizeEffect('scale')" in content
+    assert "setMinimizeEffect('genie')" in content
+
+    # 3. Effect state + persistence plumbing (localStorage key aquaos_min_effect)
+    assert "let minimizeEffect = 'scale';" in content
+    assert "aquaos_min_effect" in content
+
+    # 4. minimizeWindow honors the choice (genie warp vs classic hidden shrink)
+    assert "if (minimizeEffect === 'genie') {" in content
+    assert "classList.add('hidden', 'genie-min')" in content
+    assert "playGenieAnimation(win, true)" in content
+
+    # 5. openWindow replays the warp in reverse when restoring a genie-minimized window
+    assert "contains('genie-min')" in content
+    assert "classList.add('genie-restore')" in content
+    assert "playGenieAnimation(win, false)" in content
+
+    # 6. Dock items expose their window mapping for genie suction targets
+    dock_ids = [
+        "win-finder", "win-terminal", "win-ai", "win-shield", "win-activity", "win-settings",
+        "win-firefox", "win-thunderbird", "win-store", "win-music", "win-video", "win-preview", "win-about",
+    ]
+    for wid in dock_ids:
+        assert f'class="dock-item" data-win="{wid}"' in content, f"dock-item data-win mapping for {wid} missing"
+
+
 def test_virtual_machine_scripts() -> None:
     root = Path(__file__).resolve().parents[1]
     ps1_script = root / "scripts" / "run-vm.ps1"

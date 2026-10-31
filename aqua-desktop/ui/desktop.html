@@ -363,6 +363,33 @@
     transition: opacity 0.16s ease, transform 0.16s ease;
   }
   .aqua-window.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
+
+  /* Genie minimize effect (opt-in via Minimize Effect selector in System Settings > Desktop & Dock).
+     The window is sucked toward its Dock icon: asymmetric squash/stretch warp + slight rotation,
+     rather than the uniform 0.95x scale shrink. Targets are injected per-window as --genie-x/--genie-y. */
+  .aqua-window.genie-min {
+    transform-origin: 50% 100%;
+    animation: aqua-genie-out 0.52s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+  }
+  .aqua-window.genie-restore {
+    transform-origin: 50% 100%;
+    animation: aqua-genie-in 0.44s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  }
+  @keyframes aqua-genie-out {
+    0%   { opacity: 1; transform: translate(0, 0) scale(1, 1) rotate(0deg); border-radius: 14px; }
+    22%  { opacity: 1; transform: translate(calc(var(--genie-x, 0px) * 0.16), calc(var(--genie-y, 0px) * 0.2)) scale(0.94, 1.18) rotate(-1.5deg); border-radius: 14px; }
+    55%  { opacity: 1; transform: translate(calc(var(--genie-x, 0px) * 0.5), calc(var(--genie-y, 0px) * 0.55)) scale(0.58, 1.55) rotate(-5deg); border-radius: 18px; }
+    82%  { opacity: 0.8; transform: translate(calc(var(--genie-x, 0px) * 0.87), calc(var(--genie-y, 0px) * 0.88)) scale(0.16, 0.7) rotate(-10deg); border-radius: 24px; }
+    100% { opacity: 0; transform: translate(var(--genie-x, 0px), var(--genie-y, 0px)) scale(0.04, 0.18) rotate(-14deg); border-radius: 28px; }
+  }
+  @keyframes aqua-genie-in {
+    0%   { opacity: 0; transform: translate(var(--genie-x, 0px), var(--genie-y, 0px)) scale(0.04, 0.18) rotate(-14deg); border-radius: 28px; }
+    40%  { opacity: 1; transform: translate(calc(var(--genie-x, 0px) * 0.2), calc(var(--genie-y, 0px) * 0.22)) scale(0.72, 1.5) rotate(-4deg); border-radius: 20px; }
+    100% { opacity: 1; transform: translate(0, 0) scale(1, 1) rotate(0deg); border-radius: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .aqua-window.genie-min, .aqua-window.genie-restore { animation-duration: 0.06s; }
+  }
   .aqua-window.maximized {
     top: 4px !important; left: 6px !important;
     width: calc(100vw - 12px) !important; height: calc(100vh - 102px) !important;
@@ -2693,6 +2720,16 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
             </div>
             <div class="settings-row">
               <div>
+                <div style="font-weight:600;">Minimize Effect</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Genie warps the window fluidly into its Dock icon; Scale is the classic shrink</div>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button class="aqua-btn" id="btn-min-effect-scale" style="padding:4px 10px; font-size:11.5px;" onclick="setMinimizeEffect('scale')">Scale</button>
+                <button class="aqua-btn secondary" id="btn-min-effect-genie" style="padding:4px 10px; font-size:11.5px;" onclick="setMinimizeEffect('genie')">Genie</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div>
                 <div style="font-weight:600;">Automatically hide and show the Dock</div>
                 <div style="font-size:11.5px; color:var(--text-secondary);">Dock slides away until cursor moves to monitor edge</div>
               </div>
@@ -3527,27 +3564,27 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
 <!-- 4. Bottom Parabolic Magnifying Dock -->
 <div id="dock-container">
   <div id="dock">
-    <div class="dock-item" onclick="dockLaunch('win-finder', 'Finder', this)">
+    <div class="dock-item" data-win="win-finder" onclick="dockLaunch('win-finder', 'Finder', this)">
       <div class="dock-tooltip">Finder (Linux File Explorer)</div>
       <svg viewBox="0 0 100 100"><defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5AC8FA"/><stop offset="100%" stop-color="#007AFF"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g1)"/><path d="M28 36 C28 36 32 46 32 50 M72 36 C72 36 68 46 68 50 M30 68 Q50 82 70 68 M50 22 L45 55 L56 55" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none"/></svg>
       <div class="dock-dot" id="dot-finder"></div>
     </div>
-    <div class="dock-item" onclick="dockLaunch('win-terminal', 'Terminal', this)">
+    <div class="dock-item" data-win="win-terminal" onclick="dockLaunch('win-terminal', 'Terminal', this)">
       <div class="dock-tooltip">GNU Bash Terminal (/bin/bash)</div>
       <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#1C1C24" stroke="#444" stroke-width="2"/><path d="M26 36 L44 50 L26 64 M48 64 H72" stroke="#30D158" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
       <div class="dock-dot" id="dot-terminal"></div>
     </div>
-    <div class="dock-item" onclick="dockLaunch('win-ai', 'Aqua AI Studio', this)">
+    <div class="dock-item" data-win="win-ai" onclick="dockLaunch('win-ai', 'Aqua AI Studio', this)">
       <div class="dock-tooltip">Aqua AI & Live Python Runner</div>
       <svg viewBox="0 0 100 100"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0A84FF"/><stop offset="50%" stop-color="#BF5AF2"/><stop offset="100%" stop-color="#FF375F"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g2)"/><path d="M50 20 L57 43 L80 50 L57 57 L50 80 L43 57 L20 50 L43 43 Z" fill="#fff"/></svg>
       <div class="dock-dot" id="dot-ai"></div>
     </div>
-    <div class="dock-item" onclick="dockLaunch('win-shield', 'Aqua Shield', this)">
+    <div class="dock-item" data-win="win-shield" onclick="dockLaunch('win-shield', 'Aqua Shield', this)">
       <div class="dock-tooltip">Aqua Shield & Universal Runner</div>
       <svg viewBox="0 0 100 100"><defs><linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#30D158"/><stop offset="100%" stop-color="#1E8E3E"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g3)"/><path d="M50 20 L76 30 V50 C76 68 50 82 50 82 C50 82 24 68 24 50 V30 Z" fill="none" stroke="#fff" stroke-width="5"/><path d="M40 52 L47 59 L62 42" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none"/></svg>
       <div class="dock-dot" id="dot-shield"></div>
     </div>
-    <div class="dock-item" onclick="dockLaunch('win-activity', 'Activity Monitor', this)">
+    <div class="dock-item" data-win="win-activity" onclick="dockLaunch('win-activity', 'Activity Monitor', this)">
       <div class="dock-tooltip">Activity Monitor (Linux Processes)</div>
       <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#141E28" stroke="#30D158" stroke-width="2"/><polyline fill="none" stroke="#30D158" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="16 52 34 52 44 24 56 78 68 42 76 52 86 52"/></svg>
       <div class="dock-dot" id="dot-activity"></div>
@@ -3556,43 +3593,43 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       <div class="dock-tooltip">Spotlight Search & Calculator</div>
       <svg viewBox="0 0 100 100"><defs><linearGradient id="g4" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5E5CE6"/><stop offset="100%" stop-color="#0A84FF"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g4)"/><circle cx="45" cy="45" r="18" stroke="#fff" stroke-width="6" fill="none"/><line x1="59" y1="59" x2="75" y2="75" stroke="#fff" stroke-width="6" stroke-linecap="round"/></svg>
     </div>
-    <div class="dock-item" onclick="dockLaunch('win-settings', 'System Settings', this)">
+    <div class="dock-item" data-win="win-settings" onclick="dockLaunch('win-settings', 'System Settings', this)">
       <div class="dock-tooltip">System Settings</div>
       <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#636366"/><circle cx="50" cy="50" r="16" stroke="#fff" stroke-width="6" fill="none"/><circle cx="50" cy="50" r="28" stroke="#fff" stroke-width="5" stroke-dasharray="10 8" fill="none"/></svg>
       <div class="dock-dot" id="dot-settings"></div>
     </div>
-    <div class="dock-item" onclick="dockLaunch('win-firefox', 'Firefox', this)">
+    <div class="dock-item" data-win="win-firefox" onclick="dockLaunch('win-firefox', 'Firefox', this)">
       <div class="dock-tooltip">Firefox Browser (Default Web Browser)</div>
       <svg viewBox="0 0 100 100"><defs><linearGradient id="g-ff" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF3B30"/><stop offset="50%" stop-color="#FF9500"/><stop offset="100%" stop-color="#AF52DE"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-ff)"/><circle cx="50" cy="50" r="26" fill="#0A84FF"/><path d="M50 20 C68 20 80 34 78 52 C76 70 60 80 46 78 C32 76 24 64 26 50 C27 40 33 32 40 28 C36 32 35 38 37 43 C39 48 45 52 50 50 C56 48 58 42 56 36 C55 32 52 28 50 20 Z" fill="#FFCC00"/></svg>
       <div class="dock-dot" id="dot-firefox"></div>
     </div>
-    <div class="dock-item" onclick="dockLaunch('win-thunderbird', 'Thunderbird', this)">
+    <div class="dock-item" data-win="win-thunderbird" onclick="dockLaunch('win-thunderbird', 'Thunderbird', this)">
       <div class="dock-tooltip">Thunderbird Mail (Default Email Manager)</div>
       <svg viewBox="0 0 100 100"><defs><linearGradient id="g-tb" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0A84FF"/><stop offset="100%" stop-color="#0040DD"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-tb)"/><rect x="22" y="30" width="56" height="40" rx="6" fill="#fff" opacity="0.95"/><path d="M24 33 L50 52 L76 33" stroke="#0040DD" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M50 22 C42 22 36 28 36 34 L64 34 C64 28 58 22 50 22 Z" fill="#5AC8FA"/></svg>
       <div class="dock-dot" id="dot-thunderbird"></div>
     </div>
-    <div class="dock-item" onclick="dockLaunch('win-store', 'Snap Store', this)">
+    <div class="dock-item" data-win="win-store" onclick="dockLaunch('win-store', 'Snap Store', this)">
       <div class="dock-tooltip">Snap Store (Universal Software Hub)</div>
       <svg viewBox="0 0 100 100"><defs><linearGradient id="g-store" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0A84FF"/><stop offset="100%" stop-color="#5E5CE6"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-store)"/><path d="M30 42 L50 22 L70 42 L62 42 L62 72 L38 72 L38 42 Z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><circle cx="50" cy="54" r="6" fill="#fff"/></svg>
       <div class="dock-dot" id="dot-store"></div>
     </div>
-    <div class="dock-item" onclick="dockLaunch('win-music', 'Music', this)">
+    <div class="dock-item" data-win="win-music" onclick="dockLaunch('win-music', 'Music', this)">
       <div class="dock-tooltip">Music (Lossless Audio Player)</div>
       <svg viewBox="0 0 100 100"><defs><linearGradient id="g-mus" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF2D55"/><stop offset="100%" stop-color="#FF375F"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-mus)"/><circle cx="40" cy="66" r="10" fill="#fff"/><circle cx="68" cy="58" r="10" fill="#fff"/><path d="M50 66 V32 L78 24 V58" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none"/><line x1="50" y1="40" x2="78" y2="32" stroke="#fff" stroke-width="5"/></svg>
       <div class="dock-dot" id="dot-music"></div>
     </div>
-    <div class="dock-item" onclick="dockLaunch('win-video', 'QuickTime Player', this)">
+    <div class="dock-item" data-win="win-video" onclick="dockLaunch('win-video', 'QuickTime Player', this)">
       <div class="dock-tooltip">QuickTime Video Player</div>
       <svg viewBox="0 0 100 100"><defs><linearGradient id="g-vid" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#32ADE6"/><stop offset="100%" stop-color="#007AFF"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-vid)"/><circle cx="50" cy="50" r="26" stroke="#fff" stroke-width="6" fill="none"/><path d="M44 38 L64 50 L44 62 Z" fill="#fff"/></svg>
       <div class="dock-dot" id="dot-video"></div>
     </div>
-    <div class="dock-item" onclick="dockLaunch('win-preview', 'Preview', this)">
+    <div class="dock-item" data-win="win-preview" onclick="dockLaunch('win-preview', 'Preview', this)">
       <div class="dock-tooltip">Preview (Default Image Viewer)</div>
       <svg viewBox="0 0 100 100"><defs><linearGradient id="g-prev" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#34C759"/><stop offset="100%" stop-color="#30B0C7"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g-prev)"/><rect x="24" y="26" width="52" height="48" rx="8" fill="#fff" opacity="0.95"/><circle cx="38" cy="40" r="6" fill="#FF9500"/><path d="M26 64 L42 48 L56 60 L64 52 L74 64 Z" fill="#34C759"/></svg>
       <div class="dock-dot" id="dot-preview"></div>
     </div>
     <div class="dock-sep"></div>
-    <div class="dock-item" onclick="dockLaunch('win-about', 'About AquaOS', this)">
+    <div class="dock-item" data-win="win-about" onclick="dockLaunch('win-about', 'About AquaOS', this)">
       <div class="dock-tooltip">About This Machine</div>
       <svg viewBox="0 0 100 100">
         <rect width="100" height="100" rx="22" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
@@ -4204,7 +4241,16 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   function openWindow(winId, appTitle) {
     const win = document.getElementById(winId);
     if (!win) return;
-    win.classList.remove('hidden');
+    if (win.classList.contains('genie-min')) {
+      // Genie-minimized window: replay the warp in reverse, out of the Dock icon.
+      win.classList.remove('genie-min');
+      win.classList.add('genie-restore');
+      playGenieAnimation(win, false);
+      win.classList.remove('hidden');
+    } else {
+      win.classList.remove('genie-min', 'genie-restore');
+      win.classList.remove('hidden');
+    }
     focusWindow(winId, appTitle || winId.replace('win-', ''));
     if (winId === 'win-activity') refreshProcesses();
     if (winId === 'win-ai') setAiGlow(true);
@@ -4217,10 +4263,60 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     updateDockIndicators();
     renderStageManager();
   }
+  /* Minimize Effect: Scale (default) or Genie warp. Choice lives in-session on minimizeEffect
+     and persists across reloads via localStorage (System Settings > Desktop & Dock selector). */
+  let minimizeEffect = 'scale';
+  function setMinimizeEffect(effect, opts) {
+    if (effect !== 'genie' && effect !== 'scale') effect = 'scale';
+    minimizeEffect = effect;
+    const bScale = document.getElementById('btn-min-effect-scale');
+    const bGenie = document.getElementById('btn-min-effect-genie');
+    if (bScale) { bScale.classList.toggle('aqua-btn', effect === 'scale'); bScale.classList.toggle('secondary', effect !== 'scale'); }
+    if (bGenie) { bGenie.classList.toggle('aqua-btn', effect === 'genie'); bGenie.classList.toggle('secondary', effect !== 'genie'); }
+    try { localStorage.setItem('aquaos_min_effect', effect); } catch (err) {}
+    if (!opts || !opts.silent) showToast(`Minimize Effect: ${effect === 'genie' ? 'Genie Warp' : 'Scale'}`);
+  }
+  /* Resolve the Dock suction point for a Genie animation: the dock-item mapped to this window
+     (data-win), falling back to the Dock container center. Returns viewport coordinates. */
+  function genieDockTarget(win) {
+    const item = document.querySelector(`.dock-item[data-win="${win.id}"]`);
+    if (item) {
+      const r = item.getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }
+    const r = (document.getElementById('dock-container') || document.body).getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.bottom - 30 };
+  }
+  /* Compute the window-to-dock delta (layout coordinates, transform-independent) and run the
+     aqua-genie-out / aqua-genie-in keyframes, cleaning the animation class up on animationend. */
+  function playGenieAnimation(win, out) {
+    const par = win.offsetParent ? win.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+    const t = genieDockTarget(win);
+    const dx = t.x - (par.left + win.offsetLeft + win.offsetWidth / 2);
+    const dy = t.y - (par.top + win.offsetTop + win.offsetHeight);
+    win.style.setProperty('--genie-x', dx.toFixed(1) + 'px');
+    win.style.setProperty('--genie-y', dy.toFixed(1) + 'px');
+    const animName = out ? 'aqua-genie-out' : 'aqua-genie-in';
+    win.addEventListener('animationend', function handler(e) {
+      if (e.animationName !== animName) return;
+      win.removeEventListener('animationend', handler);
+      win.classList.remove(out ? 'genie-min' : 'genie-restore');
+      win.style.removeProperty('--genie-x');
+      win.style.removeProperty('--genie-y');
+    });
+    if (out) { highestZ += 2; win.style.zIndex = highestZ; }
+  }
   function minimizeWindow(winId) {
     const win = document.getElementById(winId);
     if (!win) return;
-    win.classList.add('hidden');
+    if (minimizeEffect === 'genie') {
+      win.classList.remove('genie-restore');
+      win.classList.add('hidden', 'genie-min');
+      playGenieAnimation(win, true);
+    } else {
+      win.classList.remove('genie-min', 'genie-restore');
+      win.classList.add('hidden');
+    }
     if (winId === 'win-ai') setAiGlow(false);
     showToast('Minimized window to Dock');
     const openWins = ALL_WINDOWS.filter(id => !document.getElementById(id)?.classList.contains('hidden'));
@@ -5440,9 +5536,15 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     document.documentElement.style.setProperty('--accent', hex);
     showToast(`Updated System Accent Color to ${hex}`);
   }
-  function setBrightness(val) {
-    document.getElementById('lbl-bright').innerText = val + '%';
-    document.getElementById('wallpaper').style.filter = `brightness(${val}%)`;
+  async function setBrightness(val) {
+    const b = parseInt(val, 10);
+    document.getElementById('lbl-bright').innerText = b + '%';
+    document.getElementById('wallpaper').style.filter = `brightness(${b}%)`;
+    await apiFetch('/api/system/brightness', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({brightness: b})
+    });
   }
   function toggleNeuralBoost() {
     const card = document.getElementById('cc-neural');
@@ -8436,6 +8538,9 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   if (savedNote && document.getElementById('nc-quick-notes')) {
     document.getElementById('nc-quick-notes').value = savedNote;
   }
+  let savedMinEffect = 'scale';
+  try { savedMinEffect = localStorage.getItem('aquaos_min_effect') || 'scale'; } catch (err) {}
+  setMinimizeEffect(savedMinEffect, { silent: true });
   (async () => {
     await execTermQuick('neofetch');
     await execTermQuick('ll');
