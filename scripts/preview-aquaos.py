@@ -42,6 +42,7 @@ from ai.ai_engine import AquaAIEngine
 from ai.ai_studio import extract_first_code_block
 from apps.about_aquaos import get_about_info
 from core.config import AquaConfig
+from core.credential_store import CredentialStore, credential_matches, validate_password
 from core.linux_env import AquaLinuxEnvironment
 from core.system_prefs import (
     FIREWALL_BOOL_KEYS,
@@ -67,6 +68,7 @@ from universal.aqua_run import AquaUniversalRunner
 
 
 config = AquaConfig()
+credential_store = CredentialStore()
 ai_engine = AquaAIEngine()
 gatekeeper = AquaGatekeeper()
 shield_diag = ShieldDiagnostics()
@@ -301,6 +303,11 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
                     "dnd": ss._dnd_enabled,
                 }
             )
+            return
+
+        if clean_path == "/api/system/lock":
+            # Lock-screen status probe: only the boolean — never hash or salt material
+            self._send_json({"has_password": credential_store.has_credential()})
             return
 
         if clean_path == "/api/settings/get":
@@ -779,6 +786,48 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
                 return
             config.set("sharing", service, enabled)
             self._send_json({"service": service, "enabled": enabled})
+            return
+
+        if clean_path == "/api/system/password":
+            if not isinstance(body, dict):
+                self._send_json({"error": "Password update must be a JSON object"}, status=400)
+                return
+            try:
+                password = validate_password(body.get("password"))
+            except ValueError as exc:
+                self._send_json({"error": str(exc)}, status=400)
+                return
+            existing = credential_store.get_credential()
+            if existing is not None:
+                current = body.get("current_password")
+                if not isinstance(current, str) or not current:
+                    self._send_json({"unlocked": False, "error": "Current password required to change the password"}, status=401)
+                    return
+                if not credential_matches(current, existing):
+                    self._send_json({"unlocked": False, "error": "Incorrect password"}, status=401)
+                    return
+            credential_store.set_password(password)
+            self._send_json({"has_password": True})
+            return
+
+        if clean_path == "/api/system/unlock":
+            if not isinstance(body, dict):
+                self._send_json({"error": "Unlock request must be a JSON object"}, status=400)
+                return
+            password = body.get("password")
+            if not isinstance(password, str):
+                self._send_json({"error": "Password must be a string"}, status=400)
+                return
+            existing = credential_store.get_credential()
+            if existing is None:
+                # No credential armed yet (first run): the gate is intentionally
+                # unarmed — nothing is verified because nothing is stored.
+                self._send_json({"unlocked": True, "has_password": False, "setup_required": True})
+                return
+            if credential_matches(password, existing):
+                self._send_json({"unlocked": True, "has_password": True})
+                return
+            self._send_json({"unlocked": False, "error": "Incorrect password"}, status=401)
             return
 
         self.send_error(404)

@@ -283,7 +283,7 @@ def test_lock_routes_setup_verify_rotation_and_persist() -> None:
         status, payload = _request(base, "/api/system/unlock", {"password": password})
         assert status == 401, payload
         status, payload = _request(base, "/api/system/unlock", {"password": rotated})
-        assert status == 200 and payload == {"unlocked": True}, payload
+        assert status == 200 and payload == {"unlocked": True, "has_password": True}, payload
 
         # 7. Rotation rewrote disk (new hash, still no plaintext)
         disk_cred2 = json.loads(cred_path.read_text(encoding="utf-8"))

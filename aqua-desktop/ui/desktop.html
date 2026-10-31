@@ -1130,6 +1130,16 @@
   .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
   .store-card { background: rgba(255,255,255,0.05); border: 0.5px solid var(--glass-border); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; transition: all 0.15s ease; }
   .store-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+
+  /* Lock Screen credential feedback */
+  @keyframes aqua-lock-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+  .aqua-lock-shake { animation: aqua-lock-shake 0.36s cubic-bezier(0.36, 0, 0.66, -0.56); }
 </style>
 </head>
 <body>
@@ -1306,17 +1316,25 @@
     </div>
     <div style="font-size:15px; font-weight:600; letter-spacing:0.02em;">Aqua User</div>
 
-    <div style="position:relative; width:100%; display:flex; align-items:center;">
-      <input id="lock-pass-input" type="password" placeholder="Enter Password" value="aquaos" style="width:100%; background:rgba(255,255,255,0.14); border:0.5px solid rgba(255,255,255,0.3); border-radius:99px; padding:8px 36px 8px 14px; color:#fff; font-size:12.5px; outline:none; backdrop-filter:blur(10px);" onkeydown="if(event.key==='Enter') unlockScreen()" />
-      <button onclick="unlockScreen()" style="position:absolute; right:4px; width:26px; height:26px; border-radius:50%; background:var(--accent); border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px;">→</button>
+    <div id="lock-verify-row" style="position:relative; width:100%; display:flex; align-items:center;">
+      <input id="lock-pass-input" type="password" placeholder="Enter Password" autocomplete="off" autocapitalize="off" spellcheck="false" style="width:100%; background:rgba(255,255,255,0.14); border:0.5px solid rgba(255,255,255,0.3); border-radius:99px; padding:8px 36px 8px 14px; color:#fff; font-size:12.5px; outline:none; backdrop-filter:blur(10px);" onkeydown="if(event.key==='Enter') attemptUnlock()" />
+      <button onclick="attemptUnlock()" style="position:absolute; right:4px; width:26px; height:26px; border-radius:50%; background:var(--accent); border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px;">→</button>
     </div>
 
-    <div style="font-size:11.5px; color:rgba(255,255,255,0.5); margin-top:2px;">Press Enter or click → to unlock</div>
+    <div id="lock-setup-row" style="position:relative; width:100%; display:flex; flex-direction:column; gap:8px;">
+      <input id="lock-setup-input" type="password" placeholder="Set a Password (min 6 chars)" autocomplete="new-password" autocapitalize="off" spellcheck="false" style="width:100%; background:rgba(255,255,255,0.14); border:0.5px solid rgba(255,255,255,0.3); border-radius:99px; padding:8px 14px; color:#fff; font-size:12.5px; outline:none; backdrop-filter:blur(10px);" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('lock-setup-confirm-input')?.focus();}" />
+      <div style="position:relative; width:100%; display:flex; align-items:center;">
+        <input id="lock-setup-confirm-input" type="password" placeholder="Confirm Password" autocomplete="new-password" autocapitalize="off" spellcheck="false" style="width:100%; background:rgba(255,255,255,0.14); border:0.5px solid rgba(255,255,255,0.3); border-radius:99px; padding:8px 36px 8px 14px; color:#fff; font-size:12.5px; outline:none; backdrop-filter:blur(10px);" onkeydown="if(event.key==='Enter') submitLockSetup()" />
+        <button onclick="submitLockSetup()" style="position:absolute; right:4px; width:26px; height:26px; border-radius:50%; background:var(--accent); border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px;">→</button>
+      </div>
+    </div>
+
+    <div id="lock-status-line" style="font-size:11.5px; color:rgba(255,255,255,0.5); margin-top:2px;">Press Enter or click → to unlock</div>
   </div>
 
   <!-- Bottom Cancel / Switch User pill -->
   <div style="position:absolute; bottom:36px; display:flex; gap:12px;">
-    <button class="aqua-btn secondary" style="padding:6px 14px; font-size:12px; border-radius:99px; background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2);" onclick="unlockScreen()">Cancel (Esc)</button>
+    <button class="aqua-btn secondary" style="padding:6px 14px; font-size:12px; border-radius:99px; background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2);" onclick="cancelLockOrSetup()">Cancel (Esc)</button>
     <button class="aqua-btn secondary" style="padding:6px 14px; font-size:12px; border-radius:99px; background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2);" onclick="showToast('Switched to Guest Session')">Switch User</button>
   </div>
 </div>
@@ -4652,6 +4670,136 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     updateDockIndicators();
   }
 
+  let lockHasPassword = false;   /* armed once the backend has a stored credential */
+  let lockFlowBusy = false;      /* guards double fires while a request is in flight */
+
+  function lockOverlayVisible() {
+    const ls = document.getElementById('lock-screen');
+    return !!ls && ls.style.display === 'flex';
+  }
+
+  function setLockStatus(text, isError = false) {
+    const line = document.getElementById('lock-status-line');
+    if (!line) return;
+    line.innerText = text;
+    line.style.color = isError ? 'rgba(255,69,58,0.95)' : 'rgba(255,255,255,0.5)';
+  }
+
+  function showLockError(message) {
+    setLockStatus(message, true);
+    const target = lockHasPassword ? document.getElementById('lock-pass-input') : document.getElementById('lock-setup-confirm-input');
+    if (target) {
+      target.classList.remove('aqua-lock-shake');
+      void target.offsetWidth;  /* force reflow so the shake replays on repeated failures */
+      target.classList.add('aqua-lock-shake');
+      target.focus();
+    }
+  }
+
+  function setLockMode(mode) {
+    lockHasPassword = mode === 'verify';
+    const verifyRow = document.getElementById('lock-verify-row');
+    const setupRow = document.getElementById('lock-setup-row');
+    if (verifyRow) verifyRow.style.display = lockHasPassword ? 'flex' : 'none';
+    if (setupRow) setupRow.style.display = lockHasPassword ? 'none' : 'flex';
+    const passInput = document.getElementById('lock-pass-input');
+    const setupInput = document.getElementById('lock-setup-input');
+    const setupConfirm = document.getElementById('lock-setup-confirm-input');
+    if (passInput) { passInput.value = ''; passInput.classList.remove('aqua-lock-shake'); }
+    if (setupInput) setupInput.value = '';
+    if (setupConfirm) { setupConfirm.value = ''; setupConfirm.classList.remove('aqua-lock-shake'); }
+    if (lockHasPassword) { passInput?.focus(); setLockStatus('Enter your password to unlock'); }
+    else setLockStatus('Set a password to secure your AquaOS session (first run)');
+  }
+
+  async function prepareLockScreen() {
+    /* Probe the backend once per lock: armed -> verify mode, unarmed -> first-run setup */
+    let armed = false;
+    try {
+      const resp = await fetch(API_BASE + '/api/system/lock');
+      if (resp.ok) armed = (await resp.json()).has_password === true;
+    } catch (err) {
+      armed = false; /* backend unreachable -> no credential can be armed; offer first-run setup */
+    }
+    if (lockOverlayVisible()) setLockMode(armed ? 'verify' : 'setup');
+  }
+
+  function hideLockScreen(showUnlockedToast) {
+    document.getElementById('lock-screen').style.display = 'none';
+    if (showUnlockedToast) showToast('Unlocked AquaOS Session', 'glass');
+  }
+
+  async function attemptUnlock() {
+    if (!lockOverlayVisible() || lockFlowBusy) return;
+    if (!lockHasPassword) { submitLockSetup(); return; }  /* unarmed: Enter submits the first-run setup */
+    const passInput = document.getElementById('lock-pass-input');
+    const password = passInput?.value ?? '';
+    if (!password) { showLockError('Enter your password to unlock'); return; }
+    lockFlowBusy = true;
+    try {
+      /* Raw fetch, NOT apiFetch: auth must fail closed when the backend is down,
+         never "succeed" through the localOSDispatch fallback. */
+      const resp = await fetch(API_BASE + '/api/system/unlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      const payload = await resp.json().catch(() => ({}));
+      if (resp.ok && payload.unlocked) {
+        hideLockScreen(true);
+      } else {
+        showLockError(payload.error || 'Incorrect password');
+        if (passInput) passInput.value = '';
+      }
+    } catch (err) {
+      showLockError('AquaOS backend unreachable — cannot verify password');
+      if (passInput) passInput.value = '';
+    } finally {
+      lockFlowBusy = false;
+    }
+  }
+
+  async function submitLockSetup() {
+    if (!lockOverlayVisible() || lockFlowBusy || lockHasPassword) return;
+    const setupInput = document.getElementById('lock-setup-input');
+    const confirmInput = document.getElementById('lock-setup-confirm-input');
+    const password = setupInput?.value ?? '';
+    const confirmPassword = confirmInput?.value ?? '';
+    if (password.length < 6) { showLockError('Password must be at least 6 characters'); return; }
+    if (password !== confirmPassword) { showLockError('Passwords do not match'); if (confirmInput) confirmInput.value = ''; return; }
+    lockFlowBusy = true;
+    try {
+      /* Raw fetch (fail closed), same reason as attemptUnlock */
+      const resp = await fetch(API_BASE + '/api/system/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      const payload = await resp.json().catch(() => ({}));
+      if (resp.ok && payload.has_password) {
+        showToast('Password Saved — Session Secured', 'glass');
+        hideLockScreen(false);
+      } else {
+        showLockError(payload.error || 'Could not save password');
+        if (confirmInput) confirmInput.value = '';
+      }
+    } catch (err) {
+      showLockError('AquaOS backend unreachable — password not saved');
+      if (confirmInput) confirmInput.value = '';
+    } finally {
+      lockFlowBusy = false;
+    }
+  }
+
+  function cancelLockOrSetup() {
+    if (!lockOverlayVisible()) return;
+    /* Armed gate must never be bypassed from the client side */
+    if (lockHasPassword) {
+      showLockError('Password required to unlock');
+      return;
+    }
+    hideLockScreen(false);
+  }
   function lockScreen() {
     const now = new Date();
     document.getElementById('lock-time').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -4660,11 +4808,12 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     if (dateEl) dateEl.innerText = now.toLocaleDateString('en-US', opts);
     const ls = document.getElementById('lock-screen');
     ls.style.display = 'flex';
-    setTimeout(() => document.getElementById('lock-pass-input')?.focus(), 50);
-  }
-  function unlockScreen() {
-    document.getElementById('lock-screen').style.display = 'none';
-    showToast('Unlocked AquaOS Session', 'glass');
+    prepareLockScreen();
+    setTimeout(() => {
+      (document.getElementById('lock-setup-row')?.style.display !== 'none'
+        ? document.getElementById('lock-setup-input')
+        : document.getElementById('lock-pass-input'))?.focus();
+    }, 50);
   }
   function restartAquaOS() {
     showToast('Restarting AquaOS Wayland Session...');
@@ -7654,8 +7803,15 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   }
 
   window.addEventListener('keydown', (e) => {
-    if (document.getElementById('lock-screen').style.display === 'flex') {
-      unlockScreen();
+    if (lockOverlayVisible()) {
+      /* While locked, no arbitrary keypress may unlock the session */
+      if (e.key === 'Escape') { e.preventDefault(); cancelLockOrSetup(); return; }
+      if (e.key === 'Enter' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+        e.preventDefault();
+        attemptUnlock();
+        return;
+      }
+      if (!['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) e.preventDefault();
       return;
     }
     if (e.key === 'F3') {
