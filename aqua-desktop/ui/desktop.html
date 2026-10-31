@@ -1496,14 +1496,14 @@
   <div class="cc-top-section">
     <!-- Left: 2x2 Network/Connectivity Block -->
     <div class="cc-quad-card">
-      <div class="cc-item active" id="cc-wifi" onclick="toggleWiFi(this)">
+      <div class="cc-item active" id="cc-wifi" onclick="setWifiEnabled(!wifiPowered)">
         <div class="cc-item-icon"><svg class="ico" width="16" height="16"><use href="#ico-wifi"/></svg></div>
         <div class="cc-item-text">
           <div class="cc-item-title">Wi-Fi</div>
           <div class="cc-item-sub">AquaOS-5G</div>
         </div>
       </div>
-      <div class="cc-item active" id="cc-bt" onclick="toggleBluetooth(this)">
+      <div class="cc-item active" id="cc-bt" onclick="setBluetoothEnabled(!bluetoothPowered)">
         <div class="cc-item-icon"><svg class="ico" width="16" height="16"><use href="#ico-bt"/></svg></div>
         <div class="cc-item-text">
           <div class="cc-item-title">Bluetooth</div>
@@ -1628,7 +1628,7 @@
 <div id="wifi-popover" class="dropdown-menu mb-flyout" style="right: 130px; top: 34px; width: 280px; padding: 14px; display: none;" onclick="event.stopPropagation()">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
     <span style="font-size:13.5px; font-weight:700;">Wi-Fi</span>
-    <div id="wifi-flyout-toggle" class="settings-toggle active" onclick="toggleWifi(this)">
+    <div id="wifi-flyout-toggle" class="settings-toggle active" onclick="setWifiEnabled(!wifiPowered)">
       <div class="settings-toggle-knob"></div>
     </div>
   </div>
@@ -2634,6 +2634,22 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
           <svg class="ico" width="15" height="15"><use href="#ico-wifi"/></svg>
           <span>Wi-Fi & Network</span>
         </div>
+        <div class="sb-item" id="sb-set-notifications" onclick="switchSettingsTab('notifications', this)">
+          <svg class="ico" width="15" height="15"><use href="#ico-cc"/></svg>
+          <span>Notifications</span>
+        </div>
+        <div class="sb-item" id="sb-set-focus" onclick="switchSettingsTab('focus', this)">
+          <svg class="ico" width="15" height="15"><use href="#ico-moon"/></svg>
+          <span>Focus</span>
+        </div>
+        <div class="sb-item" id="sb-set-storage" onclick="switchSettingsTab('storage', this)">
+          <svg class="ico" width="15" height="15"><use href="#ico-folder"/></svg>
+          <span>Storage</span>
+        </div>
+        <div class="sb-item" id="sb-set-sharing" onclick="switchSettingsTab('sharing', this)">
+          <svg class="ico" width="15" height="15"><use href="#ico-bt"/></svg>
+          <span>AirDrop & Sharing</span>
+        </div>
         <div class="sb-item" id="sb-set-battery" onclick="switchSettingsTab('battery', this)">
           <svg class="ico" width="15" height="15"><use href="#ico-bolt"/></svg>
           <span>Battery & Energy</span>
@@ -2830,7 +2846,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
             <div class="settings-card-title"><span>System Output & Alerts</span></div>
             <div class="settings-row">
               <span>Output Volume</span>
-              <input type="range" min="0" max="100" value="85" style="width:200px;" oninput="showToast('Output Volume: ' + this.value + '%')" />
+              <input type="range" id="sel-output-volume" min="0" max="100" value="75" style="width:200px;" oninput="setVolume(this.value)" />
             </div>
             <div class="settings-row">
               <span>Alert Sound</span>
@@ -2913,28 +2929,35 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
           </div>
         </div>
 
-        <!-- 8. WI-FI & NETWORK PANE -->
+        <!-- 8. WI-FI & NETWORK PANE (live connectivity — no hardcoded connection data) -->
         <div id="set-pane-network" class="settings-grid-pane" style="display:none;">
           <div class="settings-card">
             <div class="settings-card-title"><span>Active Connection</span></div>
-            <div class="settings-row">
+            <div class="settings-row" id="net-conn-row">
               <div style="display:flex; align-items:center; gap:10px;">
                 <div style="width:34px; height:34px; border-radius:50%; background:rgba(10,132,255,0.2); display:flex; align-items:center; justify-content:center;">
                   <svg class="ico" width="18" height="18" style="color:var(--accent);"><use href="#ico-wifi"/></svg>
                 </div>
                 <div>
-                  <div style="font-weight:600;">AquaOS-5G (Wi-Fi 6 / 802.11ax)</div>
-                  <div style="font-size:11.5px; color:#30D158;">Connected • IP: 192.168.1.142 • Subnet: 255.255.255.0</div>
+                  <div style="font-weight:600;" id="net-conn-ssid">Detecting network…</div>
+                  <div style="font-size:11.5px; color:var(--text-secondary);" id="net-conn-detail">Live status served by /api/system/status</div>
                 </div>
               </div>
-              <button class="aqua-btn secondary" style="padding:4px 10px; font-size:11.5px;" onclick="showToast('Renewed DHCP Lease')">Renew Lease</button>
+              <div class="settings-toggle active" id="pane-toggle-wifi" onclick="setWifiEnabled(!wifiPowered)"><div class="settings-toggle-knob"></div></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">Bluetooth</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Share with nearby devices (persists across reboots)</div>
+              </div>
+              <div class="settings-toggle active" id="pane-toggle-bluetooth" onclick="setBluetoothEnabled(!bluetoothPowered)"><div class="settings-toggle-knob"></div></div>
             </div>
             <div class="settings-row">
               <div>
                 <div style="font-weight:600;">Private Wi-Fi Address (MAC Randomization)</div>
                 <div style="font-size:11.5px; color:var(--text-secondary);">Rotates device MAC address to prevent network tracking</div>
               </div>
-              <div class="settings-toggle active" onclick="this.classList.toggle('active'); showToast('Toggled Private MAC Address')"><div class="settings-toggle-knob"></div></div>
+              <div class="settings-toggle active" id="pane-toggle-private-mac" onclick="togglePrivateMac(this)"><div class="settings-toggle-knob"></div></div>
             </div>
           </div>
 
@@ -2943,16 +2966,160 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
             <div class="settings-row">
               <div>
                 <div style="font-weight:600;">macOS Application Packet Firewall</div>
-                <div style="font-size:11.5px; color:var(--text-secondary);">Drops unsolicited incoming socket requests across all ports</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Drops unsolicited incoming socket requests across all ports (persisted under security.firewall_enabled)</div>
               </div>
-              <div class="settings-toggle active" onclick="this.classList.toggle('active'); showToast('Toggled Application Firewall')"><div class="settings-toggle-knob"></div></div>
+              <div class="settings-toggle active" id="pane-toggle-firewall" onclick="toggleFirewallPref('firewall_enabled', this)"><div class="settings-toggle-knob"></div></div>
             </div>
             <div class="settings-row">
               <div>
                 <div style="font-weight:600;">Stealth Mode</div>
-                <div style="font-size:11.5px; color:var(--text-secondary);">System will not respond to ICMP ping or port scans</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">System will not respond to ICMP ping or port scans (persisted under security.stealth_mode)</div>
               </div>
-              <div class="settings-toggle active" onclick="this.classList.toggle('active'); showToast('Toggled Stealth Mode')"><div class="settings-toggle-knob"></div></div>
+              <div class="settings-toggle active" id="pane-toggle-stealth" onclick="toggleFirewallPref('stealth_mode', this)"><div class="settings-toggle-knob"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8b. NOTIFICATIONS PANE -->
+        <div id="set-pane-notifications" class="settings-grid-pane" style="display:none;">
+          <div class="settings-card">
+            <div class="settings-card-title"><span>Global Notification Delivery</span></div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">Allow notifications when the display is asleep</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Banners and alerts still surface while the screen sleeps</div>
+              </div>
+              <div class="settings-toggle" id="pane-toggle-notif-sleep" onclick="toggleNotifPref('allow_when_sleeping', this)"><div class="settings-toggle-knob"></div></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">Allow notifications when mirroring</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Show alerts on mirrored displays and projector outputs</div>
+              </div>
+              <div class="settings-toggle" id="pane-toggle-notif-mirroring" onclick="toggleNotifPref('allow_when_mirroring', this)"><div class="settings-toggle-knob"></div></div>
+            </div>
+          </div>
+          <div class="settings-card">
+            <div class="settings-card-title"><span>Badges, Sounds & Grouping</span></div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">Badge application icons</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Red counters on Dock apps with unread activity</div>
+              </div>
+              <div class="settings-toggle active" id="pane-toggle-notif-badges" onclick="toggleNotifPref('badge_app_icon', this)"><div class="settings-toggle-knob"></div></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">Play sound for notifications</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Alert sounds accompany incoming banners</div>
+              </div>
+              <div class="settings-toggle active" id="pane-toggle-notif-sound" onclick="toggleNotifPref('play_alert_sound', this)"><div class="settings-toggle-knob"></div></div>
+            </div>
+            <div class="settings-row">
+              <span>Group notifications</span>
+              <select id="sel-notif-grouping" class="aqua-input" style="max-width:180px; padding:4px 8px;" onchange="setNotificationGrouping(this.value)">
+                <option value="automatic">Automatic</option>
+                <option value="by_app">By App</option>
+                <option value="off">Off</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8c. FOCUS PANE -->
+        <div id="set-pane-focus" class="settings-grid-pane" style="display:none;">
+          <div class="settings-card">
+            <div class="settings-card-title"><span>Focus Status</span></div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">Do Not Disturb</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Silence banners and alerts everywhere (shared with the Control Center Focus card)</div>
+              </div>
+              <div class="settings-toggle" id="pane-toggle-focus-dnd" onclick="setFocusDND(!focusDNDActive)"><div class="settings-toggle-knob"></div></div>
+            </div>
+          </div>
+          <div class="settings-card">
+            <div class="settings-card-title"><span>Focus Profiles</span></div>
+            <div class="settings-row">
+              <span>Active Focus profile</span>
+              <select id="sel-focus-mode" class="aqua-input" style="max-width:180px; padding:4px 8px;" onchange="setFocusMode(this.value)">
+                <option value="Do Not Disturb">Do Not Disturb</option>
+                <option value="Personal">Personal</option>
+                <option value="Work">Work</option>
+                <option value="Sleep">Sleep</option>
+              </select>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">Allowed applications follow the profile</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">People and app filters apply to the active profile — persisted with settings.json</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8d. STORAGE PANE (real disk telemetry via /api/storage/usage) -->
+        <div id="set-pane-storage" class="settings-grid-pane" style="display:none;">
+          <div class="settings-card">
+            <div class="settings-card-title"><span>Storage Overview</span></div>
+            <div id="storage-summary" style="font-size:12.5px; color:var(--text-secondary); margin-bottom:10px;">Scanning project root…</div>
+            <div id="storage-usage-bar" style="display:flex; height:16px; border-radius:8px; overflow:hidden; background:rgba(255,255,255,0.06); margin-bottom:12px;"></div>
+            <div id="storage-usage-legend" style="display:flex; flex-direction:column; gap:7px;"></div>
+          </div>
+          <div class="settings-card">
+            <div class="settings-card-title"><span>Largest Files</span></div>
+            <div id="storage-largest-list" style="display:flex; flex-direction:column; gap:5px; font-size:11.5px; color:var(--text-secondary); font-family:var(--font-mono);"></div>
+            <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+              <button class="aqua-btn secondary" id="btn-storage-refresh" style="padding:4px 10px; font-size:11.5px;" onclick="refreshStorageUsage()">Refresh</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8e. AIRDROP & SHARING PANE -->
+        <div id="set-pane-sharing" class="settings-grid-pane" style="display:none;">
+          <div class="settings-card">
+            <div class="settings-card-title"><span>AirDrop & Handoff</span></div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">Discover me via AirDrop</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Persisted sharing.airdrop_visibility — Off, Contacts Only, or Everyone</div>
+              </div>
+              <select id="sel-airdrop" class="aqua-input" style="max-width:180px; padding:4px 8px;" onchange="setAirdropVisibility(this.value)">
+                <option value="off">Off</option>
+                <option value="contacts" selected>Contacts Only</option>
+                <option value="everyone">Everyone</option>
+              </select>
+            </div>
+          </div>
+          <div class="settings-card">
+            <div class="settings-card-title"><span>Shared Services</span></div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">Screen Sharing (VNC)</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Allow remote desktop sessions of this AquaOS machine</div>
+              </div>
+              <div class="settings-toggle" id="pane-toggle-share-screen" onclick="toggleSharingService('screen_sharing', this)"><div class="settings-toggle-knob"></div></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">File Sharing (SMB)</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Share folders over SMB with per-user ACL permissions</div>
+              </div>
+              <div class="settings-toggle" id="pane-toggle-share-file" onclick="toggleSharingService('file_sharing', this)"><div class="settings-toggle-knob"></div></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">Remote Login (OpenSSH)</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Permit SSH logins from trusted clients (sshd toggle)</div>
+              </div>
+              <div class="settings-toggle" id="pane-toggle-share-ssh" onclick="toggleSharingService('remote_login', this)"><div class="settings-toggle-knob"></div></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div style="font-weight:600;">Internet Sharing</div>
+                <div style="font-size:11.5px; color:var(--text-secondary);">Share this connection with nearby devices over NAT</div>
+              </div>
+              <div class="settings-toggle" id="pane-toggle-share-net" onclick="toggleSharingService('internet_sharing', this)"><div class="settings-toggle-knob"></div></div>
             </div>
           </div>
         </div>
@@ -4790,6 +4957,10 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       displays: 'Displays',
       sound: 'Sound & Alerts',
       network: 'Wi-Fi & Network',
+      notifications: 'Notifications',
+      focus: 'Focus',
+      storage: 'Storage',
+      sharing: 'AirDrop & Sharing',
       battery: 'Battery & Energy',
       keyboard: 'Keyboard & Gestures',
       security: 'Privacy & Security',
@@ -4926,7 +5097,294 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       if (prefs.display && prefs.display.night_shift === true) applyNightShift(true);
       if (prefs.keyboard && prefs.keyboard.input_source) applyInputSource(prefs.keyboard.input_source);
       if (prefs.battery && prefs.battery.power_mode) applyPowerMode(prefs.battery.power_mode);
+      if (prefs.network) {
+        applyWifiState(prefs.network.wifi_enabled !== false);
+        applyBluetoothState(prefs.network.bluetooth_enabled !== false);
+        const pmac = document.getElementById('pane-toggle-private-mac');
+        if (pmac) pmac.classList.toggle('active', prefs.network.private_mac_randomization !== false);
+      }
+      applyNotificationPrefs(prefs.notifications);
+      if (prefs.focus) {
+        applyFocusDND(prefs.focus.dnd_enabled === true);
+        if (prefs.focus.mode) applyFocusMode(prefs.focus.mode);
+      }
+      if (prefs.sharing) {
+        if (prefs.sharing.airdrop_visibility) applyAirdropVisibility(prefs.sharing.airdrop_visibility);
+        SHARING_SERVICES.forEach(svc => applySharingService(svc, prefs.sharing[svc] === true));
+      }
     }).catch(() => {});
+    syncRuntimeStatus();
+    refreshStorageUsage();
+  }
+
+  /* System Settings parity panes: connectivity, notifications, focus, storage & sharing */
+  const FOCUS_MODES = ['Do Not Disturb', 'Personal', 'Work', 'Sleep'];
+  const SHARING_SERVICES = ['screen_sharing', 'file_sharing', 'remote_login', 'internet_sharing'];
+  const SHARING_SERVICE_TOGGLES = {
+    screen_sharing: 'pane-toggle-share-screen',
+    file_sharing: 'pane-toggle-share-file',
+    remote_login: 'pane-toggle-share-ssh',
+    internet_sharing: 'pane-toggle-share-net'
+  };
+  let wifiPowered = true;
+  let bluetoothPowered = true;
+  let focusDNDActive = false;
+  let wifiSsid = 'AquaOS-5G';
+
+  function applyWifiState(active) {
+    wifiPowered = !!active;
+    const pane = document.getElementById('pane-toggle-wifi');
+    if (pane) pane.classList.toggle('active', wifiPowered);
+    const cc = document.getElementById('cc-wifi');
+    if (cc) cc.classList.toggle('active', wifiPowered);
+    const flyout = document.getElementById('wifi-flyout-toggle');
+    if (flyout) flyout.classList.toggle('active', wifiPowered);
+    const ccSub = cc ? cc.querySelector('.cc-item-sub') : null;
+    if (ccSub) ccSub.innerText = wifiPowered ? wifiSsid : 'Off';
+  }
+
+  function setWifiEnabled(active) {
+    applyWifiState(active);
+    showToast(`Wi-Fi: ${active ? 'Connected to ' + wifiSsid : 'Powered Off'}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/toggle', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({feature: 'wifi', enabled: active}) });
+  }
+
+  function applyBluetoothState(active) {
+    bluetoothPowered = !!active;
+    const pane = document.getElementById('pane-toggle-bluetooth');
+    if (pane) pane.classList.toggle('active', bluetoothPowered);
+    const cc = document.getElementById('cc-bt');
+    if (cc) cc.classList.toggle('active', bluetoothPowered);
+    const ccSub = cc ? cc.querySelector('.cc-item-sub') : null;
+    if (ccSub) ccSub.innerText = bluetoothPowered ? 'Discoverable' : 'Off';
+  }
+
+  function setBluetoothEnabled(active) {
+    applyBluetoothState(active);
+    showToast(`Bluetooth: ${active ? 'Discoverable & Active' : 'Powered Off'}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/toggle', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({feature: 'bluetooth', enabled: active}) });
+  }
+
+  function applyFocusDND(active) {
+    focusDNDActive = !!active;
+    const paneToggle = document.getElementById('pane-toggle-focus-dnd');
+    if (paneToggle) paneToggle.classList.toggle('active', focusDNDActive);
+    const ccCard = document.getElementById('cc-focus');
+    if (ccCard) ccCard.classList.toggle('active', focusDNDActive);
+    const sub = document.getElementById('cc-focus-sub');
+    if (sub) sub.innerText = focusDNDActive ? 'Do Not Disturb' : 'Off';
+  }
+
+  function setFocusDND(active) {
+    applyFocusDND(active);
+    showToast(`Focus Mode: ${active ? 'Do Not Disturb Enabled' : 'Off'}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/toggle', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({feature: 'dnd', enabled: active}) });
+  }
+
+  function applyFocusMode(mode) {
+    const sel = document.getElementById('sel-focus-mode');
+    if (sel && FOCUS_MODES.includes(mode)) sel.value = mode;
+  }
+
+  function setFocusMode(mode) {
+    applyFocusMode(mode);
+    showToast(`Focus profile: ${mode}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/focus', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({mode}) });
+  }
+
+  function applyNotificationPrefs(prefs) {
+    if (!prefs || typeof prefs !== 'object') return;
+    const toggles = {
+      allow_when_sleeping: 'pane-toggle-notif-sleep',
+      allow_when_mirroring: 'pane-toggle-notif-mirroring',
+      badge_app_icon: 'pane-toggle-notif-badges',
+      play_alert_sound: 'pane-toggle-notif-sound'
+    };
+    Object.entries(toggles).forEach(([key, id]) => {
+      const el = document.getElementById(id);
+      if (el && typeof prefs[key] === 'boolean') el.classList.toggle('active', prefs[key]);
+    });
+    if (typeof prefs.grouping === 'string') {
+      const sel = document.getElementById('sel-notif-grouping');
+      if (sel) sel.value = prefs.grouping;
+    }
+  }
+
+  function toggleNotifPref(key, el) {
+    el.classList.toggle('active');
+    const active = el.classList.contains('active');
+    showToast(`Notifications: ${key.replace(/_/g, ' ')} ${active ? 'On' : 'Off'}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/notifications', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({[key]: active}) });
+  }
+
+  function setNotificationGrouping(value) {
+    showToast(`Notification Grouping: ${value}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/notifications', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({grouping: value}) });
+  }
+
+  function toggleFirewallPref(key, el) {
+    el.classList.toggle('active');
+    const active = el.classList.contains('active');
+    const label = key === 'stealth_mode' ? 'Stealth Mode' : 'Application Firewall';
+    showToast(`${label}: ${active ? 'Enabled' : 'Disabled'}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/firewall', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({[key]: active}) });
+  }
+
+  function togglePrivateMac(el) {
+    el.classList.toggle('active');
+    const active = el.classList.contains('active');
+    showToast(`Private Wi-Fi Address: ${active ? 'Rotating' : 'Fixed'}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/private-mac', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({enabled: active}) });
+  }
+
+  let airdropVisibility = 'contacts';
+  function applyAirdropVisibility(visibility) {
+    airdropVisibility = visibility;
+    const sel = document.getElementById('sel-airdrop');
+    if (sel) sel.value = visibility;
+    const cc = document.getElementById('cc-airdrop');
+    if (cc) {
+      cc.classList.toggle('active', visibility !== 'off');
+      const ccSub = cc.querySelector('.cc-item-sub');
+      if (ccSub) ccSub.innerText = visibility === 'off' ? 'Off' : (visibility === 'contacts' ? 'Contacts Only' : 'Everyone');
+    }
+  }
+
+  function setAirdropVisibility(visibility) {
+    applyAirdropVisibility(visibility);
+    showToast(`AirDrop visibility: ${visibility}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/airdrop', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({visibility}) });
+  }
+
+  function toggleAirDrop(el) {
+    const active = !el.classList.contains('active');
+    setAirdropVisibility(active ? 'contacts' : 'off');
+  }
+
+  function applySharingService(service, enabled) {
+    const id = SHARING_SERVICE_TOGGLES[service];
+    const el = id ? document.getElementById(id) : null;
+    if (el) el.classList.toggle('active', !!enabled);
+  }
+
+  function toggleSharingService(service, el) {
+    el.classList.toggle('active');
+    const active = el.classList.contains('active');
+    showToast(`${service.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase())}: ${active ? 'Enabled' : 'Disabled'}`);
+    playSystemSound('pop');
+    apiFetch('/api/system/sharing', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({service, enabled: active}) });
+  }
+
+  /* Live connectivity panel + runtime slider sync (real /api/system/status) */
+  function syncRuntimeStatus() {
+    apiFetch('/api/system/status').then(state => {
+      if (!state || typeof state !== 'object') return;
+      if (state.wifi) {
+        wifiSsid = state.wifi.ssid || wifiSsid;
+        const ssidEl = document.getElementById('net-conn-ssid');
+        if (ssidEl) ssidEl.innerText = `${wifiSsid} (Wi-Fi 6 / 802.11ax)`;
+        const detailEl = document.getElementById('net-conn-detail');
+        if (detailEl) detailEl.innerText = state.wifi.enabled ? 'Connected • live status from /api/system/status' : 'Wi-Fi Off — toggle to reconnect';
+        applyWifiState(!!state.wifi.enabled);
+        applyBluetoothState(!!state.bluetooth.enabled);
+      }
+      if (typeof state.volume === 'number') {
+        systemVolume = state.volume;
+        const lbl = document.getElementById('lbl-volume');
+        if (lbl) lbl.innerText = `${state.volume}%`;
+        const slider = document.getElementById('sel-output-volume');
+        if (slider) slider.value = String(state.volume);
+      }
+      if (typeof state.brightness === 'number') {
+        const dimmer = document.querySelector('#set-pane-wallpaper input[type=range]');
+        if (dimmer) dimmer.value = String(state.brightness);
+      }
+      if (typeof state.dnd === 'boolean') applyFocusDND(state.dnd);
+    }).catch(() => {});
+  }
+
+  /* Storage pane: real disk telemetry from /api/storage/usage */
+  let lastStorageUsage = null;
+  const STORAGE_BAR_COLORS = ['#0A84FF', '#30D158', '#FF9F0A', '#BF5AF2', '#FF375F', '#64D2FF', '#8E8E93', '#FFD60A'];
+  function fmtStorageBytes(n) {
+    if (!Number.isFinite(n) || n <= 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let idx = 0;
+    let val = n;
+    while (val >= 1024 && idx < units.length - 1) { val /= 1024; idx += 1; }
+    return `${val >= 100 ? Math.round(val) : Number(val.toFixed(1))} ${units[idx]}`;
+  }
+
+  function renderStorageUsage() {
+    const d = lastStorageUsage;
+    if (!d || typeof d !== 'object') return;
+    const summary = document.getElementById('storage-summary');
+    if (summary) {
+      summary.innerText = `${d.disk_used_gb} GB used of ${d.disk_total_gb} GB (${d.disk_percent}%) • ${d.disk_free_gb} GB free • ${d.files_scanned} files scanned in AquaOS-Beta`;
+    }
+    const bar = document.getElementById('storage-usage-bar');
+    const legend = document.getElementById('storage-usage-legend');
+    if (!bar || !legend) return;
+    bar.innerHTML = '';
+    legend.innerHTML = '';
+    (d.categories || []).forEach((cat, i) => {
+      const color = STORAGE_BAR_COLORS[i % STORAGE_BAR_COLORS.length];
+      if (cat.size_bytes > 0) {
+        const seg = document.createElement('div');
+        seg.style.width = `${Math.max(1.5, cat.percent || 0)}%`;
+        seg.style.background = color;
+        seg.title = `${cat.name}: ${fmtStorageBytes(cat.size_bytes)} (${cat.percent}%)`;
+        bar.appendChild(seg);
+      }
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:12px;';
+      const swatch = document.createElement('span');
+      swatch.style.cssText = 'width:10px; height:10px; border-radius:3px; flex:none;';
+      swatch.style.background = color;
+      const nameLabel = document.createElement('span');
+      nameLabel.style.flex = '1';
+      nameLabel.textContent = cat.name;
+      const sizeLabel = document.createElement('span');
+      sizeLabel.style.cssText = 'font-family:var(--font-mono); color:var(--text-secondary);';
+      sizeLabel.textContent = `${fmtStorageBytes(cat.size_bytes)} • ${cat.percent}%`;
+      row.append(swatch, nameLabel, sizeLabel);
+      legend.appendChild(row);
+    });
+    const list = document.getElementById('storage-largest-list');
+    if (list) {
+      const files = d.largest_files || [];
+      if (!files.length) {
+        const empty = document.createElement('div');
+        empty.textContent = 'No large files found';
+        list.appendChild(empty);
+      }
+      files.forEach((f) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; justify-content:space-between; gap:10px;';
+        const pathLabel = document.createElement('span');
+        pathLabel.style.cssText = 'overflow:hidden; text-overflow:ellipsis; white-space:nowrap;';
+        pathLabel.title = f.path;
+        pathLabel.textContent = f.path;
+        const sizeLabel = document.createElement('span');
+        sizeLabel.style.flex = 'none';
+        sizeLabel.textContent = fmtStorageBytes(f.size_bytes);
+        row.append(pathLabel, sizeLabel);
+        list.appendChild(row);
+      });
+    }
+  }
+
+  function refreshStorageUsage() {
+    apiFetch('/api/storage/usage').then(d => { lastStorageUsage = d; renderStorageUsage(); }).catch(() => {});
   }
 
   /* Finder 4-View Engine: Icons, List, Columns, Gallery */
@@ -5487,13 +5945,6 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     setPowerMode(enabling ? 'Low Power Mode' : 'Automatic');
   }
 
-  function toggleWifi(el) {
-    el.classList.toggle('active');
-    const active = el.classList.contains('active');
-    showToast(active ? 'Wi-Fi Enabled: Connected to AquaNet-5G' : 'Wi-Fi Disabled');
-    playSystemSound('pop');
-  }
-
   function switchAudioSink(idx) {
     audioOutputIdx = idx;
     const names = ['Internal Speakers (PipeWire)', 'AirPods Pro (Spatial Audio)', 'Studio Display Audio'];
@@ -5570,31 +6021,13 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
   }
 
   function toggleFocusMode(el) {
-    el.classList.toggle('active');
-    const active = el.classList.contains('active');
-    document.getElementById('cc-focus-sub').innerText = active ? 'Do Not Disturb' : 'Off';
-    showToast(`Focus Mode: ${active ? 'Do Not Disturb Enabled' : 'Off'}`);
-    apiFetch('/api/system/toggle', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({feature: 'dnd', enabled: active}) });
-  }
-
-  function toggleWiFi(el) {
-    el.classList.toggle('active');
-    const active = el.classList.contains('active');
-    showToast(`Wi-Fi: ${active ? 'Connected to AquaOS-5G' : 'Powered Off'}`);
-    apiFetch('/api/system/toggle', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({feature: 'wifi', enabled: active}) });
-  }
-
-  function toggleBluetooth(el) {
-    el.classList.toggle('active');
-    const active = el.classList.contains('active');
-    showToast(`Bluetooth: ${active ? 'Discoverable & Active' : 'Powered Off'}`);
-    apiFetch('/api/system/toggle', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({feature: 'bluetooth', enabled: active}) });
+    setFocusDND(!focusDNDActive);
   }
 
   function toggleAirDrop(el) {
-    el.classList.toggle('active');
-    const active = el.classList.contains('active');
-    el.querySelector('.cc-item-sub').innerText = active ? 'Contacts Only' : 'Off';
+    const active = !el.classList.contains('active');
+    applyAirdropVisibility(active ? 'contacts' : 'off');
+    apiFetch('/api/system/airdrop', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({visibility: active ? 'contacts' : 'off'}) });
     showToast(`AirDrop: ${active ? 'Discoverable to Contacts' : 'Off'}`);
   }
 

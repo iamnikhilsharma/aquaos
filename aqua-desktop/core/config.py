@@ -95,9 +95,19 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     },
 }
 
-# Menu Bar & Control Center persisted prefs (display/keyboard/battery) share
-# one source of truth in core.system_prefs so the UI, routes, and defaults agree.
-DEFAULT_CONFIG.update(PREF_SECTION_DEFAULTS)
+# Persisted system prefs (display/keyboard/battery from the Menu Bar & Control
+# Center card, plus the Settings panes from that expansion) share one source of
+# truth in core.system_prefs so the UI, routes, and defaults agree. Sections are
+# MERGED key-by-key (not replaced wholesale) so pref defaults for pre-existing
+# sections — e.g. security.firewall_enabled — extend the shipped section instead
+# of wiping its other keys.
+def _merge_section_defaults(base: Dict[str, Any], section_defaults: Dict[str, Dict[str, Any]]) -> None:
+    for section, defaults in section_defaults.items():
+        existing = base.setdefault(section, {})
+        existing.update(defaults)
+
+
+_merge_section_defaults(DEFAULT_CONFIG, PREF_SECTION_DEFAULTS)
 
 
 class AquaConfig:

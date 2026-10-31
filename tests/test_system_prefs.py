@@ -26,7 +26,12 @@ sys.path.insert(0, str(PROJECT_ROOT / "aqua-desktop"))
 
 
 def _load_server_module():
-    """Import scripts/preview-aquaos.py with the config dir pointed at a temp dir."""
+    """Import scripts/preview-aquaos.py with the config dir pointed at a temp dir.
+
+    When called more than once in a process (module cached in sys.modules), the
+    shared AquaConfig is re-pointed at the new temp dir and the runtime toggle
+    state is re-hydrated so every test observes its own settings.json.
+    """
     tmp_config_dir = Path(tempfile.mkdtemp(prefix="aquaos_prefs_"))
     os.environ["AQUAOS_CONFIG_DIR"] = str(tmp_config_dir)
     if "preview_aquaos_server" not in sys.modules:
@@ -38,7 +43,13 @@ def _load_server_module():
         assert spec.loader is not None, "preview-aquaos.py spec loader missing"
         sys.modules["preview_aquaos_server"] = module
         spec.loader.exec_module(module)
-    return sys.modules["preview_aquaos_server"], tmp_config_dir
+    module = sys.modules["preview_aquaos_server"]
+    if str(module.config.config_path.parent) != str(tmp_config_dir):
+        from core.config import AquaConfig
+
+        module.config = AquaConfig(config_path=tmp_config_dir / "settings.json")
+        module.hydrate_runtime_state()
+    return module, tmp_config_dir
 
 
 def _post(base: str, path: str, payload: Dict[str, Any]) -> tuple[int, Dict[str, Any]]:

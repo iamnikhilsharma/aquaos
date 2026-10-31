@@ -43,7 +43,22 @@ from ai.ai_studio import extract_first_code_block
 from apps.about_aquaos import get_about_info
 from core.config import AquaConfig
 from core.linux_env import AquaLinuxEnvironment
-from core.system_prefs import normalize_input_source, normalize_night_shift, normalize_power_mode
+from core.system_prefs import (
+    FIREWALL_BOOL_KEYS,
+    NOTIFICATION_BOOL_KEYS,
+    TOGGLE_PERSIST_KEYS,
+    normalize_airdrop_visibility,
+    normalize_bool,
+    normalize_firewall_prefs,
+    normalize_focus_mode,
+    normalize_input_source,
+    normalize_night_shift,
+    normalize_notification_grouping,
+    normalize_power_mode,
+    normalize_sharing_service,
+    normalize_toggle_feature,
+    normalize_toggle_payload,
+)
 from security.gatekeeper import AquaGatekeeper
 from security.shield_center import ShieldDiagnostics
 from spotlight.spotlight import SpotlightEngine
@@ -96,6 +111,115 @@ linux_env = AquaLinuxEnvironment(
     universal_runner=universal_runner,
     pkg_manager=pkg_manager,
 )
+
+
+# ---------------------------------------------------------------------------
+# Persisted-preference hydration + real Storage pane telemetry
+# ---------------------------------------------------------------------------
+
+def hydrate_runtime_state() -> None:
+    """Sync the in-memory runtime toggles with what the user last persisted.
+
+    Without this, a server restart would reset Wi-Fi / Bluetooth / Focus to
+    their module defaults even though settings.json says otherwise — and the
+    menu bar + Settings UI (which read /api/system/status) would disagree with
+    the persisted preference.
+    """
+    ss = ai_engine.system_services
+    ss._wifi_enabled = bool(config.get("network", "wifi_enabled", True))
+    ss._bluetooth_enabled = bool(config.get("network", "bluetooth_enabled", True))
+    ss._dnd_enabled = bool(config.get("focus", "dnd_enabled", False))
+
+
+def compute_storage_usage() -> Dict[str, Any]:
+    """Real disk telemetry + a bounded real breakdown of the project root.
+
+    Every number here comes from the filesystem (shutil.disk_usage / os.scandir
+    walks) — no hardcoded catalog. Walks are capped so a huge tree cannot hang
+    the request thread.
+    """
+    specs = ai_engine.system_services.get_hardware_specs()
+    disk_used_gb = round(max(0.0, specs.disk_total_gb - specs.disk_free_gb), 1)
+    disk_pct = round((disk_used_gb / max(0.1, specs.disk_total_gb)) * 100, 1)
+
+    MAX_FILES = 25000
+    MAX_DEPTH = 6
+    visited = 0
+    cat_bytes: Dict[str, int] = {}
+    largest: List[Dict[str, Any]] = []
+    loose_files_bytes = 0
+
+    def walk_dir(path: Path, depth: int) -> int:
+        nonlocal visited
+        total = 0
+        if depth > MAX_DEPTH or visited >= MAX_FILES:
+            return total
+        try:
+            with os.scandir(path) as it:
+                for entry in it:
+                    if visited >= MAX_FILES:
+                        break
+                    if entry.is_symlink():
+                        continue
+                    if entry.is_dir(follow_symlinks=False):
+                        visited += 1
+                        total += walk_dir(Path(entry.path), depth + 1)
+                    elif entry.is_file(follow_symlinks=False):
+                        visited += 1
+                        try:
+                            size = entry.stat().st_size
+                        except OSError:
+                            continue
+                        total += size
+                        largest.append({"path": str(entry.path), "size_bytes": size})
+        except OSError:
+            pass
+        return total
+
+    try:
+        top_entries = sorted(os.scandir(PROJECT_ROOT), key=lambda e: e.name)
+    except OSError:
+        top_entries = []
+    for entry in top_entries:
+        if entry.name.startswith(".") or entry.name == "__pycache__":
+            continue
+        if entry.is_dir(follow_symlinks=False):
+            visited += 1
+            cat_bytes[entry.name] = walk_dir(Path(entry.path), 0)
+        elif entry.is_file(follow_symlinks=False):
+            try:
+                size = entry.stat().st_size
+            except OSError:
+                continue
+            loose_files_bytes += size
+
+    if loose_files_bytes:
+        cat_bytes["(Files)"] = loose_files_bytes
+
+    walk_total = sum(cat_bytes.values()) or 1
+    categories = [
+        {
+            "name": name,
+            "size_bytes": size_bytes,
+            "percent": round((size_bytes / walk_total) * 100, 1),
+        }
+        for name, size_bytes in sorted(cat_bytes.items(), key=lambda kv: kv[1], reverse=True)
+    ]
+
+    largest.sort(key=lambda item: item["size_bytes"], reverse=True)
+    return {
+        "disk_total_gb": specs.disk_total_gb,
+        "disk_used_gb": disk_used_gb,
+        "disk_free_gb": specs.disk_free_gb,
+        "disk_percent": disk_pct,
+        "project_root": str(PROJECT_ROOT),
+        "files_scanned": visited,
+        "categories": categories,
+        "largest_files": largest[:8],
+    }
+
+
+hydrate_runtime_state()
 
 
 class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
@@ -181,6 +305,13 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
 
         if clean_path == "/api/settings/get":
             self._send_json(config.as_dict())
+            return
+
+        if clean_path == "/api/storage/usage":
+            try:
+                self._send_json(compute_storage_usage())
+            except Exception as exc:  # pragma: no cover - defensive
+                self._send_json({"error": f"Storage scan failed: {exc}"}, status=500)
             return
 
         self.send_error(404)
@@ -551,8 +682,12 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
             return
 
         if clean_path == "/api/system/toggle":
-            feature = str(body.get("feature", ""))
-            enabled = bool(body.get("enabled", True))
+            try:
+                feature = normalize_toggle_feature(body.get("feature"))
+                enabled = normalize_bool(body.get("enabled"), "enabled")
+            except ValueError as exc:
+                self._send_json({"error": str(exc)}, status=400)
+                return
             ss = ai_engine.system_services
             if feature == "wifi":
                 ss._wifi_enabled = enabled
@@ -560,7 +695,90 @@ class AquaDesktopAPIHandler(BaseHTTPRequestHandler):
                 ss._bluetooth_enabled = enabled
             elif feature == "dnd":
                 ss._dnd_enabled = enabled
+            # Persist so a restart (or the boot-time hydration) keeps the choice
+            section, key = TOGGLE_PERSIST_KEYS[feature]
+            config.set(section, key, enabled)
             self._send_json({"feature": feature, "enabled": enabled})
+            return
+
+        if clean_path == "/api/system/firewall":
+            try:
+                prefs = normalize_firewall_prefs(body)
+            except ValueError as exc:
+                self._send_json({"error": str(exc)}, status=400)
+                return
+            if not prefs:
+                self._send_json({"error": "No firewall preference provided"}, status=400)
+                return
+            for key, value in prefs.items():
+                config.set("security", key, value)
+            self._send_json(prefs)
+            return
+
+        if clean_path == "/api/system/private-mac":
+            try:
+                enabled = normalize_bool(body.get("enabled"), "Private Wi-Fi Address")
+            except ValueError as exc:
+                self._send_json({"error": str(exc)}, status=400)
+                return
+            config.set("network", "private_mac_randomization", enabled)
+            self._send_json({"enabled": enabled})
+            return
+
+        if clean_path == "/api/system/notifications":
+            if not isinstance(body, dict):
+                self._send_json({"error": "Notification update must be a JSON object"}, status=400)
+                return
+            unknown = set(body.keys()) - set(NOTIFICATION_BOOL_KEYS) - {"grouping"}
+            if unknown:
+                self._send_json({"error": f"Unknown notification setting(s): {', '.join(sorted(unknown))}"}, status=400)
+                return
+            payload: Dict[str, Any] = {}
+            try:
+                bools = {key: body[key] for key in NOTIFICATION_BOOL_KEYS if key in body}
+                payload.update(normalize_toggle_payload(bools, NOTIFICATION_BOOL_KEYS, "notification preference"))
+                if "grouping" in body:
+                    payload["grouping"] = normalize_notification_grouping(body.get("grouping"))
+            except ValueError as exc:
+                self._send_json({"error": str(exc)}, status=400)
+                return
+            if not payload:
+                self._send_json({"error": "No notification preference provided"}, status=400)
+                return
+            for key, value in payload.items():
+                config.set("notifications", key, value)
+            self._send_json(payload)
+            return
+
+        if clean_path == "/api/system/focus":
+            try:
+                mode = normalize_focus_mode(body.get("mode"))
+            except ValueError as exc:
+                self._send_json({"error": str(exc)}, status=400)
+                return
+            config.set("focus", "mode", mode)
+            self._send_json({"mode": mode})
+            return
+
+        if clean_path == "/api/system/airdrop":
+            try:
+                visibility = normalize_airdrop_visibility(body.get("visibility"))
+            except ValueError as exc:
+                self._send_json({"error": str(exc)}, status=400)
+                return
+            config.set("sharing", "airdrop_visibility", visibility)
+            self._send_json({"visibility": visibility})
+            return
+
+        if clean_path == "/api/system/sharing":
+            try:
+                service = normalize_sharing_service(body.get("service"))
+                enabled = normalize_bool(body.get("enabled"), service)
+            except ValueError as exc:
+                self._send_json({"error": str(exc)}, status=400)
+                return
+            config.set("sharing", service, enabled)
+            self._send_json({"service": service, "enabled": enabled})
             return
 
         self.send_error(404)
