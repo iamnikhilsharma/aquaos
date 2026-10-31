@@ -458,6 +458,10 @@
     border-bottom: 0.5px solid var(--glass-border);
     position: sticky; top: 0; background: rgba(20, 20, 30, 0.95);
   }
+  .fs-table th[data-sort-key] { cursor: pointer; user-select: none; white-space: nowrap; }
+  .fs-table th[data-sort-key]:hover { color: var(--text-secondary); background: rgba(10, 132, 255, 0.14); }
+  .fs-table th.fs-sorted { color: var(--accent); }
+  .fs-sort-arrow { margin-left: 4px; font-size: 8px; display: inline-block; }
   .fs-table td {
     padding: 7px 10px; border-bottom: 0.5px solid rgba(255,255,255,0.05);
     cursor: pointer;
@@ -1995,7 +1999,12 @@
           <div id="finder-browser-col" style="flex:1; overflow-y:auto; border:0.5px solid var(--glass-border); border-radius:10px; background:rgba(0,0,0,0.22); display:flex; flex-direction:column; min-width:0;">
             <table class="fs-table" id="fs-table-view">
               <thead>
-                <tr><th>Name</th><th>Size</th><th>Modified</th></tr>
+                <tr>
+                  <th data-sort-key="name" onclick="sortFinderBy('name')">Name<span class="fs-sort-arrow"></span></th>
+                  <th data-sort-key="mtime" onclick="sortFinderBy('mtime')">Date Modified<span class="fs-sort-arrow"></span></th>
+                  <th data-sort-key="size" onclick="sortFinderBy('size')">Size<span class="fs-sort-arrow"></span></th>
+                  <th data-sort-key="kind" onclick="sortFinderBy('kind')">Kind<span class="fs-sort-arrow"></span></th>
+                </tr>
               </thead>
               <tbody id="fs-tbody"></tbody>
             </table>
@@ -4887,6 +4896,68 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     showToast(finderPreviewOpen ? 'Finder: Preview Pane Opened (⇧⌘P)' : 'Finder: Preview Pane Hidden (⇧⌘P)');
   }
 
+  /* Finder List View: click-to-sort columns, kind labels, macOS '—' folder size */
+  let finderSort = { key: 'name', dir: 'asc' };
+
+  function finderItemKind(item) {
+    if (!item) return 'Unknown';
+    if (item.is_dir) return 'Folder';
+    const n = (item.name || '').toLowerCase();
+    if (n.endsWith('.py')) return 'Python Script';
+    if (n.endsWith('.sh')) return 'Shell Script';
+    if (n.endsWith('.md')) return 'Markdown Document';
+    if (n.endsWith('.json')) return 'JSON Document';
+    if (n.endsWith('.html') || n.endsWith('.htm')) return 'HTML Document';
+    if (n.endsWith('.png') || n.endsWith('.jpg') || n.endsWith('.jpeg') || n.endsWith('.svg') || n.endsWith('.gif') || n.endsWith('.webp')) return 'Image';
+    if (n.endsWith('.mp3') || n.endsWith('.wav') || n.endsWith('.flac') || n.endsWith('.ogg') || n.endsWith('.m4a')) return 'Audio';
+    if (n.endsWith('.mp4') || n.endsWith('.mkv') || n.endsWith('.webm') || n.endsWith('.mov') || n.endsWith('.avi')) return 'Video';
+    if (n.endsWith('.zip') || n.endsWith('.tar.gz') || n.endsWith('.tgz') || n.endsWith('.iso')) return 'Archive';
+    if (n.endsWith('.txt')) return 'Text Document';
+    return 'Document';
+  }
+
+  function sortFinderEntries(entries) {
+    if (!finderSort.key) return entries;
+    const dirMul = finderSort.dir === 'desc' ? -1 : 1;
+    const valOf = (item) => {
+      switch (finderSort.key) {
+        case 'size': return Number(item.size_kb) || 0;
+        case 'mtime': return String(item.mtime || '');
+        case 'kind': return finderItemKind(item).toLowerCase();
+        default: return String(item.name || '').toLowerCase();
+      }
+    };
+    return entries.slice().sort((a, b) => {
+      if (a.is_dir !== b.is_dir) return a.is_dir ? -1 : 1; /* folders stay on top (macOS) */
+      const va = valOf(a), vb = valOf(b);
+      if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dirMul;
+      return String(va).localeCompare(String(vb)) * dirMul;
+    });
+  }
+
+  function updateSortIndicators() {
+    document.querySelectorAll('#fs-table-view th[data-sort-key]').forEach(th => {
+      const arrow = th.querySelector('.fs-sort-arrow');
+      if (!arrow) return;
+      const active = th.getAttribute('data-sort-key') === finderSort.key;
+      arrow.innerText = active ? (finderSort.dir === 'asc' ? '▲' : '▼') : '';
+      th.classList.toggle('fs-sorted', active);
+    });
+  }
+
+  function sortFinderBy(key) {
+    finderSort.dir = finderSort.key === key ? (finderSort.dir === 'asc' ? 'desc' : 'asc') : 'asc';
+    finderSort.key = key;
+    currentFsEntries = sortFinderEntries(currentFsEntries);
+    renderFsListRows();
+    if (currentFinderView === 'grid') renderFinderGrid();
+    if (currentFinderView === 'columns') renderMillerCols();
+    if (currentFinderView === 'gallery') renderGalleryView();
+    updateSortIndicators();
+    const label = { name: 'Name', mtime: 'Date Modified', size: 'Size', kind: 'Kind' }[key] || key;
+    showToast(`Finder: Sort by ${label} — ${finderSort.dir === 'asc' ? 'Ascending' : 'Descending'}`);
+  }
+
   function setFinderView(mode) {
     currentFinderView = mode;
     ['btn-view-icons', 'btn-view-list', 'btn-view-columns', 'btn-view-gallery'].forEach(b => {
@@ -4941,7 +5012,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       const iconId = item.is_dir ? '#ico-folder' : (item.name.endsWith('.py') ? '#ico-code' : '#ico-file');
       const color = item.is_dir ? '#5CAEFF' : (item.name.endsWith('.py') ? '#BF5AF2' : 'var(--text-primary)');
       return `
-        <div class="fs-grid-item" onclick="onFsRowClick(${idx})" ondblclick="onFsRowClick(${idx})" title="${item.name} (${item.size_kb} KB)">
+        <div class="fs-grid-item" onclick="onFsRowClick(${idx})" ondblclick="onFsRowClick(${idx})" title="${item.name}${item.is_dir ? ' (Folder)' : ` (${item.size_kb} KB)`}">
           <svg width="42" height="42" viewBox="0 0 24 24" style="color:${color};"><use href="${iconId}"/></svg>
           <span class="fs-grid-label">${item.name}</span>
         </div>
@@ -4999,7 +5070,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
         <span class="badge-fit badge-gpu" style="font-size:9.5px;">✓ GATEKEEPER PASS</span>
       </div>
       <div style="width:100%; border-top:0.5px solid var(--glass-border); margin:14px 0 10px; text-align:left; font-size:11.5px; display:flex; flex-direction:column; gap:6px;">
-        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Size:</span><span>${isDir ? '4.0 KB' : item.size_kb + ' KB'}</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Size:</span><span>${isDir ? '—' : item.size_kb + ' KB'}</span></div>
         <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Modified:</span><span style="font-family:var(--font-mono); font-size:10.5px;">${item.mtime}</span></div>
         <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Permissions:</span><span style="font-family:var(--font-mono); font-size:10.5px;">${isDir ? 'drwxr-xr-x' : '-rw-r--r--'}</span></div>
         <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">RootFS:</span><span>SquashFS+Overlay</span></div>
@@ -5054,7 +5125,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       <div style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.04em;">Information</div>
       <div style="display:flex; flex-direction:column; gap:8px; font-size:11.5px; margin-top:4px;">
         <div><strong style="color:var(--text-muted);">Kind:</strong><br>${item.is_dir ? 'Folder' : (item.name.endsWith('.py') ? 'Python Script' : 'Document')}</div>
-        <div><strong style="color:var(--text-muted);">Size:</strong><br>${item.is_dir ? '4.0 KB (dir)' : item.size_kb + ' KB'}</div>
+        <div><strong style="color:var(--text-muted);">Size:</strong><br>${item.is_dir ? '—' : item.size_kb + ' KB'}</div>
         <div><strong style="color:var(--text-muted);">Where:</strong><br><span style="font-family:var(--font-mono); font-size:10px; word-break:break-all;">${item.path}</span></div>
         <div><strong style="color:var(--text-muted);">Modified:</strong><br><span style="font-family:var(--font-mono); font-size:10px;">${item.mtime}</span></div>
         <div><strong style="color:var(--text-muted);">Gatekeeper:</strong><br><span style="color:#30D158;">✓ Zero Malware Signatures</span></div>
@@ -5561,7 +5632,7 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
     initialFsLoaded = true;
     currentFsPath = fsData.current_dir || "/";
     parentFsPath = fsData.parent_dir || "/";
-    currentFsEntries = fsData.entries || [];
+    currentFsEntries = sortFinderEntries(fsData.entries || []);
     const pathInput = document.getElementById('fs-current-path');
     if (pathInput) pathInput.value = currentFsPath;
     const badge = document.getElementById('finder-count-badge');
@@ -5587,25 +5658,34 @@ print("First 10 Fibonacci:", [round(((1+math.sqrt(5))/2)**n / math.sqrt(5)) for 
       }
     });
 
-    const tbody = document.getElementById('fs-tbody');
-    tbody.innerHTML = currentFsEntries.map((item, idx) => {
-      const iconId = item.is_dir ? '#ico-folder' : '#ico-file';
-      const sizeStr = item.is_dir ? '4.0 KB (dir)' : `${item.size_kb} KB`;
-      return `<tr id="fs-row-${idx}" onclick="onFsRowClick(${idx})">
-        <td style="display:flex; align-items:center; gap:8px; font-weight:${item.is_dir ? '600' : '400'};">
-          <svg class="ico" width="15" height="15"><use href="${iconId}"/></svg>
-          <span>${item.name}</span>
-        </td>
-        <td style="color:var(--text-secondary);">${sizeStr}</td>
-        <td style="color:var(--text-muted); font-size:11.5px;">${item.mtime}</td>
-      </tr>`;
-    }).join('');
+    renderFsListRows();
+    updateSortIndicators();
     if (currentFinderView === 'grid') renderFinderGrid();
     if (currentFinderView === 'columns') renderMillerCols();
     if (currentFinderView === 'gallery') renderGalleryView();
     updateFinderBreadcrumbs(currentFsPath);
     const countEl = document.getElementById('finder-status-count');
     if (countEl) countEl.innerText = `${currentFsEntries.length} items`;
+  }
+
+  function renderFsListRows() {
+    const tbody = document.getElementById('fs-tbody');
+    if (!tbody) return;
+    /* innerHTML mirrors the file's established row-rendering pattern; entries originate
+       from the AquaOS backend (/api/fs/list) and local VFS — trusted app data. */
+    tbody.innerHTML = currentFsEntries.map((item, idx) => {
+      const iconId = item.is_dir ? '#ico-folder' : '#ico-file';
+      const sizeStr = item.is_dir ? '—' : `${item.size_kb} KB`;
+      return `<tr id="fs-row-${idx}" onclick="onFsRowClick(${idx})">
+        <td style="display:flex; align-items:center; gap:8px; font-weight:${item.is_dir ? '600' : '400'};">
+          <svg class="ico" width="15" height="15"><use href="${iconId}"/></svg>
+          <span>${item.name}</span>
+        </td>
+        <td style="color:var(--text-muted); font-size:11.5px;">${item.mtime}</td>
+        <td style="color:var(--text-secondary);">${sizeStr}</td>
+        <td style="color:var(--text-secondary);">${finderItemKind(item)}</td>
+      </tr>`;
+    }).join('');
   }
 
   function updateFinderBreadcrumbs(path) {
