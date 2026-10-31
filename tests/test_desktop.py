@@ -310,5 +310,52 @@ def test_finder_list_view_sorting_and_dir_size_placeholder() -> None:
         "setFinderView('gallery') must show #fs-gallery-view and call renderGalleryView()"
 
 
+def test_menu_bar_control_center_persisted_prefs() -> None:
+    """Menu Bar & Control Center expansion: Night Shift, the input-source switcher,
+    and battery power mode are wired to real endpoints with persisted state."""
+    html_path = Path(__file__).resolve().parents[1] / "aqua-desktop" / "ui" / "desktop.html"
+    content = html_path.read_text(encoding="utf-8")
+
+    # 1. Night Shift: single source of truth, shared across CC button + Displays toggle,
+    #    persisted through /api/system/night-shift
+    assert "let nightShiftActive = false;" in content
+    assert "function applyNightShift(active)" in content
+    assert "function setNightShift(active)" in content
+    assert content.count("/api/system/night-shift") >= 1
+    assert "JSON.stringify({enabled: active})" in content
+    assert 'id="toggle-night-shift" onclick="setNightShift(!nightShiftActive)"' in content
+    assert 'id="btn-cc-nightshift" style="padding:2px 8px; font-size:10.5px;" onclick="setNightShift(!nightShiftActive)"' in content
+    # Stale cosmetic handlers must be gone (toast-only / filter inference)
+    assert "function toggleNightShift(el)" not in content
+    assert "style.filter.includes('sepia')" not in content
+
+    # 2. Input-source switcher in the Keyboard pane — three canonical options
+    i_us = content.find("setInputSource('US')")
+    i_intl = content.find("setInputSource('International')")
+    i_dvorak = content.find("setInputSource('Dvorak')")
+    assert 0 < i_us < i_intl < i_dvorak, "Input-source buttons must exist in macOS order"
+    assert 'id="btn-input-US"' in content
+    assert 'id="btn-input-International"' in content
+    assert 'id="btn-input-Dvorak"' in content
+    assert "const INPUT_SOURCES = ['US', 'International', 'Dvorak'];" in content
+    assert "function setInputSource(source)" in content
+    assert "/api/system/input-source" in content
+    assert "JSON.stringify({source})" in content
+
+    # 3. Battery power mode: Settings select + menu-bar Low Power toggle share it
+    assert 'id="sel-power-mode"' in content
+    assert 'onchange="setPowerMode(this.value)"' in content
+    assert "const POWER_MODES = ['Automatic', 'Low Power Mode', 'High Power Mode'];" in content
+    assert "function applyPowerMode(mode)" in content
+    assert "function setPowerMode(mode)" in content
+    assert "/api/system/power-mode" in content
+    assert "JSON.stringify({mode})" in content
+    assert 'id="bat-lpm-toggle"' in content
+    assert "setPowerMode(enabling ? 'Low Power Mode' : 'Automatic')" in content
+
+    # 4. Persisted state is restored on boot from /api/settings/get
+    assert "function loadPersistedPrefs()" in content
+    assert "'/api/settings/get'" in content
+    assert "loadPersistedPrefs();" in content
 
 

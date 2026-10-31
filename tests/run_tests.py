@@ -14,6 +14,7 @@ sys.path.insert(0, str(TESTS_DIR.parent / "aqua-desktop"))
 import test_ai_engine
 import test_desktop
 import test_security
+import test_system_prefs
 import test_universal
 
 
@@ -43,6 +44,12 @@ def run_all_tests() -> int:
         ("test_universal.test_universal_runner_blocks_malware", test_universal.test_universal_runner_blocks_malware, True),
         ("test_universal.test_universal_package_manager", test_universal.test_universal_package_manager, False),
         ("test_desktop.test_config_persistence", test_desktop.test_config_persistence, True),
+        ("test_desktop.test_menu_bar_control_center_persisted_prefs", test_desktop.test_menu_bar_control_center_persisted_prefs, False),
+        ("test_desktop.test_genie_minimize_effect_and_selector", test_desktop.test_genie_minimize_effect_and_selector, False),
+        ("test_desktop.test_finder_list_view_sorting_and_dir_size_placeholder", test_desktop.test_finder_list_view_sorting_and_dir_size_placeholder, False),
+        ("test_system_prefs.test_prefs_defaults_and_validation", test_system_prefs.test_prefs_defaults_and_validation, False),
+        ("test_system_prefs.test_config_defaults_match_prefs_model", test_system_prefs.test_config_defaults_match_prefs_model, False),
+        ("test_system_prefs.test_system_prefs_routes_persist", test_system_prefs.test_system_prefs_routes_persist, False),
         ("test_desktop.test_dock_parabolic_magnification", test_desktop.test_dock_parabolic_magnification, False),
         ("test_desktop.test_spotlight_math_and_search", test_desktop.test_spotlight_math_and_search, True),
         ("test_desktop.test_finder_root_directory_navigation", test_desktop.test_finder_root_directory_navigation, False),
